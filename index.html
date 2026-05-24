@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#2e7d32">
-    <title>مدير المواد الذكي</title>
+    <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
+    <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -26,10 +27,11 @@
             <i class="fas fa-boxes"></i>
         </div>
         <h2>مدير المواد</h2>
-        <div class="splash-subtitle">جاري التحميل...</div>
+        <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
         <div class="splash-progress">
             <div class="splash-progress-fill"></div>
         </div>
+        <div class="splash-version">نسخة احترافية v4.0</div>
     </div>
 
     <!-- Main App -->
@@ -37,7 +39,7 @@
         
         <div class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية</div>
+            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
         <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
@@ -45,7 +47,7 @@
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
-                <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الليلي</button>
+                <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
             </div>
             <div class="toolbar-row">
                 <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
@@ -90,9 +92,10 @@
     <div id="syncStatusBar" class="sync-status-bar">
         <div class="sync-indicator">
             <div id="syncDot" class="sync-dot"></div>
-            <span id="syncStatusText">جاري الاتصال...</span>
+            <span id="syncStatusText">جاري التحميل...</span>
         </div>
         <span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span>
+        <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
     </div>
 
     <!-- ==================== النوافذ المنبثقة ==================== -->
@@ -129,7 +132,7 @@
             <input type="text" id="importantSearchInput" class="search-input" placeholder="بحث...">
             <div id="importantListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveImportantBtn" class="btn-save">إضافة</button>
+                <button id="saveImportantBtn" class="btn-save">إضافة المحددة</button>
                 <button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
@@ -141,7 +144,7 @@
             <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="بحث...">
             <div id="spicesExtraListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveSpicesExtraBtn" class="btn-save">إضافة</button>
+                <button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button>
                 <button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
@@ -153,7 +156,7 @@
             <input type="text" id="quickSearchInput" class="search-input" placeholder="بحث...">
             <div id="quickListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveQuickBtn" class="btn-save">إضافة</button>
+                <button id="saveQuickBtn" class="btn-save">إضافة المحددة</button>
                 <button id="closeQuickModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
@@ -165,7 +168,7 @@
             <input type="text" id="bagsSearchInput" class="search-input" placeholder="بحث...">
             <div id="bagsListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveBagsBtn" class="btn-save">إضافة</button>
+                <button id="saveBagsBtn" class="btn-save">إضافة المحددة</button>
                 <button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
@@ -235,6 +238,15 @@
                     <button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="systemMessageModal" class="modal">
+        <div class="modal-content" style="text-align:center">
+            <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
+            <h3 id="systemMessageTitle">رسالة</h3>
+            <p id="systemMessageText" style="margin:1rem 0"></p>
+            <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
         </div>
     </div>
 
