@@ -1,4 +1,5 @@
-// pwa.js - حل كامل لمشكلة التثبيت
+
+// pwa.js - ملف PWA متكامل ومتقدم للمشروع على /material-manager/
 
 class PWAManager {
     constructor() {
@@ -14,7 +15,6 @@ class PWAManager {
     
     init() {
         this.checkInstallationStatus();
-        this.registerServiceWorker();
         this.setupEventListeners();
         this.monitorOnlineStatus();
         
@@ -22,51 +22,6 @@ class PWAManager {
         setTimeout(() => {
             this.checkAndShowInstallButton();
         }, 2000);
-    }
-    
-    // تسجيل Service Worker
-    registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker registered:', registration.scope);
-                        
-                        // التحقق من وجود Service Worker نشط
-                        if (registration.active) {
-                            console.log('✅ Service Worker is active');
-                            this.checkInstallationEligibility();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('❌ Service Worker registration failed:', error);
-                    });
-            });
-        } else {
-            console.warn('⚠️ Service Worker not supported');
-        }
-    }
-    
-    // التحقق من أهلية التثبيت
-    checkInstallationEligibility() {
-        console.log('🔍 Checking installation eligibility...');
-        
-        // التحقق من وجود deferredPrompt
-        if (this.deferredPrompt) {
-            console.log('✅ Installation prompt is available');
-            this.showInstallButtons();
-        } else {
-            console.log('⚠️ No installation prompt yet, waiting...');
-            this.simulateInstallButton();
-        }
-    }
-    
-    // إظهار زر التثبيت بشكل بديل إذا لم يظهر beforeinstallprompt
-    simulateInstallButton() {
-        // حتى لو لم يظهر beforeinstallprompt، نظهر الزر
-        setTimeout(() => {
-            this.showInstallButtons();
-        }, 3000);
     }
     
     // التحقق من حالة التثبيت
@@ -127,66 +82,10 @@ class PWAManager {
             return;
         }
         
-        // محاولة إنشاء نافذة تثبيت يدوية
-        this.createCustomInstallDialog();
-    }
-    
-    // إنشاء نافذة تثبيت مخصصة
-    createCustomInstallDialog() {
-        // التحقق من وجود النافذة مسبقاً
-        if (document.getElementById('customInstallDialog')) return;
-        
-        const dialog = document.createElement('div');
-        dialog.id = 'customInstallDialog';
-        dialog.innerHTML = `
-            <div style="
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--bg-surface);
-                border-radius: 20px;
-                padding: 20px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-                z-index: 10003;
-                width: 90%;
-                max-width: 350px;
-                text-align: center;
-                border: 1px solid var(--border-light);
-                direction: rtl;
-            ">
-                <i class="fas fa-download" style="font-size: 2rem; color: var(--accent); margin-bottom: 10px; display: block;"></i>
-                <h3 style="margin-bottom: 10px;">تثبيت التطبيق</h3>
-                <p style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-secondary);">لتثبيت التطبيق على جهازك:</p>
-                <div style="text-align: right; margin-bottom: 20px; font-size: 0.85rem;">
-                    <div style="margin-bottom: 10px;"><strong>📍 في متصفح كروم:</strong> اضغط على <i class="fas fa-ellipsis-h"></i> → تثبيت التطبيق</div>
-                    <div style="margin-bottom: 10px;"><strong>📍 في سفاري (iPhone):</strong> اضغط على <i class="fas fa-share-alt"></i> → أضف إلى الشاشة الرئيسية</div>
-                    <div><strong>📍 في فايرفوكس:</strong> اضغط على القائمة ← تثبيت</div>
-                </div>
-                <button id="closeInstallDialog" style="
-                    background: var(--accent);
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 40px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    width: 100%;
-                ">حسناً، فهمت</button>
-            </div>
-        `;
-        document.body.appendChild(dialog);
-        
-        document.getElementById('closeInstallDialog').addEventListener('click', () => {
-            dialog.remove();
-        });
-        
-        // إخفاء النافذة بعد 10 ثوان
-        setTimeout(() => {
-            if (document.getElementById('customInstallDialog')) {
-                dialog.remove();
-            }
-        }, 10000);
+        // إذا كان هناك deferredPrompt
+        if (this.deferredPrompt) {
+            this.showInstallButtons();
+        }
     }
     
     // إعداد مستمعي الأحداث
@@ -210,9 +109,6 @@ class PWAManager {
             this.showToast('✓ تم تثبيت التطبيق بنجاح');
         });
         
-        // محاولة تنشيط beforeinstallprompt يدوياً
-        this.triggerBeforeInstallPrompt();
-        
         // ربط أزرار التثبيت
         const installBtn = document.getElementById('installBtn');
         const installWelcomeBtn = document.getElementById('installWelcomeBtn');
@@ -230,22 +126,6 @@ class PWAManager {
                 this.installApp();
             });
         }
-    }
-    
-    // محاولة تنشيط beforeinstallprompt
-    triggerBeforeInstallPrompt() {
-        // بعض المتصفحات تحتاج إلى تفاعل المستخدم أولاً
-        const triggerInstall = () => {
-            if (!this.hasShownInstallPrompt && this.deferredPrompt) {
-                console.log('🎯 Triggering install prompt...');
-                this.installApp();
-            }
-            document.removeEventListener('click', triggerInstall);
-            document.removeEventListener('touchstart', triggerInstall);
-        };
-        
-        document.addEventListener('click', triggerInstall);
-        document.addEventListener('touchstart', triggerInstall);
     }
     
     // تثبيت التطبيق
