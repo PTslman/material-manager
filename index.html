@@ -53,16 +53,6 @@
             </div>
         </header>
         
-        <!-- Welcome Card (disappears after 40 seconds) -->
-        <section class="welcome-card" id="welcomeCard">
-            <i class="fas fa-store"></i>
-            <h2>مرحباً بك في مدير المواد</h2>
-            <p>نظام متكامل لإدارة المخزون والبهارات، مع مزامنة فورية وسحابية آمنة. يمكنك تثبيت التطبيق على جهازك للوصول السريع.</p>
-            <button id="installWelcomeBtn" class="install-welcome-btn">
-                <i class="fas fa-download"></i> تثبيت التطبيق للوصول السريع
-            </button>
-        </section>
-        
         <!-- Main Action Button -->
         <button id="mainAddBtn" class="main-add-btn">
             <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
@@ -373,18 +363,6 @@
                 });
             }
             
-            // ========== Hide Welcome Card After 40 Seconds ==========
-            setTimeout(function() {
-                const welcomeCard = document.getElementById('welcomeCard');
-                if (welcomeCard) {
-                    welcomeCard.style.transition = 'opacity 0.5s ease';
-                    welcomeCard.style.opacity = '0';
-                    setTimeout(function() {
-                        if (welcomeCard) welcomeCard.style.display = 'none';
-                    }, 500);
-                }
-            }, 40000);
-            
             // ========== Hide Splash Screen After 3 Seconds ==========
             setTimeout(function() {
                 const splash = document.getElementById('splashScreen');
@@ -453,4 +431,4 @@
         })();
     </script>
 </body>
-    </html>
+</html>
