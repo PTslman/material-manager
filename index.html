@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#2e7d32">
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <meta name="keywords" content="مخزون, بهارات, إدارة, مواد, PWA">
     <meta name="author" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- PWA Manifest - مسار نسبي (الأكثر أماناً) -->
-    <link rel="manifest" href="manifest.json">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
     
-    <!-- أيقونات PWA -->
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="icons/icon-152x152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <!-- أيقونات PWA للمتصفحات المختلفة -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
     
     <!-- الخطوط والمكتبات الخارجية -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 </head>
 <body>
 
-    <!-- شاشة البداية -->
+    <!-- شاشة البداية (Splash Screen) -->
     <div id="splashScreen" class="splash">
         <div class="spinner"></div>
         <h2>مدير المواد</h2>
@@ -42,19 +42,24 @@
     <!-- حاوية التطبيق الرئيسية -->
     <div id="appContainer" class="app-main" style="display: none;">
         
+        <!-- الهيدر -->
         <div class="hero">
             <h1>مدير المواد والمخزون</h1>
             <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
+        <!-- بطاقة الترحيب (تختفي بعد 40 ثانية) -->
         <div id="welcomeCard" class="welcome-card">
             <i class="fas fa-store"></i>
             <h2>مرحباً بك في مدير المواد</h2>
-            <p>نظام متكامل لإدارة المخزون والبهارات، مع مزامنة فورية وسحابية آمنة.</p>
+            <p>نظام متكامل لإدارة المخزون والبهارات، مع مزامنة فورية وسحابية آمنة. يمكنك تثبيت التطبيق على جهازك للوصول السريع.</p>
+            <button id="installWelcomeBtn" class="install-welcome-btn"><i class="fas fa-download"></i> تثبيت التطبيق للوصول السريع</button>
         </div>
         
+        <!-- زر إضافة مادة رئيسي -->
         <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
+        <!-- شريط الأدوات -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
@@ -64,6 +69,7 @@
                 <button id="backupBtn" class="action-btn backup-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
                 <button id="restoreBtn" class="action-btn backup-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت التطبيق</button>
+                <button id="updateBtn" class="action-btn install-btn"><i class="fas fa-sync-alt"></i> تحديث التطبيق</button>
             </div>
             <div class="toolbar-row">
                 <button id="importantProductsBtn" class="action-btn"><i class="fas fa-star"></i> بهارات هامة</button>
@@ -74,8 +80,10 @@
             </div>
         </div>
         
+        <!-- حاوية عرض المواد -->
         <div id="materialsContainer"></div>
         
+        <!-- زر مسح الكل -->
         <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
     </div>
 
@@ -94,8 +102,9 @@
         </div>
     </div>
 
-    <!-- ==================== النوافذ المنبثقة ==================== -->
+    <!-- ==================== جميع النوافذ المنبثقة (Modals) ==================== -->
 
+    <!-- نافذة إضافة مادة جديدة (المطورة) -->
     <div id="newItemModal" class="new-item-modal">
         <div class="new-modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -122,6 +131,42 @@
         </div>
     </div>
 
+    <!-- نافذة إضافة مادة عادية (للتوافق) -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
+            <div class="modern-field">
+                <label>اسم المادة</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-tag"></i></div>
+                    <input type="text" id="materialName" placeholder="فلفل أسود، كمون...">
+                </div>
+            </div>
+            <div class="modern-field" id="quantityFieldContainer">
+                <label>الكمية</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
+                    <input type="number" id="quantityValue" step="0.25" value="1">
+                    <div class="quantity-unit">kg</div>
+                </div>
+            </div>
+            <div class="units-group">
+                <label>وحدة القياس</label>
+                <div class="units-buttons">
+                    <button type="button" class="unit-btn" data-unit="kg" data-needs-quantity="true">كيلو</button>
+                    <button type="button" class="unit-btn" data-unit="half" data-needs-quantity="false">نصف كيلو</button>
+                    <button type="button" class="unit-btn" data-unit="quarter" data-needs-quantity="false">ربع كيلو</button>
+                    <button type="button" class="unit-btn" data-unit="oke" data-needs-quantity="false">لوقية</button>
+                </div>
+            </div>
+            <div class="modal-buttons" style="display: flex; gap: 12px;">
+                <button id="saveMaterialBtn" class="btn-save">حفظ</button>
+                <button id="closeModalBtn" class="btn-cancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة بهارات هامة -->
     <div id="importantModal" class="important-modal">
         <div class="important-modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
@@ -137,6 +182,7 @@
         </div>
     </div>
 
+    <!-- نافذة بهارات اضافية -->
     <div id="spicesExtraModal" class="spices-extra-modal">
         <div class="spices-extra-modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
@@ -152,6 +198,7 @@
         </div>
     </div>
 
+    <!-- نافذة بذوريات واعشاب -->
     <div id="quickModal" class="quick-modal">
         <div class="quick-modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات واعشاب</h3>
@@ -167,6 +214,7 @@
         </div>
     </div>
 
+    <!-- نافذة أكياس التعبئة -->
     <div id="bagsModal" class="bags-modal">
         <div class="bags-modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس التعبئة</h3>
@@ -178,6 +226,7 @@
         </div>
     </div>
 
+    <!-- نافذة توصاية -->
     <div id="tawsayaModal" class="tawsaya-modal">
         <div class="tawsaya-modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
@@ -188,10 +237,16 @@
                     <input id="tawsayaName" placeholder="ورق عنب...">
                 </div>
             </div>
-            <div class="radio-group-modern" style="display: flex; gap: 12px; margin: 15px 0;">
-                <label class="radio-option"><input type="radio" name="tawsayaType" value="kg" checked> كيلو</label>
-                <label class="radio-option"><input type="radio" name="tawsayaType" value="half"> نصف كيلو</label>
-                <label class="radio-option"><input type="radio" name="tawsayaType" value="custom"> مخصص</label>
+            <div class="radio-group-modern" style="display: flex; gap: 12px; margin: 15px 0;" id="tawsayaTypeGroup">
+                <label class="radio-option" data-value="kg" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
+                    <input type="radio" name="tawsayaType" value="kg" checked> كيلو
+                </label>
+                <label class="radio-option" data-value="half" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
+                    <input type="radio" name="tawsayaType" value="half"> نصف كيلو
+                </label>
+                <label class="radio-option" data-value="custom" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
+                    <input type="radio" name="tawsayaType" value="custom"> مخصص
+                </label>
             </div>
             <div id="tawsayaCustomQtyGroup" style="display:none">
                 <div class="field-container">
@@ -207,6 +262,7 @@
         </div>
     </div>
 
+    <!-- نافذة تعديل الكمية -->
     <div id="editModal" class="edit-modal">
         <div class="edit-modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
@@ -232,6 +288,7 @@
         </div>
     </div>
 
+    <!-- نافذة تأكيد الحذف -->
     <div id="confirmDeleteModal" class="confirm-modal">
         <div class="confirm-card">
             <div class="confirm-header">
@@ -248,11 +305,21 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- نافذة رسالة النظام -->
+    <div id="systemMessageModal" class="modal" style="z-index: 10010;">
+        <div class="modal-content" style="text-align: center; max-width: 350px;">
+            <i class="fas fa-info-circle" style="font-size: 3rem; color: var(--accent, #2e7d32); margin-bottom: 1rem;"></i>
+            <h3 id="systemMessageTitle">رسالة</h3>
+            <p id="systemMessageText" style="margin: 1rem 0;"></p>
+            <button id="closeSystemMessageBtn" class="btn-save" style="margin-top: 0.5rem;">حسناً</button>
+        </div>
+    </div>
+
+    <!-- تحميل Firebase والمكتبات -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
-    <!-- ملفات المشروع (مسارات نسبية) -->
+    <!-- ملفات المشروع -->
     <script src="js/firebase-config.js"></script>
     <script src="js/constants.js"></script>
     <script src="js/utils.js"></script>
@@ -260,36 +327,48 @@
     <script src="js/app.js"></script>
     <script src="js/pwa.js"></script>
 
-    <!-- تسجيل Service Worker (مسار نسبي) -->
+    <!-- تسجيل Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(reg) {
-                        console.log('✅ Service Worker registered:', reg.scope);
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker registered successfully:', registration.scope);
+                        
+                        // التحقق من وجود تحديث
+                        registration.addEventListener('updatefound', function() {
+                            const newWorker = registration.installing;
+                            console.log('🔄 New Service Worker installing...');
+                            
+                            newWorker.addEventListener('statechange', function() {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('✅ Update available, please refresh');
+                                }
+                            });
+                        });
                     })
-                    .catch(function(err) {
-                        console.error('❌ Service Worker failed:', err);
+                    .catch(function(error) {
+                        console.error('❌ Service Worker registration failed:', error);
                     });
             });
         }
-    </script>
-
-    <script>
+        
+        // إخفاء بطاقة الترحيب بعد 40 ثانية
         setTimeout(function() {
-            var welcomeCard = document.getElementById('welcomeCard');
+            const welcomeCard = document.getElementById('welcomeCard');
             if (welcomeCard) {
                 welcomeCard.style.transition = 'opacity 0.5s ease';
                 welcomeCard.style.opacity = '0';
                 setTimeout(function() {
-                    welcomeCard.style.display = 'none';
+                    if (welcomeCard) welcomeCard.style.display = 'none';
                 }, 500);
             }
         }, 40000);
         
+        // إظهار التطبيق بعد 3 ثوان
         setTimeout(function() {
-            var splash = document.getElementById('splashScreen');
-            var app = document.getElementById('appContainer');
+            const splash = document.getElementById('splashScreen');
+            const app = document.getElementById('appContainer');
             if (splash && app) {
                 splash.classList.add('hidden');
                 setTimeout(function() {
@@ -298,6 +377,30 @@
                 }, 350);
             }
         }, 3000);
+        
+        // إغلاق نوافذ النظام
+        const closeSystemMsgBtn = document.getElementById('closeSystemMessageBtn');
+        if (closeSystemMsgBtn) {
+            closeSystemMsgBtn.addEventListener('click', function() {
+                document.getElementById('systemMessageModal').classList.remove('active');
+            });
+        }
+        
+        // إغلاق النوافذ عند النقر خارجها
+        const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 
+                          'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 
+                          'itemModal', 'systemMessageModal'];
+        
+        modalIds.forEach(function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
