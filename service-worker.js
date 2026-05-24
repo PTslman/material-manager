@@ -1,11 +1,7 @@
-// service-worker.js - Service Worker متقدم للمشروع على /material-manager/
+// service-worker.js - الإصدار النهائي والمتكامل
 
-const CACHE_NAME = 'material-manager-v3';
-const DYNAMIC_CACHE = 'material-manager-dynamic-v3';
-const API_CACHE = 'material-manager-api-v3';
-
-// الملفات الأساسية للتخزين المؤقت (مع المسار /material-manager/)
-const STATIC_ASSETS = [
+const CACHE_NAME = 'material-manager-v4';
+const urlsToCache = [
   '/material-manager/',
   '/material-manager/index.html',
   '/material-manager/manifest.json',
@@ -34,238 +30,107 @@ const STATIC_ASSETS = [
 
 // تثبيت Service Worker
 self.addEventListener('install', event => {
-  console.log('[SW] Installing...');
-  
+  console.log('[Service Worker] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[SW] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+        console.log('[Service Worker] Caching app files');
+        return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('[SW] Installation complete, skip waiting');
+        console.log('[Service Worker] Installation complete');
         return self.skipWaiting();
       })
-      .catch(err => console.error('[SW] Installation failed:', err))
+      .catch(error => {
+        console.error('[Service Worker] Installation failed:', error);
+      })
   );
 });
 
 // تفعيل Service Worker
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating...');
-  
+  console.log('[Service Worker] Activating...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cache => {
-          if (cache !== CACHE_NAME && cache !== DYNAMIC_CACHE && cache !== API_CACHE) {
-            console.log('[SW] Deleting old cache:', cache);
+          if (cache !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting old cache:', cache);
             return caches.delete(cache);
           }
         })
       );
     }).then(() => {
-      console.log('[SW] Activation complete, claiming clients');
+      console.log('[Service Worker] Activation complete');
       return self.clients.claim();
     })
   );
 });
 
-// استراتيجية: Cache First ثم Network للملفات الثابتة
+// استراتيجية Cache First للملفات الثابتة
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // تجاهل طلبات Chrome DevTools و Firebase Analytics
+  // تجاهل طلبات التحليلات والإضافات
   if (url.pathname.includes('chrome-extension') || 
       url.pathname.includes('firebase-analytics') ||
       url.pathname.includes('__/firebase')) {
     return;
   }
   
-  // استراتيجية Network First لـ Firestore API
-  if (url.hostname.includes('firestore.googleapis.com')) {
-    event.respondWith(networkFirstStrategy(event.request));
-    return;
-  }
-  
-  // استراتيجية Cache First للملفات الثابتة
-  if (event.request.url.includes('/material-manager/') && 
-      (event.request.url.includes('.css') || 
-       event.request.url.includes('.js') || 
-       event.request.url.includes('.png') ||
-       event.request.url.includes('.json'))) {
-    event.respondWith(cacheFirstStrategy(event.request));
-    return;
-  }
-  
-  // استراتيجية Stale While Revalidate للباقي
-  event.respondWith(staleWhileRevalidateStrategy(event.request));
-});
-
-// استراتيجية Cache First
-async function cacheFirstStrategy(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
-  
-  if (cached) {
-    console.log('[SW] Cache hit:', request.url);
-    return cached;
-  }
-  
-  try {
-    const response = await fetch(request);
-    if (response && response.status === 200) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    console.error('[SW] Fetch failed:', error);
-    
-    // إرجاع صفحة offline إذا كان طلب HTML
-    if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
-      return caches.match('/material-manager/offline.html');
-    }
-    throw error;
-  }
-}
-
-// استراتيجية Network First
-async function networkFirstStrategy(request) {
-  try {
-    const response = await fetch(request);
-    if (response && response.status === 200) {
-      const cache = await caches.open(API_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    console.log('[SW] Network failed, using cache:', request.url);
-    const cache = await caches.open(API_CACHE);
-    const cached = await cache.match(request);
-    
-    if (cached) {
-      return cached;
-    }
-    
-    throw error;
-  }
-}
-
-// استراتيجية Stale While Revalidate
-async function staleWhileRevalidateStrategy(request) {
-  const cache = await caches.open(DYNAMIC_CACHE);
-  const cached = await cache.match(request);
-  
-  const fetchPromise = fetch(request).then(response => {
-    if (response && response.status === 200) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  }).catch(error => {
-    console.error('[SW] Fetch failed:', error);
-    throw error;
-  });
-  
-  return cached || fetchPromise;
-}
-
-// استقبال المزامنة الخلفية
-self.addEventListener('sync', event => {
-  console.log('[SW] Background sync:', event.tag);
-  
-  if (event.tag === 'sync-materials') {
-    event.waitUntil(syncMaterials());
-  }
-});
-
-// مزامنة المواد في الخلفية
-async function syncMaterials() {
-  console.log('[SW] Syncing materials in background');
-  
-  try {
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'SYNC_START',
-        timestamp: new Date().toISOString()
-      });
-    });
-    
-    // يمكن إضافة منطق المزامنة هنا
-    
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'SYNC_COMPLETE',
-        timestamp: new Date().toISOString()
-      });
-    });
-  } catch (error) {
-    console.error('[SW] Sync failed:', error);
-  }
-}
-
-// استقبال الإشعارات
-self.addEventListener('push', event => {
-  console.log('[SW] Push notification received:', event);
-  
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'مدير المواد';
-  const options = {
-    body: data.body || 'يوجد تحديث في المخزون',
-    icon: data.icon || '/material-manager/icons/icon-192x192.png',
-    badge: '/material-manager/icons/icon-72x72.png',
-    vibrate: [200, 100, 200],
-    data: {
-      url: data.url || '/material-manager/'
-    },
-    actions: [
-      {
-        action: 'open',
-        title: 'فتح التطبيق'
-      },
-      {
-        action: 'dismiss',
-        title: 'إغلاق'
-      }
-    ]
-  };
-  
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// التعامل مع النقر على الإشعار
-self.addEventListener('notificationclick', event => {
-  console.log('[SW] Notification click:', event);
-  
-  event.notification.close();
-  
-  if (event.action === 'open' || !event.action) {
-    event.waitUntil(
-      self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then(clientList => {
-          if (clientList.length > 0) {
-            return clientList[0].focus();
-          }
-          return self.clients.openWindow('/material-manager/');
+  // لطلبات HTML، استخدم Network First ثم Cache
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request)
+            .then(response => {
+              if (response) {
+                return response;
+              }
+              return caches.match('/material-manager/offline.html');
+            });
         })
     );
+    return;
   }
+  
+  // للملفات الأخرى، استخدم Cache First
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request)
+          .then(response => {
+            if (!response || response.status !== 200) {
+              return response;
+            }
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+            return response;
+          });
+      })
+      .catch(error => {
+        console.error('[Service Worker] Fetch failed:', error);
+        throw error;
+      })
+  );
 });
 
 // استقبال رسائل من التطبيق
 self.addEventListener('message', event => {
-  console.log('[SW] Message from app:', event.data);
-  
-  if (event.data.type === 'SKIP_WAITING') {
+  if (event.data === 'skipWaiting') {
     self.skipWaiting();
-  }
-});
-
-// تحديث الملفات في الخلفية
-self.addEventListener('periodicsync', event => {
-  console.log('[SW] Periodic sync:', event.tag);
-  
-  if (event.tag === 'sync-materials') {
-    event.waitUntil(syncMaterials());
   }
 });
