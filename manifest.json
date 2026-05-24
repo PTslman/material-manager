@@ -2,7 +2,7 @@
   "name": "مدير المواد الذكي",
   "short_name": "مدير المواد",
   "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية",
-  "start_url": "/material-manager/",
+  "start_url": "/material-manager/index.html",
   "scope": "/material-manager/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
@@ -71,10 +71,10 @@
   ],
   "shortcuts": [
     {
-      "name": "إضافة مادة جديدة",
+      "name": "إضافة مادة",
       "short_name": "إضافة",
       "description": "إضافة مادة جديدة إلى المخزون",
-      "url": "/material-manager/?action=add",
+      "url": "/material-manager/index.html?action=add",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
@@ -86,31 +86,7 @@
       "name": "البهارات الهامة",
       "short_name": "بهارات",
       "description": "إضافة بهارات هامة",
-      "url": "/material-manager/?action=important",
-      "icons": [
-        {
-          "src": "icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "البذوريات والأعشاب",
-      "short_name": "بذوريات",
-      "description": "إضافة بذوريات وأعشاب",
-      "url": "/material-manager/?action=extra",
-      "icons": [
-        {
-          "src": "icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "أكياس التعبئة",
-      "short_name": "أكياس",
-      "description": "إضافة أكياس التعبئة",
-      "url": "/material-manager/?action=bags",
+      "url": "/material-manager/index.html?action=important",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
@@ -119,6 +95,11 @@
       ]
     }
   ],
+  "screenshots": [],
   "prefer_related_applications": false,
-  "related_applications": []
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred"
 }
