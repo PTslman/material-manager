@@ -1,6 +1,6 @@
-// ui.js - إدارة واجهة المستخدم وعرض المواد
+// ui.js - إدارة واجهة المستخدم
 
-// عرض جميع المواد في الواجهة
+// عرض جميع المواد
 function renderAllMaterials(materials) {
     const container = document.getElementById('materialsContainer');
     if (!container) return;
@@ -37,7 +37,6 @@ function renderAllMaterials(materials) {
     
     container.innerHTML = html;
     
-    // ربط أحداث الحذف والتعديل
     document.querySelectorAll('.delete-material').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -64,12 +63,9 @@ function renderAllMaterials(materials) {
             const material = allMaterials.find(m => m.id === id);
             if (material && canEditMaterial(material.unitType)) {
                 currentEditId = id;
-                const editMaterialName = document.getElementById('editMaterialName');
-                const editQuantityValue = document.getElementById('editQuantityValue');
-                if (editMaterialName) editMaterialName.value = material.name;
-                if (editQuantityValue) editQuantityValue.value = material.quantity;
-                const editModal = document.getElementById('editModal');
-                if (editModal) editModal.classList.add('active');
+                document.getElementById('editMaterialName').value = material.name;
+                document.getElementById('editQuantityValue').value = material.quantity;
+                document.getElementById('editModal').classList.add('active');
             }
         };
     });
@@ -93,35 +89,33 @@ function canEditMaterial(unitType) {
     return unitType === 'kg';
 }
 
-// دوال النوافذ المنبثقة (Modals)
+// نافذة تأكيد الحذف
 function showConfirmDialog(message, onConfirm) {
-    const confirmMessage = document.getElementById('confirmDeleteMessage');
-    const confirmModal = document.getElementById('confirmDeleteModal');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    
-    if (confirmMessage) confirmMessage.innerText = message;
-    if (confirmModal) confirmModal.classList.add('active');
+    document.getElementById('confirmDeleteMessage').innerText = message;
+    document.getElementById('confirmDeleteModal').classList.add('active');
     
     const handleConfirm = () => {
-        if (confirmModal) confirmModal.classList.remove('active');
+        document.getElementById('confirmDeleteModal').classList.remove('active');
         if (onConfirm) onConfirm();
-        if (confirmDeleteBtn) confirmDeleteBtn.removeEventListener('click', handleConfirm);
-        if (cancelDeleteBtn) cancelDeleteBtn.removeEventListener('click', handleCancel);
+        document.getElementById('confirmDeleteBtn').removeEventListener('click', handleConfirm);
+        document.getElementById('cancelDeleteBtn').removeEventListener('click', handleCancel);
     };
     
     const handleCancel = () => {
-        if (confirmModal) confirmModal.classList.remove('active');
-        if (confirmDeleteBtn) confirmDeleteBtn.removeEventListener('click', handleConfirm);
-        if (cancelDeleteBtn) cancelDeleteBtn.removeEventListener('click', handleCancel);
+        document.getElementById('confirmDeleteModal').classList.remove('active');
+        document.getElementById('confirmDeleteBtn').removeEventListener('click', handleConfirm);
+        document.getElementById('cancelDeleteBtn').removeEventListener('click', handleCancel);
     };
     
-    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleConfirm, { once: true });
-    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', handleCancel, { once: true });
+    document.getElementById('confirmDeleteBtn').addEventListener('click', handleConfirm, { once: true });
+    document.getElementById('cancelDeleteBtn').addEventListener('click', handleCancel, { once: true });
 }
 
-// عرض القوائم مع البحث
+// ==================== عرض القوائم مع البحث ====================
+
 function renderImportantFiltered(filter = '') {
+    if (window.refreshConstantsData) window.refreshConstantsData();
+    
     const container = document.getElementById('importantListContainer');
     if (!container) return;
     
@@ -162,6 +156,8 @@ function renderImportantFiltered(filter = '') {
 }
 
 function renderQuickFiltered(filter = '') {
+    if (window.refreshConstantsData) window.refreshConstantsData();
+    
     const container = document.getElementById('quickListContainer');
     if (!container) return;
     
@@ -202,6 +198,8 @@ function renderQuickFiltered(filter = '') {
 }
 
 function renderSpicesExtraFiltered(filter = '') {
+    if (window.refreshConstantsData) window.refreshConstantsData();
+    
     const container = document.getElementById('spicesExtraListContainer');
     if (!container) return;
     
@@ -257,7 +255,8 @@ function renderBags() {
     container.innerHTML = html;
 }
 
-// دوال إضافة العناصر المحددة
+// ==================== دوال الإضافة ====================
+
 async function addSelectedImportant() {
     let items = [];
     const itemsData = getImportantItems();
@@ -287,10 +286,8 @@ async function addSelectedImportant() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} مادة`);
-        const importantModal = document.getElementById('importantModal');
-        if (importantModal) importantModal.classList.remove('active');
-        const importantSearchInput = document.getElementById('importantSearchInput');
-        if (importantSearchInput) importantSearchInput.value = '';
+        document.getElementById('importantModal').classList.remove('active');
+        document.getElementById('importantSearchInput').value = '';
     } catch (e) {
         showToast("❌ فشل", true);
     }
@@ -325,10 +322,8 @@ async function addSelectedQuick() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} منتج`);
-        const quickModal = document.getElementById('quickModal');
-        if (quickModal) quickModal.classList.remove('active');
-        const quickSearchInput = document.getElementById('quickSearchInput');
-        if (quickSearchInput) quickSearchInput.value = '';
+        document.getElementById('quickModal').classList.remove('active');
+        document.getElementById('quickSearchInput').value = '';
     } catch (e) {
         showToast("❌ فشل", true);
     }
@@ -363,10 +358,8 @@ async function addSelectedSpicesExtra() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} بهار`);
-        const spicesExtraModal = document.getElementById('spicesExtraModal');
-        if (spicesExtraModal) spicesExtraModal.classList.remove('active');
-        const spicesExtraSearchInput = document.getElementById('spicesExtraSearchInput');
-        if (spicesExtraSearchInput) spicesExtraSearchInput.value = '';
+        document.getElementById('spicesExtraModal').classList.remove('active');
+        document.getElementById('spicesExtraSearchInput').value = '';
     } catch (e) {
         showToast("❌ فشل", true);
     }
@@ -402,28 +395,22 @@ async function addSelectedBags() {
             let chk = document.getElementById(`bag_chk_${i}`);
             if (chk) chk.checked = false;
         }
-        const bagsModal = document.getElementById('bagsModal');
-        if (bagsModal) bagsModal.classList.remove('active');
+        document.getElementById('bagsModal').classList.remove('active');
     } catch (e) {
         showToast("❌ فشل إضافة الأكياس", true);
     }
 }
 
 async function addTawsaya() {
-    const nameInput = document.getElementById('tawsayaName');
-    const customQtyInput = document.getElementById('tawsayaCustomQty');
-    
-    let name = nameInput?.value.trim();
+    let name = document.getElementById('tawsayaName')?.value.trim();
     if (!name) {
         showToast("✏️ اسم التوصاية", true);
         return;
     }
-    
-    let type = document.querySelector('input[name="tawsayaType"]:checked')?.value;
+    let type = document.querySelector('#tawsayaTypeGroup .unit-btn.active')?.getAttribute('data-type');
     let qty = 1;
-    
     if (type === 'kg') {
-        let v = parseFloat(customQtyInput?.value);
+        let v = parseFloat(document.getElementById('tawsayaCustomQty')?.value);
         if (isNaN(v) || v <= 0) {
             showToast("🔢 كمية صحيحة", true);
             return;
@@ -432,14 +419,13 @@ async function addTawsaya() {
     } else if (type === 'half') {
         qty = 0.5;
     } else {
-        let v = parseFloat(customQtyInput?.value);
+        let v = parseFloat(document.getElementById('tawsayaCustomQty')?.value);
         if (isNaN(v) || v <= 0) {
             showToast("🔢 كمية صحيحة", true);
             return;
         }
         qty = v;
     }
-    
     try {
         await materialsCollection.add({
             name,
@@ -450,13 +436,13 @@ async function addTawsaya() {
             priority: "tawsaya"
         });
         showToast(`✓ تمت إضافة "${name}"`);
-        if (nameInput) nameInput.value = "";
-        if (customQtyInput) customQtyInput.value = "1";
-        const kgRadio = document.querySelector('input[value="kg"]');
-        if (kgRadio) kgRadio.checked = true;
-        toggleTawsayaField();
-        const tawsayaModal = document.getElementById('tawsayaModal');
-        if (tawsayaModal) tawsayaModal.classList.remove('active');
+        document.getElementById('tawsayaName').value = "";
+        document.getElementById('tawsayaCustomQty').value = "1";
+        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="kg"]').classList.add('active');
+        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="half"]').classList.remove('active');
+        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="custom"]').classList.remove('active');
+        document.getElementById('tawsayaCustomQtyGroup').style.display = 'none';
+        document.getElementById('tawsayaModal').classList.remove('active');
     } catch (e) {
         showToast("❌ خطأ", true);
     }
@@ -464,8 +450,7 @@ async function addTawsaya() {
 
 async function saveEdit() {
     if (!currentEditId) return;
-    const editQuantityValue = document.getElementById('editQuantityValue');
-    let newQty = parseFloat(editQuantityValue?.value);
+    let newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
     if (isNaN(newQty) || newQty <= 0) {
         showToast("🔢 كمية صحيحة", true);
         return;
@@ -473,125 +458,83 @@ async function saveEdit() {
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: newQty });
         showToast("✓ تم تحديث الكمية");
-        const editModal = document.getElementById('editModal');
-        if (editModal) editModal.classList.remove('active');
+        document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
     } catch (e) {
         showToast("❌ فشل التحديث", true);
     }
 }
 
-function toggleTawsayaField() {
-    const customGroup = document.getElementById('tawsayaCustomQtyGroup');
-    const selectedType = document.querySelector('input[name="tawsayaType"]:checked')?.value;
-    if (customGroup) {
-        customGroup.style.display = selectedType === 'custom' ? 'block' : 'none';
-    }
-}
+// ==================== ربط الأحداث ====================
 
-// ربط أحداث النوافذ المنبثقة
 function bindModalEvents() {
-    // نافذة بهارات هامة
-    const importantBtn = document.getElementById('importantProductsBtn');
-    const importantModal = document.getElementById('importantModal');
-    const closeImportantBtn = document.getElementById('closeImportantModalBtn');
-    const saveImportantBtn = document.getElementById('saveImportantBtn');
-    const importantSearch = document.getElementById('importantSearchInput');
+    // Important Items
+    document.getElementById('importantProductsBtn')?.addEventListener('click', () => {
+        renderImportantFiltered('');
+        document.getElementById('importantModal').classList.add('active');
+        document.getElementById('importantSearchInput')?.focus();
+    });
+    document.getElementById('closeImportantModalBtn')?.addEventListener('click', () => {
+        document.getElementById('importantModal').classList.remove('active');
+    });
+    document.getElementById('saveImportantBtn')?.addEventListener('click', addSelectedImportant);
+    document.getElementById('importantSearchInput')?.addEventListener('input', (e) => {
+        renderImportantFiltered(e.target.value.trim());
+    });
     
-    if (importantBtn) {
-        importantBtn.onclick = () => {
-            renderImportantFiltered('');
-            if (importantModal) importantModal.classList.add('active');
-            if (importantSearch) importantSearch.focus();
-        };
-    }
-    if (closeImportantBtn) closeImportantBtn.onclick = () => importantModal?.classList.remove('active');
-    if (saveImportantBtn) saveImportantBtn.onclick = addSelectedImportant;
-    if (importantSearch) {
-        importantSearch.oninput = (e) => renderImportantFiltered(e.target.value.trim());
-    }
+    // Spices Extra
+    document.getElementById('spicesExtraBtn')?.addEventListener('click', () => {
+        renderSpicesExtraFiltered('');
+        document.getElementById('spicesExtraModal').classList.add('active');
+        document.getElementById('spicesExtraSearchInput')?.focus();
+    });
+    document.getElementById('closeSpicesExtraModalBtn')?.addEventListener('click', () => {
+        document.getElementById('spicesExtraModal').classList.remove('active');
+    });
+    document.getElementById('saveSpicesExtraBtn')?.addEventListener('click', addSelectedSpicesExtra);
+    document.getElementById('spicesExtraSearchInput')?.addEventListener('input', (e) => {
+        renderSpicesExtraFiltered(e.target.value.trim());
+    });
     
-    // نافذة بهارات اضافية
-    const spicesExtraBtn = document.getElementById('spicesExtraBtn');
-    const spicesExtraModal = document.getElementById('spicesExtraModal');
-    const closeSpicesExtraBtn = document.getElementById('closeSpicesExtraModalBtn');
-    const saveSpicesExtraBtn = document.getElementById('saveSpicesExtraBtn');
-    const spicesExtraSearch = document.getElementById('spicesExtraSearchInput');
+    // Quick Products
+    document.getElementById('quickProductsBtn')?.addEventListener('click', () => {
+        renderQuickFiltered('');
+        document.getElementById('quickModal').classList.add('active');
+        document.getElementById('quickSearchInput')?.focus();
+    });
+    document.getElementById('closeQuickModalBtn')?.addEventListener('click', () => {
+        document.getElementById('quickModal').classList.remove('active');
+    });
+    document.getElementById('saveQuickBtn')?.addEventListener('click', addSelectedQuick);
+    document.getElementById('quickSearchInput')?.addEventListener('input', (e) => {
+        renderQuickFiltered(e.target.value.trim());
+    });
     
-    if (spicesExtraBtn) {
-        spicesExtraBtn.onclick = () => {
-            renderSpicesExtraFiltered('');
-            if (spicesExtraModal) spicesExtraModal.classList.add('active');
-            if (spicesExtraSearch) spicesExtraSearch.focus();
-        };
-    }
-    if (closeSpicesExtraBtn) closeSpicesExtraBtn.onclick = () => spicesExtraModal?.classList.remove('active');
-    if (saveSpicesExtraBtn) saveSpicesExtraBtn.onclick = addSelectedSpicesExtra;
-    if (spicesExtraSearch) {
-        spicesExtraSearch.oninput = (e) => renderSpicesExtraFiltered(e.target.value.trim());
-    }
+    // Bags
+    document.getElementById('bagsManagerBtn')?.addEventListener('click', () => {
+        renderBags();
+        document.getElementById('bagsModal').classList.add('active');
+    });
+    document.getElementById('closeBagsModalBtn')?.addEventListener('click', () => {
+        document.getElementById('bagsModal').classList.remove('active');
+    });
+    document.getElementById('saveBagsBtn')?.addEventListener('click', addSelectedBags);
     
-    // نافذة بذوريات واعشاب
-    const quickBtn = document.getElementById('quickProductsBtn');
-    const quickModal = document.getElementById('quickModal');
-    const closeQuickBtn = document.getElementById('closeQuickModalBtn');
-    const saveQuickBtn = document.getElementById('saveQuickBtn');
-    const quickSearch = document.getElementById('quickSearchInput');
+    // Tawsaya
+    document.getElementById('tawsayaQuickBtn')?.addEventListener('click', () => {
+        document.getElementById('tawsayaModal').classList.add('active');
+        document.getElementById('tawsayaName')?.focus();
+    });
+    document.getElementById('closeTawsayaModalBtn')?.addEventListener('click', () => {
+        document.getElementById('tawsayaModal').classList.remove('active');
+    });
+    document.getElementById('saveTawsayaBtn')?.addEventListener('click', addTawsaya);
     
-    if (quickBtn) {
-        quickBtn.onclick = () => {
-            renderQuickFiltered('');
-            if (quickModal) quickModal.classList.add('active');
-            if (quickSearch) quickSearch.focus();
-        };
-    }
-    if (closeQuickBtn) closeQuickBtn.onclick = () => quickModal?.classList.remove('active');
-    if (saveQuickBtn) saveQuickBtn.onclick = addSelectedQuick;
-    if (quickSearch) {
-        quickSearch.oninput = (e) => renderQuickFiltered(e.target.value.trim());
-    }
-    
-    // نافذة أكياس
-    const bagsBtn = document.getElementById('bagsManagerBtn');
-    const bagsModal = document.getElementById('bagsModal');
-    const closeBagsBtn = document.getElementById('closeBagsModalBtn');
-    const saveBagsBtn = document.getElementById('saveBagsBtn');
-    
-    if (bagsBtn) {
-        bagsBtn.onclick = () => {
-            renderBags();
-            if (bagsModal) bagsModal.classList.add('active');
-        };
-    }
-    if (closeBagsBtn) closeBagsBtn.onclick = () => bagsModal?.classList.remove('active');
-    if (saveBagsBtn) saveBagsBtn.onclick = addSelectedBags;
-    
-    // نافذة توصاية
-    const tawsayaBtn = document.getElementById('tawsayaQuickBtn');
-    const tawsayaModal = document.getElementById('tawsayaModal');
-    const closeTawsayaBtn = document.getElementById('closeTawsayaModalBtn');
-    const saveTawsayaBtn = document.getElementById('saveTawsayaBtn');
-    const tawsayaRadios = document.querySelectorAll('input[name="tawsayaType"]');
-    
-    if (tawsayaBtn) {
-        tawsayaBtn.onclick = () => {
-            if (tawsayaModal) tawsayaModal.classList.add('active');
-            const tawsayaName = document.getElementById('tawsayaName');
-            if (tawsayaName) tawsayaName.focus();
-            toggleTawsayaField();
-        };
-    }
-    if (closeTawsayaBtn) closeTawsayaBtn.onclick = () => tawsayaModal?.classList.remove('active');
-    if (saveTawsayaBtn) saveTawsayaBtn.onclick = addTawsaya;
-    tawsayaRadios.forEach(r => r.addEventListener('change', toggleTawsayaField));
-    
-    // نافذة تعديل
-    const editModal = document.getElementById('editModal');
-    const closeEditBtn = document.getElementById('closeEditModalBtn');
-    const saveEditBtn = document.getElementById('saveEditBtn');
-    
-    if (closeEditBtn) closeEditBtn.onclick = () => editModal?.classList.remove('active');
-    if (saveEditBtn) saveEditBtn.onclick = saveEdit;
+    // Edit Modal
+    document.getElementById('closeEditModalBtn')?.addEventListener('click', () => {
+        document.getElementById('editModal').classList.remove('active');
+    });
+    document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
 }
 
 // تصدير الدوال للنطاق العام
@@ -606,7 +549,6 @@ window.addSelectedSpicesExtra = addSelectedSpicesExtra;
 window.addSelectedBags = addSelectedBags;
 window.addTawsaya = addTawsaya;
 window.saveEdit = saveEdit;
-window.toggleTawsayaField = toggleTawsayaField;
 window.showConfirmDialog = showConfirmDialog;
 
 // ربط الأحداث عند تحميل الصفحة
