@@ -173,7 +173,7 @@ function renderImportantFiltered(filter = '') {
                 <button class="qty-btn" data-action="decr" data-idx="${originalIdx}">-</button>
                 <input type="number" class="qty-value" id="important_qty_${originalIdx}" value="1" step="1" min="1" max="5">
                 <button class="qty-btn" data-action="incr" data-idx="${originalIdx}">+</button>
-                <span class="unit-label">kg</span>
+                <span class="unit-label">كجم</span>
             </div>
         </div>`;
     });
@@ -212,7 +212,7 @@ function renderSpicesExtraFiltered(filter = '') {
                 <button class="qty-btn" data-action="decr" data-idx="${originalIdx}">-</button>
                 <input type="number" class="qty-value" id="spices_extra_qty_${originalIdx}" value="1" step="1" min="1" max="10">
                 <button class="qty-btn" data-action="incr" data-idx="${originalIdx}">+</button>
-                <span class="unit-label">kg</span>
+                <span class="unit-label">كجم</span>
             </div>
         </div>`;
     });
@@ -251,7 +251,7 @@ function renderQuickFiltered(filter = '') {
                 <button class="qty-btn" data-action="decr" data-idx="${originalIdx}">-</button>
                 <input type="number" class="qty-value" id="quick_qty_${originalIdx}" value="1" step="1" min="1" max="10">
                 <button class="qty-btn" data-action="incr" data-idx="${originalIdx}">+</button>
-                <span class="unit-label">kg</span>
+                <span class="unit-label">كجم</span>
             </div>
         </div>`;
     });
@@ -576,31 +576,41 @@ function setupPWA() {
 
 // ==================== ربط الأحداث ====================
 function bindEvents() {
+    // زر إضافة مادة رئيسي
     document.getElementById('mainAddBtn').onclick = () => {
         document.getElementById('newItemModal').classList.add('active');
         document.getElementById('newMaterialName').focus();
     };
     
+    // زر المزامنة
     document.getElementById('syncBtn').onclick = () => {
         if (unsubscribe) unsubscribe();
         startListener();
         showToast("🔄 مزامنة يدوية");
     };
     
+    // زر تغيير الثيم
     document.getElementById('themeToggle').onclick = () => {
         document.body.classList.contains('dark') ? setTheme('light') : setTheme('dark');
     };
     
+    // زر النسخ الاحتياطي
     document.getElementById('backupBtn').onclick = backupData;
+    
+    // زر الاستعادة
     document.getElementById('restoreBtn').onclick = restoreData;
+    
+    // زر مسح الكل
     document.getElementById('clearAllBtn').onclick = clearAll;
+    
+    // زر إعادة محاولة المزامنة
     document.getElementById('syncRetry').onclick = () => {
         if (unsubscribe) unsubscribe();
         startListener();
         showToast("🔄 محاولة إعادة الاتصال...");
     };
     
-    // أزرار الجداول
+    // أزرار الجداول الأربعة
     document.getElementById('importantProductsBtn').onclick = () => {
         renderImportantFiltered('');
         document.getElementById('importantModal').classList.add('active');
@@ -624,21 +634,46 @@ function bindEvents() {
         document.getElementById('bagsModal').classList.add('active');
     };
     
+    // زر التوصاية
     document.getElementById('tawsayaQuickBtn').onclick = () => {
         document.getElementById('tawsayaModal').classList.add('active');
         document.getElementById('tawsayaName').focus();
     };
     
-    // إغلاق النوافذ
-    document.getElementById('closeNewModalBtn').onclick = () => document.getElementById('newItemModal').classList.remove('active');
-    document.getElementById('closeImportantModalBtn').onclick = () => document.getElementById('importantModal').classList.remove('active');
-    document.getElementById('closeSpicesExtraModalBtn').onclick = () => document.getElementById('spicesExtraModal').classList.remove('active');
-    document.getElementById('closeQuickModalBtn').onclick = () => document.getElementById('quickModal').classList.remove('active');
-    document.getElementById('closeBagsModalBtn').onclick = () => document.getElementById('bagsModal').classList.remove('active');
-    document.getElementById('closeTawsayaModalBtn').onclick = () => document.getElementById('tawsayaModal').classList.remove('active');
-    document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('editModal').classList.remove('active');
+    // أزرار إغلاق النوافذ المنبثقة
+    document.getElementById('closeNewModalBtn').onclick = () => {
+        document.getElementById('newItemModal').classList.remove('active');
+    };
     
-    // حفظ
+    document.getElementById('closeImportantModalBtn').onclick = () => {
+        document.getElementById('importantModal').classList.remove('active');
+    };
+    
+    document.getElementById('closeSpicesExtraModalBtn').onclick = () => {
+        document.getElementById('spicesExtraModal').classList.remove('active');
+    };
+    
+    document.getElementById('closeQuickModalBtn').onclick = () => {
+        document.getElementById('quickModal').classList.remove('active');
+    };
+    
+    document.getElementById('closeBagsModalBtn').onclick = () => {
+        document.getElementById('bagsModal').classList.remove('active');
+    };
+    
+    document.getElementById('closeTawsayaModalBtn').onclick = () => {
+        document.getElementById('tawsayaModal').classList.remove('active');
+    };
+    
+    document.getElementById('closeEditModalBtn').onclick = () => {
+        document.getElementById('editModal').classList.remove('active');
+    };
+    
+    document.getElementById('closeSystemMessageBtn').onclick = () => {
+        document.getElementById('systemMessageModal').classList.remove('active');
+    };
+    
+    // أزرار حفظ النوافذ المنبثقة
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
     document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
     document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
@@ -647,17 +682,26 @@ function bindEvents() {
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
     
-    // بحث
+    // أزرار البحث
     document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
     document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
     document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
+    document.getElementById('bagsSearchInput').oninput = (e) => {
+        const val = e.target.value;
+        const items = document.querySelectorAll('#bagsListContainer .modern-item-card');
+        items.forEach(item => {
+            const name = item.querySelector('.item-name')?.innerText || '';
+            item.style.display = name.includes(val) ? 'flex' : 'none';
+        });
+    };
     
-    // كمية
+    // أزرار الكمية
     document.getElementById('decrementQty').onclick = () => {
         let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
         val = Math.max(0.25, val - 0.25);
         document.getElementById('newQuantityValue').value = val;
     };
+    
     document.getElementById('incrementQty').onclick = () => {
         let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
         val = val + 0.25;
@@ -665,22 +709,28 @@ function bindEvents() {
     };
     
     // إغلاق النوافذ عند النقر خارجها
-    const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal'];
+    const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
     modalIds.forEach(id => {
         const modal = document.getElementById(id);
-        if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
     });
     
-    // توصاية
-    const typeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-    const customGroup = document.getElementById('tawsayaCustomQtyGroup');
-    typeBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            typeBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+    // أزرار نوع الكمية في نافذة التوصاية
+    const tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+    const tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
+    if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
+        tawsayaTypeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tawsayaTypeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tawsayaCustomGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+            });
         });
-    });
+    }
 }
 
 function setTheme(th) {
@@ -768,4 +818,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered:', reg.scope))
             .catch(err => console.error('❌ SW failed:', err));
     });
-        }
+                    }
