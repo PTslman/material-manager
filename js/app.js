@@ -65,6 +65,9 @@ function updateSyncUI(status, itemCount = null) {
     } else if (status === 'syncing') {
         if (syncDot) syncDot.className = 'sync-dot syncing';
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
+    } else if (status === 'checking') {
+        if (syncDot) syncDot.className = 'sync-dot syncing';
+        if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحقق...';
     }
     
     if (itemCount !== null && syncItemsCount) {
@@ -74,6 +77,27 @@ function updateSyncUI(status, itemCount = null) {
     if (lastSyncDate && syncLastTime) {
         let d = new Date(lastSyncDate);
         syncLastTime.innerHTML = `<i class="far fa-clock"></i> ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+    }
+}
+
+// دالة للتحقق من الاتصال قبل المزامنة
+async function checkConnectionAndSync() {
+    updateSyncUI('checking');
+    
+    // محاولة جلب بيانات بسيطة للتحقق من الاتصال
+    try {
+        const testQuery = await materialsCollection.limit(1).get();
+        // إذا وصلنا هنا، الاتصال موجود
+        if (unsubscribe) unsubscribe();
+        startListener();
+        updateSyncUI('connected', allMaterials.length);
+        showToast("🔄 تمت المزامنة بنجاح");
+        return true;
+    } catch (error) {
+        console.error("فشل الاتصال:", error);
+        updateSyncUI('offline');
+        showToast("❌ لا يوجد اتصال بالإنترنت، يرجى التحقق من الشبكة", true);
+        return false;
     }
 }
 
@@ -241,9 +265,7 @@ function setupPWA() {
         e.preventDefault();
         deferredPrompt = e;
         const installBtn = document.getElementById('installBtn');
-        const installWelcomeBtn = document.getElementById('installWelcomeBtn');
         if (installBtn) installBtn.style.display = 'inline-flex';
-        if (installWelcomeBtn) installWelcomeBtn.style.display = 'inline-flex';
     });
     
     const installBtn = document.getElementById('installBtn');
@@ -255,24 +277,6 @@ function setupPWA() {
                 if (outcome === 'accepted') showToast('✓ تم تثبيت التطبيق');
                 deferredPrompt = null;
                 if (installBtn) installBtn.style.display = 'none';
-                const installWelcomeBtn = document.getElementById('installWelcomeBtn');
-                if (installWelcomeBtn) installWelcomeBtn.style.display = 'none';
-            } else {
-                showToast('يمكنك التثبيت من قائمة المتصفح', false);
-            }
-        });
-    }
-    
-    const installWelcomeBtn = document.getElementById('installWelcomeBtn');
-    if (installWelcomeBtn) {
-        installWelcomeBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') showToast('✓ تم تثبيت التطبيق');
-                deferredPrompt = null;
-                if (installBtn) installBtn.style.display = 'none';
-                if (installWelcomeBtn) installWelcomeBtn.style.display = 'none';
             } else {
                 showToast('يمكنك التثبيت من قائمة المتصفح', false);
             }
@@ -281,7 +285,6 @@ function setupPWA() {
     
     if (window.matchMedia('(display-mode: standalone)').matches) {
         if (installBtn) installBtn.style.display = 'none';
-        if (installWelcomeBtn) installWelcomeBtn.style.display = 'none';
     }
 }
 
@@ -296,12 +299,13 @@ function bindEvents() {
         if (newMaterialName) newMaterialName.focus();
     };
     
+    // زر المزامنة - يستخدم الدالة الجديدة للتحقق من الاتصال
     const syncBtn = document.getElementById('syncBtn');
-    if (syncBtn) syncBtn.onclick = () => {
-        if (unsubscribe) unsubscribe();
-        startListener();
-        showToast("🔄 مزامنة يدوية");
-    };
+    if (syncBtn) {
+        syncBtn.onclick = () => {
+            checkConnectionAndSync();
+        };
+    }
     
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) themeToggle.onclick = () => {
@@ -318,11 +322,11 @@ function bindEvents() {
     if (clearAllBtn) clearAllBtn.onclick = clearAll;
     
     const syncRetry = document.getElementById('syncRetry');
-    if (syncRetry) syncRetry.onclick = () => {
-        if (unsubscribe) unsubscribe();
-        startListener();
-        showToast("🔄 محاولة إعادة الاتصال...");
-    };
+    if (syncRetry) {
+        syncRetry.onclick = () => {
+            checkConnectionAndSync();
+        };
+    }
     
     // أزرار النوافذ المنبثقة
     const closeNewModalBtn = document.getElementById('closeNewModalBtn');
@@ -369,7 +373,7 @@ function bindEvents() {
     }
     
     // إغلاق النوافذ عند النقر خارجها
-    const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmModal'];
+    const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmModal', 'itemModal'];
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
         if (modal) {
@@ -416,4 +420,4 @@ if ('serviceWorker' in navigator) {
                 console.error('فشل تسجيل Service Worker:', error);
             });
     });
-    }
+}
