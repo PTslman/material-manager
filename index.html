@@ -9,30 +9,30 @@
     <meta name="author" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- PWA Manifest - المسار الصحيح لـ GitHub Pages -->
-    <link rel="manifest" href="/material-manager/manifest.json">
+    <!-- PWA Manifest - مسار نسبي (الأكثر أماناً) -->
+    <link rel="manifest" href="manifest.json">
     
-    <!-- أيقونات PWA للمتصفحات المختلفة -->
-    <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
+    <!-- أيقونات PWA -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
     
     <!-- الخطوط والمكتبات الخارجية -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <!-- ملفات المشروع -->
-    <link rel="stylesheet" href="/material-manager/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <!-- شاشة البداية (Splash Screen) -->
+    <!-- شاشة البداية -->
     <div id="splashScreen" class="splash">
         <div class="spinner"></div>
         <h2>مدير المواد</h2>
@@ -42,23 +42,19 @@
     <!-- حاوية التطبيق الرئيسية -->
     <div id="appContainer" class="app-main" style="display: none;">
         
-        <!-- الهيدر -->
         <div class="hero">
             <h1>مدير المواد والمخزون</h1>
             <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
-        <!-- بطاقة الترحيب (تختفي بعد 40 ثانية) -->
         <div id="welcomeCard" class="welcome-card">
             <i class="fas fa-store"></i>
             <h2>مرحباً بك في مدير المواد</h2>
             <p>نظام متكامل لإدارة المخزون والبهارات، مع مزامنة فورية وسحابية آمنة.</p>
         </div>
         
-        <!-- زر إضافة مادة رئيسي -->
         <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
-        <!-- شريط الأدوات -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
@@ -78,10 +74,8 @@
             </div>
         </div>
         
-        <!-- حاوية عرض المواد -->
         <div id="materialsContainer"></div>
         
-        <!-- زر مسح الكل -->
         <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
     </div>
 
@@ -100,9 +94,8 @@
         </div>
     </div>
 
-    <!-- ==================== جميع النوافذ المنبثقة (Modals) ==================== -->
+    <!-- ==================== النوافذ المنبثقة ==================== -->
 
-    <!-- نافذة إضافة مادة جديدة -->
     <div id="newItemModal" class="new-item-modal">
         <div class="new-modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -129,7 +122,6 @@
         </div>
     </div>
 
-    <!-- نافذة بهارات هامة -->
     <div id="importantModal" class="important-modal">
         <div class="important-modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
@@ -145,7 +137,6 @@
         </div>
     </div>
 
-    <!-- نافذة بهارات اضافية -->
     <div id="spicesExtraModal" class="spices-extra-modal">
         <div class="spices-extra-modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
@@ -161,7 +152,6 @@
         </div>
     </div>
 
-    <!-- نافذة بذوريات واعشاب -->
     <div id="quickModal" class="quick-modal">
         <div class="quick-modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات واعشاب</h3>
@@ -177,7 +167,6 @@
         </div>
     </div>
 
-    <!-- نافذة أكياس التعبئة -->
     <div id="bagsModal" class="bags-modal">
         <div class="bags-modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس التعبئة</h3>
@@ -189,7 +178,6 @@
         </div>
     </div>
 
-    <!-- نافذة توصاية -->
     <div id="tawsayaModal" class="tawsaya-modal">
         <div class="tawsaya-modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
@@ -201,15 +189,9 @@
                 </div>
             </div>
             <div class="radio-group-modern" style="display: flex; gap: 12px; margin: 15px 0;">
-                <label class="radio-option">
-                    <input type="radio" name="tawsayaType" value="kg" checked> كيلو
-                </label>
-                <label class="radio-option">
-                    <input type="radio" name="tawsayaType" value="half"> نصف كيلو
-                </label>
-                <label class="radio-option">
-                    <input type="radio" name="tawsayaType" value="custom"> مخصص
-                </label>
+                <label class="radio-option"><input type="radio" name="tawsayaType" value="kg" checked> كيلو</label>
+                <label class="radio-option"><input type="radio" name="tawsayaType" value="half"> نصف كيلو</label>
+                <label class="radio-option"><input type="radio" name="tawsayaType" value="custom"> مخصص</label>
             </div>
             <div id="tawsayaCustomQtyGroup" style="display:none">
                 <div class="field-container">
@@ -225,7 +207,6 @@
         </div>
     </div>
 
-    <!-- نافذة تعديل الكمية -->
     <div id="editModal" class="edit-modal">
         <div class="edit-modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
@@ -251,7 +232,6 @@
         </div>
     </div>
 
-    <!-- نافذة تأكيد الحذف -->
     <div id="confirmDeleteModal" class="confirm-modal">
         <div class="confirm-card">
             <div class="confirm-header">
@@ -268,37 +248,36 @@
         </div>
     </div>
 
-    <!-- تحميل Firebase والمكتبات -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
-    <!-- ملفات المشروع -->
-    <script src="/material-manager/js/firebase-config.js"></script>
-    <script src="/material-manager/js/constants.js"></script>
-    <script src="/material-manager/js/utils.js"></script>
-    <script src="/material-manager/js/ui.js"></script>
-    <script src="/material-manager/js/app.js"></script>
-    <script src="/material-manager/js/pwa.js"></script>
+    <!-- ملفات المشروع (مسارات نسبية) -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/pwa.js"></script>
 
-    <!-- تسجيل Service Worker (تم إصلاح الكود) -->
+    <!-- تسجيل Service Worker (مسار نسبي) -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/material-manager/service-worker.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker registered successfully:', registration.scope);
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(reg) {
+                        console.log('✅ Service Worker registered:', reg.scope);
                     })
-                    .catch(function(error) {
-                        console.error('❌ Service Worker registration failed:', error);
+                    .catch(function(err) {
+                        console.error('❌ Service Worker failed:', err);
                     });
             });
         }
     </script>
 
     <script>
-        // إخفاء بطاقة الترحيب بعد 40 ثانية
         setTimeout(function() {
-            const welcomeCard = document.getElementById('welcomeCard');
+            var welcomeCard = document.getElementById('welcomeCard');
             if (welcomeCard) {
                 welcomeCard.style.transition = 'opacity 0.5s ease';
                 welcomeCard.style.opacity = '0';
@@ -308,10 +287,9 @@
             }
         }, 40000);
         
-        // إظهار التطبيق بعد 3 ثوان
         setTimeout(function() {
-            const splash = document.getElementById('splashScreen');
-            const app = document.getElementById('appContainer');
+            var splash = document.getElementById('splashScreen');
+            var app = document.getElementById('appContainer');
             if (splash && app) {
                 splash.classList.add('hidden');
                 setTimeout(function() {
