@@ -1,6 +1,7 @@
 let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
+let isSyncComplete = false;
 
 // ==================== القوائم الثابتة ====================
 const importantItemsList = [
@@ -301,54 +302,141 @@ async function addNewMaterialDirect() {
     document.getElementById('newItemModal').classList.remove('active');
 }
 
-// ==================== المزامنة ====================
+// ==================== المزامنة التلقائية عند فتح التطبيق ====================
 function startListener() {
-    console.log('🔄 Starting Firestore listener...');
+    console.log('🔄 جاري المزامنة مع قاعدة البيانات...');
+    document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
+    document.getElementById('syncDot').className = 'sync-dot syncing';
+    
     const query = materialsCollection.orderBy('createdAt', 'desc');
+    
     unsubscribe = query.onSnapshot((snapshot) => {
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            list.push({ id: doc.id, name: data.name, unitType: data.unitType, quantity: data.quantity, notes: data.notes || "", createdAt: data.createdAt, priority: data.priority || "main" });
+            list.push({ 
+                id: doc.id, 
+                name: data.name, 
+                unitType: data.unitType, 
+                quantity: data.quantity, 
+                notes: data.notes || "", 
+                createdAt: data.createdAt, 
+                priority: data.priority || "main" 
+            });
         });
         allMaterials = list;
-        console.log('✅ Data loaded:', list.length, 'items');
+        
+        console.log('✅ تم تحميل البيانات:', list.length, 'عنصر');
+        
+        // تحديث واجهة المستخدم
         document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-check-circle"></i> متصل';
         document.getElementById('syncDot').className = 'sync-dot';
         document.getElementById('syncItemsCount').innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
+        document.getElementById('syncLastTime').innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
+        
         renderAllMaterials(allMaterials);
-        forceHideSplash();
+        
+        // إخفاء شاشة البداية بعد اكتمال المزامنة الأولى
+        if (!isSyncComplete) {
+            isSyncComplete = true;
+            setTimeout(() => forceHideSplash(), 500);
+        }
     }, (error) => {
-        console.error('❌ Firestore error:', error);
+        console.error('❌ خطأ في المزامنة:', error);
         document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
         document.getElementById('syncDot').className = 'sync-dot offline';
+        
+        // حتى لو فشل الاتصال، نخفي شاشة البداية بعد فترة
+        if (!isSyncComplete) {
+            isSyncComplete = true;
+            setTimeout(() => forceHideSplash(), 3000);
+        }
     });
 }
 
 function forceHideSplash() {
-    if (document.getElementById('splashScreen').style.display === 'none') return;
-    document.getElementById('splashScreen').classList.add('hidden');
-    setTimeout(() => {
-        document.getElementById('splashScreen').style.display = 'none';
-        document.getElementById('appContainer').style.display = 'block';
-    }, 350);
+    const splash = document.getElementById('splashScreen');
+    const app = document.getElementById('appContainer');
+    if (splash && app && splash.style.display !== 'none') {
+        splash.classList.add('hidden');
+        setTimeout(() => {
+            splash.style.display = 'none';
+            app.style.display = 'block';
+            console.log('✅ تم فتح التطبيق');
+        }, 350);
+    }
 }
 
 // ==================== ربط الأحداث ====================
 function bindEvents() {
     document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
-    document.getElementById('syncBtn').onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 مزامنة"); };
-    document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
-    document.getElementById('backupBtn').onclick = () => { let data = JSON.stringify(allMaterials); let blob = new Blob([data]); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); showToast("💾 تم النسخ"); };
-    document.getElementById('restoreBtn').onclick = () => { let input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json'; input.onchange = async (e) => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = async (ev) => { let backup = JSON.parse(ev.target.result); for (let it of backup) { await materialsCollection.add(it); } showToast("✓ تم الاستعادة"); }; reader.readAsText(file); }; input.click(); };
-    document.getElementById('clearAllBtn').onclick = async () => { if (confirm("⚠️ حذف الكل؟")) { let batch = db.batch(); allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id))); await batch.commit(); showToast("✓ تم المسح"); } };
     
+    document.getElementById('syncBtn').onclick = () => { 
+        if (unsubscribe) unsubscribe();
+        isSyncComplete = false;
+        startListener(); 
+        showToast("🔄 جاري المزامنة..."); 
+    };
+    
+    document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
+    
+    document.getElementById('backupBtn').onclick = () => { 
+        if (allMaterials.length === 0) { showToast("📭 لا توجد بيانات", true); return; }
+        let data = JSON.stringify(allMaterials, null, 2); 
+        let blob = new Blob([data]); 
+        let a = document.createElement('a'); 
+        a.href = URL.createObjectURL(blob); 
+        a.download = `backup_${new Date().toISOString().slice(0,19)}.json`; 
+        a.click(); 
+        showToast("💾 تم النسخ"); 
+    };
+    
+    document.getElementById('restoreBtn').onclick = () => { 
+        let input = document.createElement('input'); 
+        input.type = 'file'; 
+        input.accept = 'application/json'; 
+        input.onchange = async (e) => { 
+            let file = e.target.files[0]; 
+            let reader = new FileReader(); 
+            reader.onload = async (ev) => { 
+                try {
+                    let backup = JSON.parse(ev.target.result); 
+                    if (confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) {
+                        let batch = db.batch();
+                        allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
+                        await batch.commit();
+                        for (let it of backup) { 
+                            await materialsCollection.add(it); 
+                        }
+                        showToast("✓ تم الاستعادة");
+                        if (unsubscribe) unsubscribe();
+                        startListener();
+                    }
+                } catch(e) { showToast("❌ ملف غير صالح", true); }
+            }; 
+            reader.readAsText(file); 
+        }; 
+        input.click(); 
+    };
+    
+    document.getElementById('clearAllBtn').onclick = async () => { 
+        if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
+        if (confirm("⚠️ حذف جميع المواد نهائياً؟")) { 
+            let batch = db.batch(); 
+            allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id))); 
+            await batch.commit(); 
+            showToast("✓ تم المسح"); 
+        } 
+    };
+    
+    // أزرار الجداول الأربعة
     document.getElementById('importantProductsBtn').onclick = () => { renderImportantFiltered(''); document.getElementById('importantModal').classList.add('active'); };
     document.getElementById('spicesExtraBtn').onclick = () => { renderSpicesExtraFiltered(''); document.getElementById('spicesExtraModal').classList.add('active'); };
     document.getElementById('quickProductsBtn').onclick = () => { renderQuickFiltered(''); document.getElementById('quickModal').classList.add('active'); };
     document.getElementById('bagsManagerBtn').onclick = () => { renderBags(); document.getElementById('bagsModal').classList.add('active'); };
     document.getElementById('tawsayaQuickBtn').onclick = () => document.getElementById('tawsayaModal').classList.add('active');
     
+    // أزرار الإغلاق
     document.getElementById('closeNewModalBtn').onclick = () => document.getElementById('newItemModal').classList.remove('active');
     document.getElementById('closeImportantModalBtn').onclick = () => document.getElementById('importantModal').classList.remove('active');
     document.getElementById('closeSpicesExtraModalBtn').onclick = () => document.getElementById('spicesExtraModal').classList.remove('active');
@@ -357,6 +445,7 @@ function bindEvents() {
     document.getElementById('closeTawsayaModalBtn').onclick = () => document.getElementById('tawsayaModal').classList.remove('active');
     document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('editModal').classList.remove('active');
     
+    // أزرار الحفظ
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
     document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
     document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
@@ -365,10 +454,12 @@ function bindEvents() {
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
     
+    // أزرار البحث
     document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
     document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
     document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
     
+    // أزرار الكمية
     document.getElementById('decrementQty').onclick = () => { let val = parseFloat(document.getElementById('newQuantityValue').value) || 1; val = Math.max(0.25, val - 0.25); document.getElementById('newQuantityValue').value = val; };
     document.getElementById('incrementQty').onclick = () => { let val = parseFloat(document.getElementById('newQuantityValue').value) || 1; val = val + 0.25; document.getElementById('newQuantityValue').value = val; };
     
@@ -380,12 +471,22 @@ function bindEvents() {
             document.getElementById('tawsayaCustomQtyGroup').style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
         };
     });
+    
+    // إغلاق النوافذ عند النقر خارجها
+    const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal'];
+    modals.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
+    });
 }
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Starting app...');
+    console.log('🚀 تشغيل التطبيق...');
     bindEvents();
-    startListener();
-    setTimeout(() => forceHideSplash(), 2000);
+    startListener(); // المزامنة تبدأ فوراً
 });
