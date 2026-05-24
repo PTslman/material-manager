@@ -1,14 +1,6 @@
 let allMaterials = [];
 let unsubscribe = null;
-let autoSyncTimer = null;
 let currentEditId = null;
-let fileInput = null;
-let isConnected = false;
-let lastSyncDate = null;
-let reconnectAttempts = 0;
-let splashHidden = false;
-let deferredPrompt = null;
-let syncStarted = false;
 
 // ==================== القوائم الثابتة ====================
 const importantItemsList = [
@@ -38,15 +30,13 @@ const extraItemsList = [
 const bagTypesList = ["شفاف 10×12","شفاف 20×12","شفاف 10×20","شفاف 25×17","شفاف 20×30","شفاف 35×25","صيدلية","أسود 30","أسود 35","أسود 40","أسود 45"];
 
 function getImportantItems() { 
-    return importantItemsList.map(name => ({ name, type: "range", min: 1, max: 5, step: 1 })); 
+    return importantItemsList.map(name => ({ name, min: 1, max: 5 })); 
 }
-
 function getSpicesExtraItems() { 
-    return spicesExtraItemsList.map(name => ({ name, type: "range", min: 1, max: 10, step: 1 })); 
+    return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); 
 }
-
 function getExtraItems() { 
-    return extraItemsList.map(name => ({ name, type: "range", min: 1, max: 10, step: 1 })); 
+    return extraItemsList.map(name => ({ name, min: 1, max: 10 })); 
 }
 
 // ==================== دوال مساعدة ====================
@@ -55,7 +45,7 @@ function showToast(msg, isErr = false) {
     if (t) t.remove();
     let div = document.createElement('div');
     div.className = 'toast';
-    div.style.background = isErr ? '#dc2626' : '#2e7d32';
+    div.style.cssText = `position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:${isErr ? '#dc2626' : '#2e7d32'};color:white;padding:10px 24px;border-radius:40px;font-size:0.85rem;z-index:10001;font-weight:600;`;
     div.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 2500);
@@ -63,35 +53,16 @@ function showToast(msg, isErr = false) {
 
 function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>]/g, m => {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
+    return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 }
 
 function formatDisplay(mat) {
-    const u = mat.unitType;
-    if (u === 'kg') return `${mat.quantity} كجم`;
-    if (u === 'half') return `نصف كيلو`;
-    if (u === 'quarter') return `ربع كيلو`;
-    if (u === 'oke') return `لوقية (200g)`;
-    if (u === 'bag') return `${mat.quantity} كيس`;
+    if (mat.unitType === 'kg') return `${mat.quantity} كجم`;
+    if (mat.unitType === 'half') return `نصف كيلو`;
+    if (mat.unitType === 'quarter') return `ربع كيلو`;
+    if (mat.unitType === 'oke') return `لوقية`;
+    if (mat.unitType === 'bag') return `${mat.quantity} كيس`;
     return '';
-}
-
-// ==================== إغلاق جميع النوافذ ====================
-function closeAllModals() {
-    const modals = [
-        'newItemModal', 'importantModal', 'spicesExtraModal', 
-        'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 
-        'confirmDeleteModal', 'systemMessageModal'
-    ];
-    modals.forEach(id => {
-        const modal = document.getElementById(id);
-        if (modal) modal.classList.remove('active');
-    });
 }
 
 // ==================== عرض المواد ====================
@@ -103,12 +74,6 @@ function renderAllMaterials(materials) {
     const spicesExtra = materials.filter(m => m.priority === 'spices_extra');
     const extra = materials.filter(m => m.priority === 'extra');
     const taws = materials.filter(m => m.priority === 'tawsaya');
-    
-    const sortDate = (a, b) => (b.createdAt?.toMillis?.() || b.createdAt) - (a.createdAt?.toMillis?.() || a.createdAt);
-    main.sort(sortDate);
-    spicesExtra.sort(sortDate);
-    extra.sort(sortDate);
-    taws.sort(sortDate);
     
     let html = `
         <div class="priority-section">
@@ -135,17 +100,9 @@ function renderAllMaterials(materials) {
         btn.onclick = (e) => {
             e.stopPropagation();
             const id = btn.getAttribute('data-id');
-            if (id) {
-                const material = allMaterials.find(m => m.id === id);
-                const materialName = material ? material.name : 'هذه المادة';
-                showConfirmDialog(`⚠️ هل أنت متأكد من حذف "${materialName}"؟`, async () => {
-                    try {
-                        await materialsCollection.doc(id).delete();
-                        showToast("✅ تم حذف المادة");
-                    } catch (e) {
-                        showToast("❌ فشل الحذف", true);
-                    }
-                });
+            const material = allMaterials.find(m => m.id === id);
+            if (confirm(`⚠️ هل أنت متأكد من حذف "${material?.name}"؟`)) {
+                materialsCollection.doc(id).delete().then(() => showToast("✅ تم حذف المادة")).catch(e => showToast("❌ فشل الحذف", true));
             }
         };
     });
@@ -166,12 +123,11 @@ function renderAllMaterials(materials) {
 }
 
 function renderMaterialCard(m) {
-    const showEdit = m.unitType === 'kg';
     return `<div class="material-card">
         <div class="card-header">
             <div class="card-title"><i class="fas fa-box"></i> ${escapeHtml(m.name)}</div>
             <div class="card-actions">
-                <button class="edit-material ${!showEdit ? 'hidden' : ''}" data-id="${m.id}"><i class="fas fa-edit"></i></button>
+                <button class="edit-material" data-id="${m.id}"><i class="fas fa-edit"></i></button>
                 <button class="delete-material" data-id="${m.id}"><i class="fas fa-trash-alt"></i></button>
             </div>
         </div>
@@ -179,329 +135,160 @@ function renderMaterialCard(m) {
     </div>`;
 }
 
-function showConfirmDialog(message, onConfirm) {
-    document.getElementById('confirmDeleteMessage').innerText = message;
-    document.getElementById('confirmDeleteModal').classList.add('active');
-    
-    const handleConfirm = () => {
-        document.getElementById('confirmDeleteModal').classList.remove('active');
-        if (onConfirm) onConfirm();
-        document.getElementById('confirmDeleteBtn').removeEventListener('click', handleConfirm);
-        document.getElementById('cancelDeleteBtn').removeEventListener('click', handleCancel);
-    };
-    
-    const handleCancel = () => {
-        document.getElementById('confirmDeleteModal').classList.remove('active');
-        document.getElementById('confirmDeleteBtn').removeEventListener('click', handleConfirm);
-        document.getElementById('cancelDeleteBtn').removeEventListener('click', handleCancel);
-    };
-    
-    document.getElementById('confirmDeleteBtn').addEventListener('click', handleConfirm, { once: true });
-    document.getElementById('cancelDeleteBtn').addEventListener('click', handleCancel, { once: true });
-}
-
 // ==================== عرض القوائم في النوافذ ====================
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
-    
     const filtered = importantItemsList.filter(item => item.includes(filter));
-    let html = '';
-    
-    filtered.forEach((item, idx) => {
-        const originalIdx = importantItemsList.findIndex(orig => orig === item);
-        html += `<div class="modern-item-card" data-idx="${originalIdx}">
-            <div class="item-info">
-                <input type="checkbox" id="important_chk_${originalIdx}" style="margin-left: 10px;"> 
-                <span class="item-name">${escapeHtml(item)}</span>
-            </div>
-            <div class="quantity-modern">
-                <button class="qty-btn" data-action="decr" data-idx="${originalIdx}">-</button>
-                <input type="number" class="qty-value" id="important_qty_${originalIdx}" value="1" step="1" min="1" max="5">
-                <button class="qty-btn" data-action="incr" data-idx="${originalIdx}">+</button>
-                <span class="unit-label">كجم</span>
-            </div>
-        </div>`;
-    });
-    
-    container.innerHTML = html;
-    
+    container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="imp_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="imp_qty_${idx}" value="1" min="1" max="5" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
     document.querySelectorAll('#importantListContainer .qty-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const idx = parseInt(btn.getAttribute('data-idx'));
-            const input = document.getElementById(`important_qty_${idx}`);
-            if (input) {
-                let val = parseInt(input.value);
-                if (btn.getAttribute('data-action') === 'incr') val = Math.min(val + 1, 5);
-                else val = Math.max(val - 1, 1);
-                input.value = val;
-            }
-        });
+        btn.onclick = () => {
+            let idx = btn.dataset.idx;
+            let inp = document.getElementById(`imp_qty_${idx}`);
+            let val = parseInt(inp.value);
+            if (btn.dataset.dir === 'up') val = Math.min(val+1,5);
+            else val = Math.max(val-1,1);
+            inp.value = val;
+        };
     });
 }
 
 function renderSpicesExtraFiltered(filter = '') {
     const container = document.getElementById('spicesExtraListContainer');
     if (!container) return;
-    
     const filtered = spicesExtraItemsList.filter(item => item.includes(filter));
-    let html = '';
-    
-    filtered.forEach((item, idx) => {
-        const originalIdx = spicesExtraItemsList.findIndex(orig => orig === item);
-        html += `<div class="modern-item-card" data-idx="${originalIdx}">
-            <div class="item-info">
-                <input type="checkbox" id="spices_extra_chk_${originalIdx}" style="margin-left: 10px;"> 
-                <span class="item-name">${escapeHtml(item)}</span>
-            </div>
-            <div class="quantity-modern">
-                <button class="qty-btn" data-action="decr" data-idx="${originalIdx}">-</button>
-                <input type="number" class="qty-value" id="spices_extra_qty_${originalIdx}" value="1" step="1" min="1" max="10">
-                <button class="qty-btn" data-action="incr" data-idx="${originalIdx}">+</button>
-                <span class="unit-label">كجم</span>
-            </div>
-        </div>`;
-    });
-    
-    container.innerHTML = html;
-    
+    container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="sp_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="sp_qty_${idx}" value="1" min="1" max="10" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
     document.querySelectorAll('#spicesExtraListContainer .qty-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-idx'));
-            const input = document.getElementById(`spices_extra_qty_${idx}`);
-            if (input) {
-                let val = parseInt(input.value);
-                if (btn.getAttribute('data-action') === 'incr') val = Math.min(val + 1, 10);
-                else val = Math.max(val - 1, 1);
-                input.value = val;
-            }
-        });
+        btn.onclick = () => {
+            let idx = btn.dataset.idx;
+            let inp = document.getElementById(`sp_qty_${idx}`);
+            let val = parseInt(inp.value);
+            if (btn.dataset.dir === 'up') val = Math.min(val+1,10);
+            else val = Math.max(val-1,1);
+            inp.value = val;
+        };
     });
 }
 
 function renderQuickFiltered(filter = '') {
     const container = document.getElementById('quickListContainer');
     if (!container) return;
-    
     const filtered = extraItemsList.filter(item => item.includes(filter));
-    let html = '';
-    
-    filtered.forEach((item, idx) => {
-        const originalIdx = extraItemsList.findIndex(orig => orig === item);
-        html += `<div class="modern-item-card" data-idx="${originalIdx}">
-            <div class="item-info">
-                <input type="checkbox" id="quick_chk_${originalIdx}" style="margin-left: 10px;"> 
-                <span class="item-name">${escapeHtml(item)}</span>
-            </div>
-            <div class="quantity-modern">
-                <button class="qty-btn" data-action="decr" data-idx="${originalIdx}">-</button>
-                <input type="number" class="qty-value" id="quick_qty_${originalIdx}" value="1" step="1" min="1" max="10">
-                <button class="qty-btn" data-action="incr" data-idx="${originalIdx}">+</button>
-                <span class="unit-label">كجم</span>
-            </div>
-        </div>`;
-    });
-    
-    container.innerHTML = html;
-    
+    container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="quick_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="quick_qty_${idx}" value="1" min="1" max="10" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
     document.querySelectorAll('#quickListContainer .qty-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-idx'));
-            const input = document.getElementById(`quick_qty_${idx}`);
-            if (input) {
-                let val = parseInt(input.value);
-                if (btn.getAttribute('data-action') === 'incr') val = Math.min(val + 1, 10);
-                else val = Math.max(val - 1, 1);
-                input.value = val;
-            }
-        });
+        btn.onclick = () => {
+            let idx = btn.dataset.idx;
+            let inp = document.getElementById(`quick_qty_${idx}`);
+            let val = parseInt(inp.value);
+            if (btn.dataset.dir === 'up') val = Math.min(val+1,10);
+            else val = Math.max(val-1,1);
+            inp.value = val;
+        };
     });
 }
 
 function renderBags() {
     const container = document.getElementById('bagsListContainer');
     if (!container) return;
-    
-    let html = '';
-    bagTypesList.forEach((t, i) => {
-        html += `<div class="modern-item-card" data-idx="${i}">
-            <div class="item-info">
-                <input type="checkbox" id="bag_chk_${i}" style="margin-left: 10px;"> 
-                <span class="item-name">${escapeHtml(t)}</span>
-            </div>
-        </div>`;
-    });
-    container.innerHTML = html;
+    container.innerHTML = bagTypesList.map((b, i) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="bag_chk_${i}"><span>${escapeHtml(b)}</span></div></div>`).join('');
 }
 
-// ==================== دوال الإضافة إلى Firebase ====================
+// ==================== دوال الإضافة ====================
 async function addSelectedImportant() {
     let items = [];
     for (let i = 0; i < importantItemsList.length; i++) {
-        const chk = document.getElementById(`important_chk_${i}`);
-        if (chk && chk.checked) {
-            let qty = parseInt(document.getElementById(`important_qty_${i}`).value);
+        if (document.getElementById(`imp_chk_${i}`)?.checked) {
+            let qty = parseInt(document.getElementById(`imp_qty_${i}`).value);
             items.push({ name: importantItemsList[i], quantity: qty });
         }
     }
-    if (items.length === 0) { showToast("⭐ اختر مادة هامة", true); return; }
-    try {
-        let batch = db.batch();
-        items.forEach(p => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, {
-                name: p.name, unitType: 'kg', quantity: p.quantity,
-                notes: "مواد هامة سريعة",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                priority: "main"
-            });
-        });
-        await batch.commit();
-        showToast(`✓ تم إضافة ${items.length} مادة`);
-        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
-            window.pwaManager.notifyMaterialAdded(items.length + ' مواد');
-        }
-        closeAllModals();
-        document.getElementById('importantSearchInput').value = '';
-    } catch (e) { showToast("❌ فشل", true); }
+    if (items.length === 0) { showToast("⭐ اختر مادة", true); return; }
+    let batch = db.batch();
+    items.forEach(p => {
+        let ref = materialsCollection.doc();
+        batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "مواد هامة", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+    });
+    await batch.commit();
+    showToast(`✓ تم إضافة ${items.length} مادة`);
+    document.getElementById('importantModal').classList.remove('active');
 }
 
 async function addSelectedSpicesExtra() {
     let items = [];
     for (let i = 0; i < spicesExtraItemsList.length; i++) {
-        const chk = document.getElementById(`spices_extra_chk_${i}`);
-        if (chk && chk.checked) {
-            let qty = parseInt(document.getElementById(`spices_extra_qty_${i}`).value);
+        if (document.getElementById(`sp_chk_${i}`)?.checked) {
+            let qty = parseInt(document.getElementById(`sp_qty_${i}`).value);
             items.push({ name: spicesExtraItemsList[i], quantity: qty });
         }
     }
-    if (items.length === 0) { showToast("🌿 اختر بهاراً", true); return; }
-    try {
-        let batch = db.batch();
-        items.forEach(p => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, {
-                name: p.name, unitType: 'kg', quantity: p.quantity,
-                notes: "بهارات اضافية",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                priority: "spices_extra"
-            });
-        });
-        await batch.commit();
-        showToast(`✓ تم إضافة ${items.length} بهار`);
-        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
-            window.pwaManager.notifyMaterialAdded(items.length + ' بهارات');
-        }
-        closeAllModals();
-        document.getElementById('spicesExtraSearchInput').value = '';
-    } catch (e) { showToast("❌ فشل", true); }
+    if (items.length === 0) { showToast("🌿 اختر بهار", true); return; }
+    let batch = db.batch();
+    items.forEach(p => {
+        let ref = materialsCollection.doc();
+        batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بهارات اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "spices_extra" });
+    });
+    await batch.commit();
+    showToast(`✓ تم إضافة ${items.length} بهار`);
+    document.getElementById('spicesExtraModal').classList.remove('active');
 }
 
 async function addSelectedQuick() {
     let items = [];
     for (let i = 0; i < extraItemsList.length; i++) {
-        const chk = document.getElementById(`quick_chk_${i}`);
-        if (chk && chk.checked) {
+        if (document.getElementById(`quick_chk_${i}`)?.checked) {
             let qty = parseInt(document.getElementById(`quick_qty_${i}`).value);
             items.push({ name: extraItemsList[i], quantity: qty });
         }
     }
-    if (items.length === 0) { showToast("🌱 اختر منتجاً", true); return; }
-    try {
-        let batch = db.batch();
-        items.forEach(p => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, {
-                name: p.name, unitType: 'kg', quantity: p.quantity,
-                notes: "بذوريات واعشاب",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                priority: "extra"
-            });
-        });
-        await batch.commit();
-        showToast(`✓ تم إضافة ${items.length} منتج`);
-        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
-            window.pwaManager.notifyMaterialAdded(items.length + ' منتجات');
-        }
-        closeAllModals();
-        document.getElementById('quickSearchInput').value = '';
-    } catch (e) { showToast("❌ فشل", true); }
+    if (items.length === 0) { showToast("🌱 اختر منتج", true); return; }
+    let batch = db.batch();
+    items.forEach(p => {
+        let ref = materialsCollection.doc();
+        batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بذوريات", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
+    });
+    await batch.commit();
+    showToast(`✓ تم إضافة ${items.length} منتج`);
+    document.getElementById('quickModal').classList.remove('active');
 }
 
 async function addSelectedBags() {
     let selected = [];
     for (let i = 0; i < bagTypesList.length; i++) {
-        if (document.getElementById(`bag_chk_${i}`)?.checked) {
-            selected.push(bagTypesList[i]);
-        }
+        if (document.getElementById(`bag_chk_${i}`)?.checked) selected.push(bagTypesList[i]);
     }
-    if (selected.length === 0) { showToast("📦 اختر نوع كيس", true); return; }
-    try {
-        let batch = db.batch();
-        selected.forEach(b => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, {
-                name: `كيس تعبئة - ${b}`, unitType: 'bag', quantity: 1,
-                notes: "أكياس تعبئة",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                priority: "extra"
-            });
-        });
-        await batch.commit();
-        showToast(`✓ تم إضافة ${selected.length} نوع`);
-        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
-            window.pwaManager.notifyMaterialAdded(selected.length + ' أكياس');
-        }
-        for (let i = 0; i < bagTypesList.length; i++) {
-            let chk = document.getElementById(`bag_chk_${i}`);
-            if (chk) chk.checked = false;
-        }
-        closeAllModals();
-    } catch (e) { showToast("❌ فشل إضافة الأكياس", true); }
+    if (selected.length === 0) { showToast("📦 اختر كيس", true); return; }
+    let batch = db.batch();
+    selected.forEach(b => {
+        let ref = materialsCollection.doc();
+        batch.set(ref, { name: `كيس تعبئة - ${b}`, unitType: 'bag', quantity: 1, notes: "أكياس", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
+    });
+    await batch.commit();
+    showToast(`✓ تم إضافة ${selected.length} نوع`);
+    document.getElementById('bagsModal').classList.remove('active');
 }
 
 async function addTawsaya() {
     let name = document.getElementById('tawsayaName')?.value.trim();
-    if (!name) { showToast("✏️ اسم التوصاية", true); return; }
+    if (!name) { showToast("✏️ اسم المنتج", true); return; }
     let type = document.querySelector('#tawsayaTypeGroup .unit-btn.active')?.getAttribute('data-type');
     let qty = 1;
-    if (type === 'kg') {
-        let v = parseFloat(document.getElementById('tawsayaCustomQty')?.value);
-        if (isNaN(v) || v <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-        qty = v;
-    } else if (type === 'half') {
-        qty = 0.5;
-    } else {
-        let v = parseFloat(document.getElementById('tawsayaCustomQty')?.value);
-        if (isNaN(v) || v <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-        qty = v;
-    }
-    try {
-        await materialsCollection.add({
-            name, unitType: 'kg', quantity: qty, notes: "توصاية",
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            priority: "tawsaya"
-        });
-        showToast(`✓ تمت إضافة "${name}"`);
-        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
-            window.pwaManager.notifyMaterialAdded(name);
-        }
-        document.getElementById('tawsayaName').value = "";
-        document.getElementById('tawsayaCustomQty').value = "1";
-        closeAllModals();
-    } catch (e) { showToast("❌ خطأ", true); }
+    if (type === 'kg') qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    else if (type === 'half') qty = 0.5;
+    else qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    if (isNaN(qty) || qty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+    await materialsCollection.add({ name, unitType: 'kg', quantity: qty, notes: "توصاية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "tawsaya" });
+    showToast(`✓ تمت إضافة "${name}"`);
+    document.getElementById('tawsayaModal').classList.remove('active');
 }
 
 async function saveEdit() {
     if (!currentEditId) return;
     let newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
     if (isNaN(newQty) || newQty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-    try {
-        await materialsCollection.doc(currentEditId).update({ quantity: newQty });
-        showToast("✓ تم تحديث الكمية");
-        closeAllModals();
-        currentEditId = null;
-    } catch (e) { showToast("❌ فشل التحديث", true); }
+    await materialsCollection.doc(currentEditId).update({ quantity: newQty });
+    showToast("✓ تم تحديث الكمية");
+    document.getElementById('editModal').classList.remove('active');
+    currentEditId = null;
 }
 
 async function addNewMaterialDirect() {
@@ -509,320 +296,66 @@ async function addNewMaterialDirect() {
     if (!name) { showToast("✏️ اكتب اسم المادة", true); return; }
     let quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
     if (isNaN(quantity) || quantity <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-    showToast(`➕ جاري إضافة "${name}"...`);
-    try {
-        await materialsCollection.add({
-            name, unitType: 'kg', quantity,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            priority: "main"
-        });
-        showToast(`✓ تمت إضافة "${name}"`);
-        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
-            window.pwaManager.notifyMaterialAdded(name);
-        }
-        document.getElementById('newMaterialName').value = "";
-        document.getElementById('newQuantityValue').value = "1";
-        closeAllModals();
-    } catch (e) { showToast("❌ خطأ في الاتصال", true); }
+    await materialsCollection.add({ name, unitType: 'kg', quantity, createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+    showToast(`✓ تمت إضافة "${name}"`);
+    document.getElementById('newItemModal').classList.remove('active');
 }
 
-// ==================== Firebase والمزامنة ====================
+// ==================== المزامنة ====================
 function startListener() {
-    if (syncStarted) {
-        console.log('⚠️ Sync already started, skipping...');
-        return;
-    }
-    
-    syncStarted = true;
-    updateSyncUI('syncing');
-    
-    if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-    }
-    
     console.log('🔄 Starting Firestore listener...');
-    
     const query = materialsCollection.orderBy('createdAt', 'desc');
-    
     unsubscribe = query.onSnapshot((snapshot) => {
-        console.log('✅ Firestore connected, received', snapshot.size, 'documents');
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            list.push({
-                id: doc.id, name: data.name, unitType: data.unitType,
-                quantity: data.quantity, notes: data.notes || "",
-                createdAt: data.createdAt, priority: data.priority || "main"
-            });
+            list.push({ id: doc.id, name: data.name, unitType: data.unitType, quantity: data.quantity, notes: data.notes || "", createdAt: data.createdAt, priority: data.priority || "main" });
         });
         allMaterials = list;
-        lastSyncDate = new Date();
-        updateSyncUI('connected', list.length);
+        console.log('✅ Data loaded:', list.length, 'items');
+        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+        document.getElementById('syncDot').className = 'sync-dot';
+        document.getElementById('syncItemsCount').innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
         renderAllMaterials(allMaterials);
-        
-        if (!splashHidden) {
-            forceHideSplash();
-        }
-        reconnectAttempts = 0;
+        forceHideSplash();
     }, (error) => {
-        console.error("❌ Firestore error:", error);
-        updateSyncUI('offline');
-        
-        if (!splashHidden) {
-            forceHideSplash();
-        }
-        
-        if (reconnectAttempts < 5) {
-            reconnectAttempts++;
-            console.log(`🔄 Reconnection attempt ${reconnectAttempts}/5 in 3 seconds...`);
-            setTimeout(() => {
-                if (unsubscribe) {
-                    unsubscribe();
-                    unsubscribe = null;
-                }
-                syncStarted = false;
-                startListener();
-            }, 3000);
-        }
+        console.error('❌ Firestore error:', error);
+        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
+        document.getElementById('syncDot').className = 'sync-dot offline';
     });
-}
-
-function startAutoSync() {
-    if (autoSyncTimer) clearInterval(autoSyncTimer);
-    autoSyncTimer = setInterval(() => {
-        if (unsubscribe) {
-            console.log('🔄 Auto-sync refreshing...');
-            unsubscribe();
-            unsubscribe = null;
-            syncStarted = false;
-            startListener();
-        }
-    }, 30 * 1000);
-}
-
-function updateSyncUI(status, itemCount = null) {
-    const syncDot = document.getElementById('syncDot');
-    const syncStatusText = document.getElementById('syncStatusText');
-    const syncRetry = document.getElementById('syncRetry');
-    const syncItemsCount = document.getElementById('syncItemsCount');
-    const syncLastTime = document.getElementById('syncLastTime');
-    
-    if (status === 'connected') {
-        if (syncDot) syncDot.className = 'sync-dot';
-        if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
-        if (syncRetry) syncRetry.style.display = 'none';
-        isConnected = true;
-        console.log('✅ Sync status: Connected');
-    } else if (status === 'offline') {
-        if (syncDot) syncDot.className = 'sync-dot offline';
-        if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-        if (syncRetry) syncRetry.style.display = 'inline-flex';
-        isConnected = false;
-        console.log('⚠️ Sync status: Offline');
-    } else if (status === 'syncing') {
-        if (syncDot) syncDot.className = 'sync-dot syncing';
-        if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
-        console.log('🔄 Sync status: Syncing...');
-    }
-    
-    if (itemCount !== null && syncItemsCount) {
-        syncItemsCount.innerHTML = `<i class="fas fa-database"></i> ${itemCount} عنصر`;
-    }
-    
-    if (lastSyncDate && syncLastTime) {
-        let d = new Date(lastSyncDate);
-        syncLastTime.innerHTML = `<i class="far fa-clock"></i> ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
-    }
 }
 
 function forceHideSplash() {
-    if (splashHidden) return;
-    splashHidden = true;
-    const splashEl = document.getElementById('splashScreen');
-    const appContainer = document.getElementById('appContainer');
-    if (splashEl) {
-        splashEl.classList.add('hidden');
-        setTimeout(() => { 
-            splashEl.style.display = 'none'; 
-            if (appContainer) appContainer.style.display = 'block'; 
-            console.log('✅ App started, splash hidden');
-        }, 350);
-    } else { 
-        if (appContainer) appContainer.style.display = 'block'; 
-    }
+    if (document.getElementById('splashScreen').style.display === 'none') return;
+    document.getElementById('splashScreen').classList.add('hidden');
+    setTimeout(() => {
+        document.getElementById('splashScreen').style.display = 'none';
+        document.getElementById('appContainer').style.display = 'block';
+    }, 350);
 }
 
-// ==================== PWA والتثبيت ====================
-function setupPWA() {
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const installBtn = document.getElementById('installBtn');
-        if (installBtn) installBtn.style.display = 'inline-flex';
-    });
-    
-    const installBtn = document.getElementById('installBtn');
-    if (installBtn) {
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') showToast('✓ تم تثبيت التطبيق');
-                deferredPrompt = null;
-                if (installBtn) installBtn.style.display = 'none';
-            } else { showToast('يمكنك التثبيت من قائمة المتصفح', false); }
-        });
-    }
-    
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        if (installBtn) installBtn.style.display = 'none';
-    }
-}
-
-// ==================== العمليات الأساسية ====================
-async function clearAll() {
-    if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
-    if (!confirm("⚠️ حذف جميع المواد نهائياً؟")) return;
-    try {
-        let batch = db.batch();
-        allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
-        await batch.commit();
-        showToast("✓ تم مسح القائمة");
-    } catch (e) { showToast("❌ فشل المسح", true); }
-}
-
-function backupData() {
-    if (allMaterials.length === 0) { showToast("📭 لا توجد بيانات للنسخ", true); return; }
-    let data = JSON.stringify(allMaterials, null, 2);
-    let blob = new Blob([data], { type: 'application/json' });
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `backup_${new Date().toISOString().slice(0, 19)}.json`;
-    a.click();
-    URL.revokeObjectURL(blob);
-    showToast("💾 تم نسخ البيانات");
-}
-
-function restoreData() {
-    if (!fileInput) {
-        fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'application/json';
-        fileInput.onchange = async (e) => {
-            let file = e.target.files[0];
-            if (!file) return;
-            let reader = new FileReader();
-            reader.onload = async (ev) => {
-                try {
-                    let backup = JSON.parse(ev.target.result);
-                    if (!Array.isArray(backup)) throw new Error();
-                    if (confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) {
-                        let batch = db.batch();
-                        allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
-                        await batch.commit();
-                        for (let it of backup) {
-                            await materialsCollection.add({
-                                name: it.name, unitType: it.unitType || 'kg', quantity: it.quantity || 1,
-                                notes: it.notes || "", createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                priority: it.priority || "main"
-                            });
-                        }
-                        showToast(`✓ تم استعادة ${backup.length} عنصر`);
-                    }
-                } catch (err) { showToast("❌ ملف غير صالح", true); }
-            };
-            reader.readAsText(file);
-        };
-    }
-    fileInput.click();
-}
-
-function setTheme(th) {
-    if (th === 'dark') {
-        document.body.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i> نهاري';
-    } else {
-        document.body.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-moon"></i> ليلي';
-    }
-}
-
-// ==================== ربط جميع الأحداث ====================
+// ==================== ربط الأحداث ====================
 function bindEvents() {
-    document.getElementById('mainAddBtn').onclick = () => {
-        document.getElementById('newItemModal').classList.add('active');
-        document.getElementById('newMaterialName').focus();
-    };
+    document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
+    document.getElementById('syncBtn').onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 مزامنة"); };
+    document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
+    document.getElementById('backupBtn').onclick = () => { let data = JSON.stringify(allMaterials); let blob = new Blob([data]); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); showToast("💾 تم النسخ"); };
+    document.getElementById('restoreBtn').onclick = () => { let input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json'; input.onchange = async (e) => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = async (ev) => { let backup = JSON.parse(ev.target.result); for (let it of backup) { await materialsCollection.add(it); } showToast("✓ تم الاستعادة"); }; reader.readAsText(file); }; input.click(); };
+    document.getElementById('clearAllBtn').onclick = async () => { if (confirm("⚠️ حذف الكل؟")) { let batch = db.batch(); allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id))); await batch.commit(); showToast("✓ تم المسح"); } };
     
-    document.getElementById('syncBtn').onclick = () => {
-        if (unsubscribe) {
-            unsubscribe();
-            unsubscribe = null;
-        }
-        syncStarted = false;
-        startListener();
-        showToast("🔄 مزامنة يدوية");
-    };
+    document.getElementById('importantProductsBtn').onclick = () => { renderImportantFiltered(''); document.getElementById('importantModal').classList.add('active'); };
+    document.getElementById('spicesExtraBtn').onclick = () => { renderSpicesExtraFiltered(''); document.getElementById('spicesExtraModal').classList.add('active'); };
+    document.getElementById('quickProductsBtn').onclick = () => { renderQuickFiltered(''); document.getElementById('quickModal').classList.add('active'); };
+    document.getElementById('bagsManagerBtn').onclick = () => { renderBags(); document.getElementById('bagsModal').classList.add('active'); };
+    document.getElementById('tawsayaQuickBtn').onclick = () => document.getElementById('tawsayaModal').classList.add('active');
     
-    document.getElementById('themeToggle').onclick = () => {
-        document.body.classList.contains('dark') ? setTheme('light') : setTheme('dark');
-    };
-    
-    document.getElementById('backupBtn').onclick = backupData;
-    document.getElementById('restoreBtn').onclick = restoreData;
-    document.getElementById('clearAllBtn').onclick = clearAll;
-    document.getElementById('syncRetry').onclick = () => {
-        if (unsubscribe) {
-            unsubscribe();
-            unsubscribe = null;
-        }
-        syncStarted = false;
-        startListener();
-        showToast("🔄 محاولة إعادة الاتصال...");
-    };
-    
-    document.getElementById('importantProductsBtn').onclick = () => {
-        renderImportantFiltered('');
-        document.getElementById('importantModal').classList.add('active');
-        document.getElementById('importantSearchInput').focus();
-    };
-    
-    document.getElementById('spicesExtraBtn').onclick = () => {
-        renderSpicesExtraFiltered('');
-        document.getElementById('spicesExtraModal').classList.add('active');
-        document.getElementById('spicesExtraSearchInput').focus();
-    };
-    
-    document.getElementById('quickProductsBtn').onclick = () => {
-        renderQuickFiltered('');
-        document.getElementById('quickModal').classList.add('active');
-        document.getElementById('quickSearchInput').focus();
-    };
-    
-    document.getElementById('bagsManagerBtn').onclick = () => {
-        renderBags();
-        document.getElementById('bagsModal').classList.add('active');
-    };
-    
-    document.getElementById('tawsayaQuickBtn').onclick = () => {
-        document.getElementById('tawsayaModal').classList.add('active');
-        document.getElementById('tawsayaName').focus();
-    };
-    
-    document.getElementById('closeNewModalBtn').onclick = closeAllModals;
-    document.getElementById('closeImportantModalBtn').onclick = closeAllModals;
-    document.getElementById('closeSpicesExtraModalBtn').onclick = closeAllModals;
-    document.getElementById('closeQuickModalBtn').onclick = closeAllModals;
-    document.getElementById('closeBagsModalBtn').onclick = closeAllModals;
-    document.getElementById('closeTawsayaModalBtn').onclick = closeAllModals;
-    document.getElementById('closeEditModalBtn').onclick = closeAllModals;
-    document.getElementById('closeSystemMessageBtn').onclick = closeAllModals;
-    document.getElementById('cancelDeleteBtn').onclick = closeAllModals;
+    document.getElementById('closeNewModalBtn').onclick = () => document.getElementById('newItemModal').classList.remove('active');
+    document.getElementById('closeImportantModalBtn').onclick = () => document.getElementById('importantModal').classList.remove('active');
+    document.getElementById('closeSpicesExtraModalBtn').onclick = () => document.getElementById('spicesExtraModal').classList.remove('active');
+    document.getElementById('closeQuickModalBtn').onclick = () => document.getElementById('quickModal').classList.remove('active');
+    document.getElementById('closeBagsModalBtn').onclick = () => document.getElementById('bagsModal').classList.remove('active');
+    document.getElementById('closeTawsayaModalBtn').onclick = () => document.getElementById('tawsayaModal').classList.remove('active');
+    document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('editModal').classList.remove('active');
     
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
     document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
@@ -836,72 +369,23 @@ function bindEvents() {
     document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
     document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
     
-    document.getElementById('decrementQty').onclick = () => {
-        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
-        val = Math.max(0.25, val - 0.25);
-        document.getElementById('newQuantityValue').value = val;
-    };
-    document.getElementById('incrementQty').onclick = () => {
-        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
-        val = val + 0.25;
-        document.getElementById('newQuantityValue').value = val;
-    };
+    document.getElementById('decrementQty').onclick = () => { let val = parseFloat(document.getElementById('newQuantityValue').value) || 1; val = Math.max(0.25, val - 0.25); document.getElementById('newQuantityValue').value = val; };
+    document.getElementById('incrementQty').onclick = () => { let val = parseFloat(document.getElementById('newQuantityValue').value) || 1; val = val + 0.25; document.getElementById('newQuantityValue').value = val; };
     
-    const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
-    modalIds.forEach(id => {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeAllModals();
-            });
-        }
+    // Tawsaya type
+    document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('tawsayaCustomQtyGroup').style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+        };
     });
-    
-    const tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-    const tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
-    if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
-        tawsayaTypeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                tawsayaTypeBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                tawsayaCustomGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
-            });
-        });
-    }
 }
 
-// ==================== التهيئة النهائية ====================
+// ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Material Manager - Starting...');
-    
-    if (localStorage.getItem('theme') === 'dark') {
-        setTheme('dark');
-    } else {
-        setTheme('light');
-    }
-    
-    setupPWA();
+    console.log('🚀 Starting app...');
     bindEvents();
-    
-    // بدء المزامنة فوراً
-    console.log('🔄 Starting automatic sync...');
     startListener();
-    
-    // بدء المزامنة الدورية
-    startAutoSync();
-    
-    // تأخير إخفاء شاشة البداية قليلاً
-    setTimeout(() => {
-        if (!splashHidden) {
-            forceHideSplash();
-        }
-    }, 2000);
+    setTimeout(() => forceHideSplash(), 2000);
 });
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/material-manager/service-worker.js')
-            .then(reg => console.log('✅ Service Worker registered:', reg.scope))
-            .catch(err => console.error('❌ Service Worker failed:', err));
-    });
-        }
