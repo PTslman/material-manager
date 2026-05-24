@@ -53,39 +53,29 @@
         
         <!-- 4 أزرار عريضة للجداول -->
         <div class="categories-container">
-            
             <button class="category-card" id="importantProductsBtn">
                 <div class="category-icon"><i class="fas fa-star"></i></div>
-                <div class="category-info">
-                    <h3 class="category-title">بهارات هامة</h3>
-                </div>
+                <div class="category-info"><h3 class="category-title">بهارات هامة</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
             <button class="category-card" id="spicesExtraBtn">
                 <div class="category-icon"><i class="fas fa-leaf"></i></div>
-                <div class="category-info">
-                    <h3 class="category-title">بهارات اضافية</h3>
-                </div>
+                <div class="category-info"><h3 class="category-title">بهارات اضافية</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
             <button class="category-card" id="quickProductsBtn">
                 <div class="category-icon"><i class="fas fa-seedling"></i></div>
-                <div class="category-info">
-                    <h3 class="category-title">بذوريات وأعشاب</h3>
-                </div>
+                <div class="category-info"><h3 class="category-title">بذوريات وأعشاب</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
             <button class="category-card" id="bagsManagerBtn">
                 <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
-                <div class="category-info">
-                    <h3 class="category-title">أكياس تعبئة</h3>
-                </div>
+                <div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
-            
         </div>
         
         <div id="materialsContainer"></div>
@@ -111,159 +101,71 @@
     <div id="newItemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
-            <div class="modern-field">
-                <label>اسم المادة</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-tag"></i></div>
-                    <input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون...">
-                </div>
-            </div>
-            <div class="modern-field">
-                <label>الكمية (كيلوغرام)</label>
-                <div class="qty-picker">
-                    <button id="decrementQty">-</button>
-                    <input type="number" id="newQuantityValue" step="0.25" value="1">
-                    <button id="incrementQty">+</button>
-                    <span class="qty-unit-label">كجم</span>
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="saveNewItemBtn" class="btn-save">إضافة</button>
-                <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modern-field"><label>اسم المادة</label><div class="field-container"><div class="field-icon"><i class="fas fa-tag"></i></div><input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون..."></div></div>
+            <div class="modern-field"><label>الكمية (كيلوغرام)</label><div class="qty-picker"><button id="decrementQty">-</button><input type="number" id="newQuantityValue" step="0.25" value="1"><button id="incrementQty">+</button><span class="qty-unit-label">كجم</span></div></div>
+            <div class="modal-buttons"><button id="saveNewItemBtn" class="btn-save">إضافة</button><button id="closeNewModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="importantModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="importantSearchInput" class="search-input" placeholder="ابحث عن بهار...">
-            </div>
+            <div class="search-container"><i class="fas fa-search search-icon"></i><input type="text" id="importantSearchInput" class="search-input" placeholder="ابحث عن بهار..."></div>
             <div id="importantListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons">
-                <button id="saveImportantBtn" class="btn-save">إضافة المحددة</button>
-                <button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modal-buttons"><button id="saveImportantBtn" class="btn-save">إضافة المحددة</button><button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="spicesExtraModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="ابحث عن بهار...">
-            </div>
+            <div class="search-container"><i class="fas fa-search search-icon"></i><input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="ابحث عن بهار..."></div>
             <div id="spicesExtraListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons">
-                <button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button>
-                <button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modal-buttons"><button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button><button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="quickModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات وأعشاب</h3>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="quickSearchInput" class="search-input" placeholder="ابحث عن منتج...">
-            </div>
+            <div class="search-container"><i class="fas fa-search search-icon"></i><input type="text" id="quickSearchInput" class="search-input" placeholder="ابحث عن منتج..."></div>
             <div id="quickListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons">
-                <button id="saveQuickBtn" class="btn-save">إضافة المحددة</button>
-                <button id="closeQuickModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modal-buttons"><button id="saveQuickBtn" class="btn-save">إضافة المحددة</button><button id="closeQuickModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="bagsModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس تعبئة</h3>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="bagsSearchInput" class="search-input" placeholder="ابحث عن نوع كيس...">
-            </div>
+            <div class="search-container"><i class="fas fa-search search-icon"></i><input type="text" id="bagsSearchInput" class="search-input" placeholder="ابحث عن نوع كيس..."></div>
             <div id="bagsListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons">
-                <button id="saveBagsBtn" class="btn-save">إضافة المحددة</button>
-                <button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modal-buttons"><button id="saveBagsBtn" class="btn-save">إضافة المحددة</button><button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="tawsayaModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
-            <div class="modern-field">
-                <label>المنتج</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-box"></i></div>
-                    <input id="tawsayaName" placeholder="اسم المنتج...">
-                </div>
-            </div>
-            <div class="units-group">
-                <label>نوع الكمية</label>
-                <div class="units-buttons" id="tawsayaTypeGroup">
-                    <button type="button" class="unit-btn active" data-type="kg">كيلو</button>
-                    <button type="button" class="unit-btn" data-type="half">نصف كيلو</button>
-                    <button type="button" class="unit-btn" data-type="custom">مخصص</button>
-                </div>
-            </div>
-            <div id="tawsayaCustomQtyGroup" style="display:none">
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-hashtag"></i></div>
-                    <input type="number" id="tawsayaCustomQty" step="any" value="1">
-                    <div class="quantity-unit">كجم</div>
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="saveTawsayaBtn" class="btn-save">إضافة</button>
-                <button id="closeTawsayaModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modern-field"><label>المنتج</label><div class="field-container"><div class="field-icon"><i class="fas fa-box"></i></div><input id="tawsayaName" placeholder="اسم المنتج..."></div></div>
+            <div class="units-group"><label>نوع الكمية</label><div class="units-buttons" id="tawsayaTypeGroup"><button type="button" class="unit-btn active" data-type="kg">كيلو</button><button type="button" class="unit-btn" data-type="half">نصف كيلو</button><button type="button" class="unit-btn" data-type="custom">مخصص</button></div></div>
+            <div id="tawsayaCustomQtyGroup" style="display:none"><div class="field-container"><div class="field-icon"><i class="fas fa-hashtag"></i></div><input type="number" id="tawsayaCustomQty" step="any" value="1"><div class="quantity-unit">كجم</div></div></div>
+            <div class="modal-buttons"><button id="saveTawsayaBtn" class="btn-save">إضافة</button><button id="closeTawsayaModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
-            <div class="modern-field">
-                <label>المادة</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-tag"></i></div>
-                    <input id="editMaterialName" readonly>
-                </div>
-            </div>
-            <div class="modern-field">
-                <label>الكمية الجديدة</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
-                    <input type="number" id="editQuantityValue" step="0.25">
-                    <div class="quantity-unit">كجم</div>
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="saveEditBtn" class="btn-save">تحديث</button>
-                <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
+            <div class="modern-field"><label>المادة</label><div class="field-container"><div class="field-icon"><i class="fas fa-tag"></i></div><input id="editMaterialName" readonly></div></div>
+            <div class="modern-field"><label>الكمية الجديدة</label><div class="field-container"><div class="field-icon"><i class="fas fa-weight-hanging"></i></div><input type="number" id="editQuantityValue" step="0.25"><div class="quantity-unit">كجم</div></div></div>
+            <div class="modal-buttons"><button id="saveEditBtn" class="btn-save">تحديث</button><button id="closeEditModalBtn" class="btn-cancel">إلغاء</button></div>
         </div>
     </div>
 
     <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
-            <div class="confirm-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>تأكيد الحذف</h3>
-            </div>
-            <div class="confirm-body">
-                <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
-                <div class="confirm-buttons">
-                    <button id="confirmDeleteBtn" class="btn-confirm">نعم، احذف</button>
-                    <button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button>
-                </div>
-            </div>
+            <div class="confirm-header"><i class="fas fa-exclamation-triangle"></i><h3>تأكيد الحذف</h3></div>
+            <div class="confirm-body"><p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p><div class="confirm-buttons"><button id="confirmDeleteBtn" class="btn-confirm">نعم، احذف</button><button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button></div></div>
         </div>
     </div>
 
@@ -276,13 +178,66 @@
         </div>
     </div>
 
-    <!-- Firebase والمكتبات -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
     <script src="/material-manager/js/firebase-config.js"></script>
     <script src="/material-manager/js/utils.js"></script>
     <script src="/material-manager/js/app.js"></script>
+
+    <!-- كود مباشر لضمان عمل أزرار الإلغاء -->
+    <script>
+        (function() {
+            console.log('🔧 Direct close buttons handler loaded');
+            
+            // دالة لإغلاق جميع النوافذ
+            window.closeAllModals = function() {
+                const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+                modals.forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                });
+                console.log('✅ All modals closed');
+            };
+            
+            // ربط أزرار الإلغاء بعد تحميل الصفحة
+            document.addEventListener('DOMContentLoaded', function() {
+                // أزرار الإلغاء في جميع النوافذ
+                var cancelBtns = [
+                    'closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn',
+                    'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn',
+                    'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'
+                ];
+                
+                cancelBtns.forEach(function(btnId) {
+                    var btn = document.getElementById(btnId);
+                    if (btn) {
+                        btn.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.closeAllModals();
+                            return false;
+                        };
+                        console.log('✅ Button bound:', btnId);
+                    }
+                });
+                
+                // إغلاق النوافذ عند النقر خارج المحتوى
+                var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+                modals.forEach(function(id) {
+                    var modal = document.getElementById(id);
+                    if (modal) {
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === modal) {
+                                window.closeAllModals();
+                            }
+                        });
+                    }
+                });
+            });
+        })();
+    </script>
 
     <script>
         setTimeout(() => {
@@ -295,4 +250,4 @@
         }, 2500);
     </script>
 </body>
-</html>
+    </html>
