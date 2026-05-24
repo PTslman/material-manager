@@ -7,11 +7,12 @@
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="manifest" href="/material-manager/manifest.json">
-    <link rel="stylesheet" href="/material-manager/css/style.css">
     
+    <!-- PWA -->
+    <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
     <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
@@ -21,15 +22,26 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
+    <!-- ==================== MODERN SPLASH SCREEN ==================== -->
     <div id="splashScreen" class="splash">
-        <div class="spinner"></div>
+        <div class="splash-logo">
+            <i class="fas fa-boxes"></i>
+        </div>
         <h2>مدير المواد</h2>
-        <div class="version-badge">نسخة احترافية v4.0</div>
+        <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
+        <div class="splash-progress">
+            <div class="splash-progress-fill"></div>
+        </div>
+        <div class="splash-version">نسخة احترافية v4.0</div>
     </div>
 
+    <!-- ==================== MAIN APP ==================== -->
     <div id="appContainer" class="app-main" style="display: none;">
         
         <div class="hero">
@@ -51,7 +63,7 @@
             </div>
         </div>
         
-        <!-- 4 أزرار عريضة للجداول -->
+        <!-- 4 Category Buttons -->
         <div class="categories-container">
             <button class="category-card" id="importantProductsBtn">
                 <div class="category-icon"><i class="fas fa-star"></i></div>
@@ -83,6 +95,7 @@
         <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
     </div>
 
+    <!-- Sync Status Bar -->
     <div id="syncStatusBar" class="sync-status-bar">
         <div class="sync-status-left">
             <div class="sync-indicator">
@@ -97,7 +110,8 @@
         </div>
     </div>
 
-    <!-- النوافذ المنبثقة -->
+    <!-- ==================== MODALS ==================== -->
+    
     <div id="newItemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -178,102 +192,69 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- ==================== SCRIPTS ==================== -->
+    
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
     <script src="/material-manager/js/firebase-config.js"></script>
     <script src="/material-manager/js/utils.js"></script>
     <script src="/material-manager/js/app.js"></script>
+    <script src="/material-manager/js/pwa.js"></script>
 
-    <!-- كود مباشر لضمان عمل أزرار الإلغاء -->
+    <!-- ==================== INITIALIZATION ==================== -->
     <script>
         (function() {
-            console.log('🔧 Direct close buttons handler loaded');
+            // إخفاء شاشة البداية بعد 2.5 ثانية
+            setTimeout(function() {
+                var splash = document.getElementById('splashScreen');
+                var app = document.getElementById('appContainer');
+                if (splash && app) {
+                    splash.classList.add('hidden');
+                    setTimeout(function() {
+                        splash.style.display = 'none';
+                        app.style.display = 'block';
+                    }, 600);
+                }
+            }, 2500);
             
-            // دالة لإغلاق جميع النوافذ
+            // المزامنة التلقائية
+            var autoSyncInterval = null;
+            
+            function startAutoSync() {
+                if (autoSyncInterval) clearInterval(autoSyncInterval);
+                autoSyncInterval = setInterval(function() {
+                    console.log('🔄 Auto-sync...', new Date().toLocaleTimeString());
+                    if (typeof startListener === 'function') {
+                        if (window.unsubscribe) window.unsubscribe();
+                        startListener();
+                    }
+                }, 30000);
+                console.log('✅ Auto-sync enabled (every 30s)');
+            }
+            
+            setTimeout(startAutoSync, 5000);
+            
+            // ربط أزرار الإلغاء
             window.closeAllModals = function() {
-                const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+                var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
                 modals.forEach(function(id) {
                     var el = document.getElementById(id);
                     if (el) el.classList.remove('active');
                 });
-                console.log('✅ All modals closed');
             };
             
-            // ربط أزرار الإلغاء بعد تحميل الصفحة
-            document.addEventListener('DOMContentLoaded', function() {
-                // أزرار الإلغاء في جميع النوافذ
-                var cancelBtns = [
-                    'closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn',
-                    'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn',
-                    'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'
-                ];
-                
-                cancelBtns.forEach(function(btnId) {
-                    var btn = document.getElementById(btnId);
-                    if (btn) {
-                        btn.onclick = function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            window.closeAllModals();
-                            return false;
-                        };
-                        console.log('✅ Button bound:', btnId);
-                    }
-                });
-                
-                // إغلاق النوافذ عند النقر خارج المحتوى
-                var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
-                modals.forEach(function(id) {
-                    var modal = document.getElementById(id);
-                    if (modal) {
-                        modal.addEventListener('click', function(e) {
-                            if (e.target === modal) {
-                                window.closeAllModals();
-                            }
-                        });
-                    }
-                });
+            var cancelBtns = ['closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn', 'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn', 'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'];
+            cancelBtns.forEach(function(btnId) {
+                var btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.onclick = function(e) {
+                        e.preventDefault();
+                        window.closeAllModals();
+                    };
+                }
             });
         })();
     </script>
-
-    <script>
-        setTimeout(() => {
-            const splash = document.getElementById('splashScreen');
-            const app = document.getElementById('appContainer');
-            if (splash && app) {
-                splash.classList.add('hidden');
-                setTimeout(() => { splash.style.display = 'none'; app.style.display = 'block'; }, 350);
-            }
-        }, 2500);
-    </script>
-    <script>
-    // تفعيل المزامنة التلقائية
-    (function() {
-        let autoSyncInterval = null;
-        
-        function performAutoSync() {
-            console.log('🔄 مزامنة تلقائية...', new Date().toLocaleTimeString());
-            if (typeof startListener === 'function') {
-                if (window.unsubscribe) window.unsubscribe();
-                startListener();
-                if (typeof showToast === 'function') {
-                    showToast('🔄 مزامنة تلقائية', 'info');
-                }
-            }
-        }
-        
-        function startAutoSync() {
-            if (autoSyncInterval) clearInterval(autoSyncInterval);
-            autoSyncInterval = setInterval(performAutoSync, 30000); // كل 30 ثانية
-            console.log('✅ المزامنة التلقائية مفعلة (كل 30 ثانية)');
-        }
-        
-        // البدء بعد تحميل الصفحة بـ 5 ثوان
-        setTimeout(startAutoSync, 5000);
-    })();
-    </script>
 </body>
-    </html>
+        </html>
