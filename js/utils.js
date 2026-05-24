@@ -1,4 +1,4 @@
-window.showToast = function(msg, isErr = false) {
+function showToast(msg, isErr = false) {
     let t = document.querySelector('.toast');
     if (t) t.remove();
     
@@ -9,7 +9,7 @@ window.showToast = function(msg, isErr = false) {
     document.body.appendChild(div);
     
     setTimeout(() => div.remove(), 2500);
-};
+}
 
 function escapeHtml(str) {
     if (!str) return '';
