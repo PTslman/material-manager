@@ -1,7 +1,7 @@
 let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
-let isSyncComplete = false;
+let autoSyncInterval = null;
 
 // ==================== القوائم الثابتة ====================
 const importantItemsList = [
@@ -136,7 +136,7 @@ function renderMaterialCard(m) {
     </div>`;
 }
 
-// ==================== عرض القوائم في النوافذ ====================
+// ==================== عرض القوائم ====================
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
@@ -229,7 +229,7 @@ async function addSelectedSpicesExtra() {
         batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بهارات اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "spices_extra" });
     });
     await batch.commit();
-    showToast(`✓ تم إضافة ${items.length} بهار`);
+    showToast(`✓ تم إ添加 ${items.length} بهار`);
     document.getElementById('spicesExtraModal').classList.remove('active');
 }
 
@@ -302,13 +302,16 @@ async function addNewMaterialDirect() {
     document.getElementById('newItemModal').classList.remove('active');
 }
 
-// ==================== المزامنة التلقائية عند فتح التطبيق ====================
+// ==================== المزامنة مع Firebase ====================
 function startListener() {
-    console.log('🔄 جاري المزامنة مع قاعدة البيانات...');
-    document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
-    document.getElementById('syncDot').className = 'sync-dot syncing';
+    console.log('🔄 Starting Firestore sync...');
     
     const query = materialsCollection.orderBy('createdAt', 'desc');
+    
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
     
     unsubscribe = query.onSnapshot((snapshot) => {
         const list = [];
@@ -326,107 +329,133 @@ function startListener() {
         });
         allMaterials = list;
         
-        console.log('✅ تم تحميل البيانات:', list.length, 'عنصر');
+        console.log('✅ Data synced:', list.length, 'items');
         
         // تحديث واجهة المستخدم
-        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-check-circle"></i> متصل';
-        document.getElementById('syncDot').className = 'sync-dot';
-        document.getElementById('syncItemsCount').innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
-        document.getElementById('syncLastTime').innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        const itemsCount = document.getElementById('syncItemsCount');
+        const syncTime = document.getElementById('syncLastTime');
+        
+        if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+        if (syncDot) syncDot.className = 'sync-dot';
+        if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
+        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
         
         renderAllMaterials(allMaterials);
         
-        // إخفاء شاشة البداية بعد اكتمال المزامنة الأولى
-        if (!isSyncComplete) {
-            isSyncComplete = true;
-            setTimeout(() => forceHideSplash(), 500);
+        // إخفاء شاشة البداية
+        const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appContainer');
+        if (splash && app && splash.style.display !== 'none') {
+            splash.classList.add('hidden');
+            setTimeout(() => {
+                splash.style.display = 'none';
+                app.style.display = 'block';
+            }, 500);
         }
-    }, (error) => {
-        console.error('❌ خطأ في المزامنة:', error);
-        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-        document.getElementById('syncDot').className = 'sync-dot offline';
         
-        // حتى لو فشل الاتصال، نخفي شاشة البداية بعد فترة
-        if (!isSyncComplete) {
-            isSyncComplete = true;
-            setTimeout(() => forceHideSplash(), 3000);
-        }
+    }, (error) => {
+        console.error('❌ Firestore error:', error);
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
+        if (syncDot) syncDot.className = 'sync-dot offline';
     });
 }
 
-function forceHideSplash() {
-    const splash = document.getElementById('splashScreen');
-    const app = document.getElementById('appContainer');
-    if (splash && app && splash.style.display !== 'none') {
-        splash.classList.add('hidden');
-        setTimeout(() => {
-            splash.style.display = 'none';
-            app.style.display = 'block';
-            console.log('✅ تم فتح التطبيق');
-        }, 350);
+// ==================== المزامنة التلقائية ====================
+function startAutoSync() {
+    if (autoSyncInterval) {
+        clearInterval(autoSyncInterval);
+        autoSyncInterval = null;
     }
+    
+    autoSyncInterval = setInterval(function() {
+        console.log('🔄 Auto-sync at:', new Date().toLocaleTimeString());
+        
+        // إعادة تشغيل المستمع
+        if (unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+        }
+        startListener();
+        
+        // إشعار قصير
+        const statusText = document.getElementById('syncStatusText');
+        if (statusText) {
+            statusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> تحديث...';
+            setTimeout(() => {
+                if (statusText.innerHTML.includes('تحديث')) {
+                    statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+                }
+            }, 2000);
+        }
+        
+    }, 30000); // كل 30 ثانية
+    
+    console.log('✅ Auto-sync enabled (every 30 seconds)');
 }
 
 // ==================== ربط الأحداث ====================
 function bindEvents() {
     document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
     
-    document.getElementById('syncBtn').onclick = () => { 
+    document.getElementById('syncBtn').onclick = () => {
         if (unsubscribe) unsubscribe();
-        isSyncComplete = false;
-        startListener(); 
-        showToast("🔄 جاري المزامنة..."); 
+        startListener();
+        showToast("🔄 جاري المزامنة...");
     };
     
     document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
     
-    document.getElementById('backupBtn').onclick = () => { 
+    document.getElementById('backupBtn').onclick = () => {
         if (allMaterials.length === 0) { showToast("📭 لا توجد بيانات", true); return; }
-        let data = JSON.stringify(allMaterials, null, 2); 
-        let blob = new Blob([data]); 
-        let a = document.createElement('a'); 
-        a.href = URL.createObjectURL(blob); 
-        a.download = `backup_${new Date().toISOString().slice(0,19)}.json`; 
-        a.click(); 
-        showToast("💾 تم النسخ"); 
+        let data = JSON.stringify(allMaterials, null, 2);
+        let blob = new Blob([data]);
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        showToast("💾 تم النسخ");
     };
     
-    document.getElementById('restoreBtn').onclick = () => { 
-        let input = document.createElement('input'); 
-        input.type = 'file'; 
-        input.accept = 'application/json'; 
-        input.onchange = async (e) => { 
-            let file = e.target.files[0]; 
-            let reader = new FileReader(); 
-            reader.onload = async (ev) => { 
+    document.getElementById('restoreBtn').onclick = () => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = async (e) => {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            reader.onload = async (ev) => {
                 try {
-                    let backup = JSON.parse(ev.target.result); 
+                    let backup = JSON.parse(ev.target.result);
                     if (confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) {
                         let batch = db.batch();
                         allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
                         await batch.commit();
-                        for (let it of backup) { 
-                            await materialsCollection.add(it); 
+                        for (let it of backup) {
+                            await materialsCollection.add(it);
                         }
                         showToast("✓ تم الاستعادة");
                         if (unsubscribe) unsubscribe();
                         startListener();
                     }
                 } catch(e) { showToast("❌ ملف غير صالح", true); }
-            }; 
-            reader.readAsText(file); 
-        }; 
-        input.click(); 
+            };
+            reader.readAsText(file);
+        };
+        input.click();
     };
     
-    document.getElementById('clearAllBtn').onclick = async () => { 
+    document.getElementById('clearAllBtn').onclick = async () => {
         if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
-        if (confirm("⚠️ حذف جميع المواد نهائياً؟")) { 
-            let batch = db.batch(); 
-            allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id))); 
-            await batch.commit(); 
-            showToast("✓ تم المسح"); 
-        } 
+        if (confirm("⚠️ حذف جميع المواد نهائياً؟")) {
+            let batch = db.batch();
+            allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
+            await batch.commit();
+            showToast("✓ تم المسح");
+        }
     };
     
     // أزرار الجداول الأربعة
@@ -486,7 +515,8 @@ function bindEvents() {
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 تشغيل التطبيق...');
+    console.log('🚀 App starting...');
     bindEvents();
-    startListener(); // المزامنة تبدأ فوراً
+    startListener();      // مزامنة فورية عند الفتح
+    startAutoSync();      // مزامنة تلقائية كل 30 ثانية
 });
