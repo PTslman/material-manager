@@ -4,123 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة المواد - مدير المواد</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #2e7d32;
-            --primary-dark: #1b5e20;
-            --bg-page: #fef9e6;
-            --bg-surface: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-light: #e2e8f0;
-            --danger: #ef4444;
-            --danger-bg: #fee2e2;
-            --warning: #f59e0b;
-            --warning-bg: #fef3c7;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 20px;
-            --radius-full: 9999px;
-        }
         body {
-            font-family: 'Inter', 'Tajawal', system-ui, sans-serif;
-            background: var(--bg-page);
-            color: var(--text-primary);
+            font-family: 'Inter', 'Tajawal', sans-serif;
+            background: #fef9e6;
             padding: 20px;
         }
         .header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: var(--radius-xl);
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
             padding: 20px;
+            border-radius: 24px;
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            color: white;
         }
-        .header h1 { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; }
         .back-btn {
             background: rgba(255,255,255,0.2);
             border: none;
             padding: 8px 20px;
-            border-radius: var(--radius-full);
+            border-radius: 40px;
             color: white;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
         .card {
-            background: var(--bg-surface);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--border-light);
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
             margin-bottom: 20px;
-            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .card-header {
-            padding: 15px 20px;
-            background: var(--bg-page);
-            border-bottom: 1px solid var(--border-light);
+        .card h2 {
+            color: #2e7d32;
+            margin-bottom: 15px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
             gap: 10px;
-        }
-        .card-header h2 { display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 1.1rem; }
-        .add-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 16px;
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
         }
         .search-input {
             width: 100%;
             padding: 10px 16px;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-full);
-            font-family: inherit;
+            border: 1px solid #e5e7eb;
+            border-radius: 40px;
             margin-bottom: 15px;
+            font-family: inherit;
         }
-        .items-list { max-height: 350px; overflow-y: auto; }
+        .items-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
         .item-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--border-light);
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .item-row:hover { background: var(--bg-page); }
-        .item-name { flex: 1; }
+        .item-row:hover {
+            background: #fef9e6;
+        }
+        .item-name { flex: 1; font-weight: 500; }
         .item-actions { display: flex; gap: 8px; }
         .edit-btn, .delete-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-full);
+            background: none;
             border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
             cursor: pointer;
+            font-size: 1rem;
         }
-        .edit-btn { background: var(--warning-bg); color: var(--warning); }
-        .delete-btn { background: var(--danger-bg); color: var(--danger); }
-        .empty-state { text-align: center; padding: 40px; color: var(--text-secondary); }
+        .edit-btn { color: #f59e0b; }
+        .edit-btn:hover { background: #fef3c7; }
+        .delete-btn { color: #ef4444; }
+        .delete-btn:hover { background: #fee2e2; }
+        .add-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(4px);
             display: flex;
@@ -133,84 +114,72 @@
         }
         .modal.active { visibility: visible; opacity: 1; }
         .modal-content {
-            background: var(--bg-surface);
+            background: white;
             width: 90%;
             max-width: 400px;
-            border-radius: var(--radius-xl);
-            padding: 25px;
+            padding: 24px;
+            border-radius: 24px;
         }
-        .modal-content h3 { margin-bottom: 20px; color: var(--primary); }
+        .modal-content h3 { margin-bottom: 20px; color: #2e7d32; }
         .modal-content input {
             width: 100%;
             padding: 12px;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
+            border: 1px solid #e5e7eb;
+            border-radius: 40px;
+            margin: 15px 0;
             font-family: inherit;
-            margin-bottom: 20px;
         }
         .modal-buttons { display: flex; gap: 10px; }
-        .modal-buttons button { flex: 1; padding: 10px; border-radius: var(--radius-full); cursor: pointer; }
-        .save-btn { background: var(--primary); color: white; border: none; }
-        .cancel-btn { background: var(--bg-page); border: 1px solid var(--border-light); }
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--radius-full);
-            z-index: 1001;
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
         }
-        .counter { font-size: 0.8rem; color: var(--text-secondary); margin-right: 8px; }
+        .save-btn { background: #2e7d32; color: white; border: none; }
+        .cancel-btn { background: #f3f4f6; border: 1px solid #e5e7eb; }
+        .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
+        .counter {
+            font-size: 0.8rem;
+            background: #e8f5e9;
+            padding: 2px 10px;
+            border-radius: 40px;
+            margin-right: 8px;
+        }
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .header { flex-direction: column; text-align: center; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-database"></i> إدارة المواد</h1>
-            <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-right"></i> عودة</button>
-        </div>
-
-        <!-- بهارات هامة -->
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-star"></i> البهارات الهامة <span id="importantCounter" class="counter"></span></h2>
-                <button class="add-btn" onclick="openAddModal('important')"><i class="fas fa-plus"></i> إضافة</button>
-            </div>
-            <div class="card-body">
-                <input type="text" id="searchImportant" class="search-input" placeholder="بحث...">
-                <div id="importantList" class="items-list"></div>
-            </div>
-        </div>
-
-        <!-- بهارات اضافية -->
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-leaf"></i> البهارات الاضافية <span id="spicesCounter" class="counter"></span></h2>
-                <button class="add-btn" onclick="openAddModal('spices')"><i class="fas fa-plus"></i> إضافة</button>
-            </div>
-            <div class="card-body">
-                <input type="text" id="searchSpices" class="search-input" placeholder="بحث...">
-                <div id="spicesList" class="items-list"></div>
-            </div>
-        </div>
-
-        <!-- بذوريات -->
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-seedling"></i> البذوريات والأعشاب <span id="extraCounter" class="counter"></span></h2>
-                <button class="add-btn" onclick="openAddModal('extra')"><i class="fas fa-plus"></i> إضافة</button>
-            </div>
-            <div class="card-body">
-                <input type="text" id="searchExtra" class="search-input" placeholder="بحث...">
-                <div id="extraList" class="items-list"></div>
-            </div>
-        </div>
+    <div class="header">
+        <h1><i class="fas fa-database"></i> إدارة المواد</h1>
+        <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-right"></i> العودة للتطبيق</button>
     </div>
 
-    <!-- Modal -->
+    <div class="card">
+        <h2><i class="fas fa-star"></i> البهارات الهامة <span id="importantCounter" class="counter"></span></h2>
+        <input type="text" id="searchImportant" class="search-input" placeholder="🔍 بحث...">
+        <div id="importantList" class="items-list"></div>
+        <button class="add-btn" onclick="openModal('important')"><i class="fas fa-plus"></i> إضافة بهار جديد</button>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-leaf"></i> البهارات الاضافية <span id="spicesCounter" class="counter"></span></h2>
+        <input type="text" id="searchSpices" class="search-input" placeholder="🔍 بحث...">
+        <div id="spicesList" class="items-list"></div>
+        <button class="add-btn" onclick="openModal('spices')"><i class="fas fa-plus"></i> إضافة بهار جديد</button>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-seedling"></i> البذوريات والأعشاب <span id="extraCounter" class="counter"></span></h2>
+        <input type="text" id="searchExtra" class="search-input" placeholder="🔍 بحث...">
+        <div id="extraList" class="items-list"></div>
+        <button class="add-btn" onclick="openModal('extra')"><i class="fas fa-plus"></i> إضافة منتج جديد</button>
+    </div>
+
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle"><i class="fas fa-plus"></i> إضافة عنصر</h3>
@@ -223,19 +192,36 @@
     </div>
 
     <script>
-        // ==================== مفاتيح التخزين ====================
         const STORAGE_KEYS = {
             IMPORTANT: 'material_important_items',
             SPICES: 'material_spices_items',
             EXTRA: 'material_extra_items'
         };
 
-        // البيانات الافتراضية
-        const DEFAULT_IMPORTANT = ["شطه حلوة", "شطة حدة", "بابريكا مدخنة", "فلفل اسود ناعم", "كزبرة ناعمة", "كزبرة حب", "قرفة خشنة عيدان", "قرفة سيجار", "كمون ناعم", "كمون حب", "كاكاو نخب اول", "كاكاو نخب ثاني", "كركم", "كريمة محلاية", "كبسة ناعمة", "كبسة خليجية", "كاري", "مندي", "زنجبيل خشن", "زنجبيل ناعم", "سمسم", "سماق ناعم", "شيش", "شاورما", "حبة البركة", "ثوم ناعم", "بصل ناعم", "ملح ليمون", "ملح صيني", "ماجي صفراء", "ماجي بيضاء", "مشكلة", "مشكلة بيضاء", "نشا مصري", "هيل ناعم", "هيل حب"];
-        const DEFAULT_SPICES = ["عصفر", "توابل هندية حارة", "صفار الزعفران", "صفار البيض", "فلفل اسود حب", "فلفل ابيض ناعم", "فلافل", "فاهيتا", "قرنفل ناعم", "قرنفل حب", "قرفة ناعمة", "قلي", "كتشب", "كراوية", "كريسبي", "بطاطا", "بروستد", "زعتر اوريجانو", "بيتزا", "جوزة الطيب ناعمة", "جوزة الطيب حب", "حلبة حب", "حلبة ناعمة", "خل نكهة", "خميرة", "لحمة خاروف", "مكسيكي", "مشاوي", "مدخنة", "محاشي", "نشا درس", "يانسون ناعم", "سدر ناعم", "سمك", "سجق", "سحلب", "شبة ناعمة", "نوديلز اندومي"];
-        const DEFAULT_EXTRA = ["بذر دوار شمس ملكي", "بذر دوار شمس الشبح", "بذر اصفر ملكي", "بذر اسود ملكي", "بذر كوسا", "بذر ابيض عريض", "فستق مدخن", "فستق مملح", "ذرة الفوشار", "شوفان", "نعنع يابس", "نسكافية خشنة", "اشلميش", "لوز ني", "كاجو ني", "لوز بقشرو", "فستق ني", "لبان الدكر", "لومي", "لومي اسود", "كركدية", "زهرة الالماسة", "شمرا ناعمة", "شمرا حب", "زهورات مشكلة", "جوز امريكي", "تمر سري", "جوز هند خشن", "جوز هند ناعم", "بذور الشيا", "بذور الكتان", "بذور الرشاد", "رمان زركش"];
+        const DEFAULT_IMPORTANT = [
+            "شطه حلوة", "شطة حدة", "بابريكا مدخنة", "فلفل اسود ناعم", "كزبرة ناعمة", "كزبرة حب",
+            "قرفة خشنة عيدان", "قرفة سيجار", "كمون ناعم", "كمون حب", "كاكاو نخب اول", "كاكاو نخب ثاني",
+            "كركم", "كريمة محلاية", "كبسة ناعمة", "كبسة خليجية", "كاري", "مندي", "زنجبيل خشن",
+            "زنجبيل ناعم", "سمسم", "سماق ناعم", "شيش", "شاورما", "حبة البركة", "ثوم ناعم", "بصل ناعم",
+            "ملح ليمون", "ملح صيني", "ماجي صفراء", "ماجي بيضاء", "مشكلة", "مشكلة بيضاء", "نشا مصري", "هيل ناعم", "هيل حب"
+        ];
 
-        // ==================== تحميل البيانات ====================
+        const DEFAULT_SPICES = [
+            "عصفر", "توابل هندية حارة", "صفار الزعفران", "صفار البيض", "فلفل اسود حب", "فلفل ابيض ناعم",
+            "فلافل", "فاهيتا", "قرنفل ناعم", "قرنفل حب", "قرفة ناعمة", "قلي", "كتشب", "كراوية", "كريسبي",
+            "بطاطا", "بروستد", "زعتر اوريجانو", "بيتزا", "جوزة الطيب ناعمة", "جوزة الطيب حب", "حلبة حب",
+            "حلبة ناعمة", "خل نكهة", "خميرة", "لحمة خاروف", "مكسيكي", "مشاوي", "مدخنة", "محاشي", "نشا درس",
+            "يانسون ناعم", "سدر ناعم", "سمك", "سجق", "سحلب", "شبة ناعمة", "نوديلز اندومي"
+        ];
+
+        const DEFAULT_EXTRA = [
+            "بذر دوار شمس ملكي", "بذر دوار شمس الشبح", "بذر اصفر ملكي", "بذر اسود ملكي", "بذر كوسا",
+            "بذر ابيض عريض", "فستق مدخن", "فستق مملح", "ذرة الفوشار", "شوفان", "نعنع يابس", "نسكافية خشنة",
+            "اشلميش", "لوز ني", "كاجو ني", "لوز بقشرو", "فستق ني", "لبان الدكر", "لومي", "لومي اسود", "كركدية",
+            "زهرة الالماسة", "شمرا ناعمة", "شمرا حب", "زهورات مشكلة", "جوز امريكي", "تمر سري", "جوز هند خشن",
+            "جوز هند ناعم", "بذور الشيا", "بذور الكتان", "بذور الرشاد", "رمان زركش"
+        ];
+
         let importantItems = [], spicesItems = [], extraItems = [];
         let currentType = 'important';
         let editingIndex = null;
@@ -262,13 +248,22 @@
             localStorage.setItem(STORAGE_KEYS.SPICES, JSON.stringify(spicesItems));
             localStorage.setItem(STORAGE_KEYS.EXTRA, JSON.stringify(extraItems));
             
-            // تحديث العدادات
             document.getElementById('importantCounter').innerText = importantItems.length;
             document.getElementById('spicesCounter').innerText = spicesItems.length;
             document.getElementById('extraCounter').innerText = extraItems.length;
+            
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({
+                        type: 'SYNC_MATERIALS_DATA',
+                        important: importantItems,
+                        spices: spicesItems,
+                        extra: extraItems
+                    }, '*');
+                } catch(e) {}
+            }
         }
 
-        // ==================== العرض ====================
         function renderList(type, searchTerm = '') {
             let items, containerId;
             if (type === 'important') { items = importantItems; containerId = 'importantList'; }
@@ -309,25 +304,24 @@
             return div.innerHTML;
         }
 
-        // ==================== العمليات ====================
         function addItem(type, name) {
-            if (!name.trim()) { showToast('الرجاء إدخال اسم', 'error'); return false; }
+            if (!name.trim()) { showMessage('الرجاء إدخال اسم صحيح', 'error'); return false; }
             let items;
             if (type === 'important') items = importantItems;
             else if (type === 'spices') items = spicesItems;
             else items = extraItems;
             
-            if (items.includes(name.trim())) { showToast('العنصر موجود بالفعل', 'error'); return false; }
+            if (items.includes(name.trim())) { showMessage('هذا العنصر موجود بالفعل!', 'error'); return false; }
             
             items.push(name.trim());
             saveData();
             renderAll();
-            showToast(`✓ تمت إضافة "${name}"`);
+            showMessage(`✓ تمت إضافة "${name}"`);
             return true;
         }
 
         function updateItem(type, index, newName) {
-            if (!newName.trim()) { showToast('الرجاء إدخال اسم', 'error'); return false; }
+            if (!newName.trim()) { showMessage('الرجاء إدخال اسم صحيح', 'error'); return false; }
             let items;
             if (type === 'important') items = importantItems;
             else if (type === 'spices') items = spicesItems;
@@ -338,15 +332,15 @@
             items[index] = newName.trim();
             saveData();
             renderAll();
-            showToast(`✓ تم تعديل "${oldName}" إلى "${newName}"`);
+            showMessage(`✓ تم تعديل "${oldName}" إلى "${newName}"`);
             return true;
         }
 
         function deleteItem(type, index) {
             let items, typeName;
-            if (type === 'important') { items = importantItems; typeName = 'بهار'; }
-            else if (type === 'spices') { items = spicesItems; typeName = 'بهار'; }
-            else { items = extraItems; typeName = 'منتج'; }
+            if (type === 'important') { items = importantItems; typeName = 'البهار'; }
+            else if (type === 'spices') { items = spicesItems; typeName = 'البهار'; }
+            else { items = extraItems; typeName = 'المنتج'; }
             
             if (index < 0 || index >= items.length) return;
             const deletedName = items[index];
@@ -354,15 +348,14 @@
                 items.splice(index, 1);
                 saveData();
                 renderAll();
-                showToast(`✓ تم حذف ${typeName} "${deletedName}"`);
+                showMessage(`✓ تم حذف ${typeName} "${deletedName}"`);
             }
         }
 
-        // ==================== النوافذ ====================
-        function openAddModal(type) {
+        function openModal(type) {
             currentType = type;
             editingIndex = null;
-            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> إضافة عنصر';
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> إضافة عنصر جديد';
             document.getElementById('itemName').value = '';
             document.getElementById('itemModal').classList.add('active');
         }
@@ -392,26 +385,30 @@
             editingIndex = null;
         }
 
-        function showToast(message, type = 'success') {
+        function showMessage(message, type = 'success') {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
             const toast = document.createElement('div');
             toast.className = 'toast';
+            toast.style.cssText = `
+                position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+                background: ${type === 'error' ? '#dc2626' : '#2e7d32'}; color: white;
+                padding: 10px 20px; border-radius: 40px; font-size: 0.85rem;
+                z-index: 1001; font-weight: 600;
+            `;
             toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 2000);
         }
 
-        // ==================== الأحداث ====================
         document.getElementById('searchImportant')?.addEventListener('input', (e) => renderList('important', e.target.value));
         document.getElementById('searchSpices')?.addEventListener('input', (e) => renderList('spices', e.target.value));
         document.getElementById('searchExtra')?.addEventListener('input', (e) => renderList('extra', e.target.value));
-        document.getElementById('itemName')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveItem(); });
         document.getElementById('itemModal')?.addEventListener('click', (e) => { if (e.target === document.getElementById('itemModal')) closeModal(); });
+        document.getElementById('itemName')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveItem(); });
 
-        // ==================== التهيئة ====================
         loadData();
-        saveData(); // لتحديث العدادات
+        saveData();
         renderAll();
     </script>
 </body>
