@@ -34,7 +34,6 @@
     <link rel="stylesheet" href="/material-manager/css/style.css">
     
     <style>
-        /* تحسينات إضافية */
         .toolbar-row {
             display: flex;
             flex-wrap: wrap;
@@ -56,40 +55,13 @@
             align-items: center;
             gap: 8px;
         }
-        .action-btn:active {
-            transform: scale(0.97);
-        }
-        .manage-data-btn {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
-            border: none;
-        }
-        .manage-units-btn {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            color: white;
-            border: none;
-        }
-        .refresh-data-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-        }
-        .install-btn {
-            background: linear-gradient(135deg, #0A84FF, #0066CC);
-            color: white;
-            border: none;
-        }
-        .update-btn {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            border: none;
-        }
-        @media (max-width: 600px) {
-            .action-btn {
-                padding: 6px 12px;
-                font-size: 0.7rem;
-            }
-        }
+        .action-btn:active { transform: scale(0.97); }
+        .manage-data-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; }
+        .manage-units-btn { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; }
+        .refresh-data-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; }
+        .install-btn { background: linear-gradient(135deg, #0A84FF, #0066CC); color: white; border: none; }
+        .update-btn { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; }
+        @media (max-width: 600px) { .action-btn { padding: 6px 12px; font-size: 0.7rem; } }
     </style>
 </head>
 <body>
@@ -104,20 +76,13 @@
     <!-- Main App Container -->
     <div id="appContainer" class="app-main" style="display: none;">
         
-        <!-- Header -->
         <header class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud">
-                <i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن
-            </div>
+            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </header>
         
-        <!-- Main Add Button -->
-        <button id="mainAddBtn" class="main-add-btn">
-            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
-        </button>
+        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
-        <!-- Toolbar -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
@@ -130,15 +95,9 @@
                 <button id="updateBtn" class="action-btn update-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
             </div>
             <div class="toolbar-row">
-                <button id="refreshDataBtn" class="action-btn refresh-data-btn">
-                    <i class="fas fa-database"></i> تحديث البيانات
-                </button>
-                <button class="action-btn manage-data-btn" onclick="window.location.href='manage-data.html'">
-                    <i class="fas fa-edit"></i> إدارة البيانات
-                </button>
-                <button class="action-btn manage-units-btn" onclick="window.location.href='manage-units.html'">
-                    <i class="fas fa-ruler-combined"></i> إدارة الوحدات
-                </button>
+                <button id="refreshDataBtn" class="action-btn refresh-data-btn"><i class="fas fa-database"></i> تحديث البيانات</button>
+                <button id="manageDataBtn" class="action-btn manage-data-btn"><i class="fas fa-edit"></i> إدارة البيانات</button>
+                <button id="manageUnitsBtn" class="action-btn manage-units-btn"><i class="fas fa-ruler-combined"></i> إدارة الوحدات</button>
             </div>
             <div class="toolbar-row">
                 <button id="importantProductsBtn" class="action-btn"><i class="fas fa-star"></i> بهارات هامة</button>
@@ -149,13 +108,9 @@
             </div>
         </div>
         
-        <!-- Materials Container -->
         <main id="materialsContainer"></main>
         
-        <!-- Clear All Button -->
-        <button id="clearAllBtn" class="clear-full-btn">
-            <i class="fas fa-trash-alt"></i> مسح جميع المواد
-        </button>
+        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
     </div>
 
     <!-- Sync Status Bar -->
@@ -168,16 +123,13 @@
             <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
         </div>
         <div class="sync-status-right">
-            <span id="syncRetry" class="retry-link" style="display: none;">
-                <i class="fas fa-sync-alt"></i> إعادة المحاولة
-            </span>
+            <span id="syncRetry" class="retry-link" style="display: none;"><i class="fas fa-sync-alt"></i> إعادة المحاولة</span>
             <span id="syncItemsCount" class="sync-text"><i class="fas fa-database"></i> 0 عنصر</span>
         </div>
     </footer>
 
     <!-- ==================== MODALS ==================== -->
 
-    <!-- New Item Modal -->
     <div id="newItemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -204,7 +156,6 @@
         </div>
     </div>
 
-    <!-- Legacy Item Modal -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة</h3>
@@ -239,7 +190,6 @@
         </div>
     </div>
 
-    <!-- Important Items Modal -->
     <div id="importantModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
@@ -255,7 +205,6 @@
         </div>
     </div>
 
-    <!-- Spices Extra Modal -->
     <div id="spicesExtraModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
@@ -271,7 +220,6 @@
         </div>
     </div>
 
-    <!-- Quick Products Modal -->
     <div id="quickModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات واعشاب</h3>
@@ -287,7 +235,6 @@
         </div>
     </div>
 
-    <!-- Bags Modal -->
     <div id="bagsModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس التعبئة</h3>
@@ -299,7 +246,6 @@
         </div>
     </div>
 
-    <!-- Tawsaya Modal -->
     <div id="tawsayaModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
@@ -335,7 +281,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
@@ -361,7 +306,6 @@
         </div>
     </div>
 
-    <!-- Confirm Delete Modal -->
     <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
             <div class="confirm-header">
@@ -378,7 +322,6 @@
         </div>
     </div>
 
-    <!-- System Message Modal -->
     <div id="systemMessageModal" class="modal">
         <div class="modal-content" style="text-align:center">
             <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
@@ -395,115 +338,186 @@
     <script src="/material-manager/js/firebase-config.js"></script>
     <script src="/material-manager/js/constants.js"></script>
     <script src="/material-manager/js/utils.js"></script>
-    <script src="/material-manager/js/ui.js"></script>
     <script src="/material-manager/js/app.js"></script>
-    <script src="/material-manager/js/pwa.js"></script>
 
+    <!-- كود ربط الأزرار المباشر والمضمون -->
     <script>
         (function() {
-            // تحديث بيانات القوائم من localStorage عند التحميل
-            if (window.refreshConstantsData) {
-                window.refreshConstantsData();
+            console.log('🔧 Direct button binding script running...');
+            
+            // ========== أزرار الجداول الأربعة ==========
+            
+            // 1. بهارات هامة
+            const importantBtn = document.getElementById('importantProductsBtn');
+            if (importantBtn) {
+                importantBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('✅ Important button clicked');
+                    if (typeof renderImportantFiltered === 'function') {
+                        renderImportantFiltered('');
+                    } else {
+                        console.warn('renderImportantFiltered not available, using fallback');
+                        // إظهار نافذة منبثقة فارغة كحل مؤقت
+                        const modal = document.getElementById('importantModal');
+                        if (modal) modal.classList.add('active');
+                        const container = document.getElementById('importantListContainer');
+                        if (container) container.innerHTML = '<div class="empty-state">جاري التحميل...</div>';
+                    }
+                    const modal = document.getElementById('importantModal');
+                    if (modal) modal.classList.add('active');
+                    const search = document.getElementById('importantSearchInput');
+                    if (search) search.focus();
+                };
+            } else {
+                console.error('importantProductsBtn not found');
             }
             
-            // زر تحديث البيانات
+            // 2. بهارات اضافية
+            const spicesBtn = document.getElementById('spicesExtraBtn');
+            if (spicesBtn) {
+                spicesBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('✅ Spices button clicked');
+                    if (typeof renderSpicesExtraFiltered === 'function') {
+                        renderSpicesExtraFiltered('');
+                    }
+                    const modal = document.getElementById('spicesExtraModal');
+                    if (modal) modal.classList.add('active');
+                    const search = document.getElementById('spicesExtraSearchInput');
+                    if (search) search.focus();
+                };
+            }
+            
+            // 3. بذوريات
+            const quickBtn = document.getElementById('quickProductsBtn');
+            if (quickBtn) {
+                quickBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('✅ Quick products button clicked');
+                    if (typeof renderQuickFiltered === 'function') {
+                        renderQuickFiltered('');
+                    }
+                    const modal = document.getElementById('quickModal');
+                    if (modal) modal.classList.add('active');
+                    const search = document.getElementById('quickSearchInput');
+                    if (search) search.focus();
+                };
+            }
+            
+            // 4. أكياس
+            const bagsBtn = document.getElementById('bagsManagerBtn');
+            if (bagsBtn) {
+                bagsBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('✅ Bags button clicked');
+                    if (typeof renderBags === 'function') {
+                        renderBags();
+                    }
+                    const modal = document.getElementById('bagsModal');
+                    if (modal) modal.classList.add('active');
+                };
+            }
+            
+            // 5. توصاية
+            const tawsayaBtn = document.getElementById('tawsayaQuickBtn');
+            if (tawsayaBtn) {
+                tawsayaBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('✅ Tawsaya button clicked');
+                    const modal = document.getElementById('tawsayaModal');
+                    if (modal) modal.classList.add('active');
+                    const nameInput = document.getElementById('tawsayaName');
+                    if (nameInput) nameInput.focus();
+                };
+            }
+            
+            // ========== أزرار إدارة البيانات والوحدات ==========
+            const manageDataBtn = document.getElementById('manageDataBtn');
+            if (manageDataBtn) {
+                manageDataBtn.onclick = function() {
+                    window.location.href = 'manage-data.html';
+                };
+            }
+            
+            const manageUnitsBtn = document.getElementById('manageUnitsBtn');
+            if (manageUnitsBtn) {
+                manageUnitsBtn.onclick = function() {
+                    window.location.href = 'manage-units.html';
+                };
+            }
+            
+            // ========== زر تحديث البيانات ==========
             const refreshBtn = document.getElementById('refreshDataBtn');
             if (refreshBtn) {
-                refreshBtn.addEventListener('click', function() {
-                    if (window.refreshConstantsData) {
-                        window.refreshConstantsData();
+                refreshBtn.onclick = function() {
+                    if (typeof refreshConstantsData === 'function') {
+                        refreshConstantsData();
                         showToast('✓ تم تحديث البيانات بنجاح');
                     } else {
-                        showToast('❌ خطأ في تحديث البيانات', true);
+                        showToast('⚠️ وظيفة التحديث غير متاحة', true);
                     }
-                });
+                };
             }
             
-            // Service Worker Registration
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/material-manager/service-worker.js')
-                        .then(function(reg) { console.log('✅ Service Worker registered:', reg.scope); })
-                        .catch(function(err) { console.error('❌ Service Worker failed:', err); });
-                });
-            }
-            
-            // Hide Splash Screen
-            setTimeout(function() {
-                var splash = document.getElementById('splashScreen');
-                var app = document.getElementById('appContainer');
-                if (splash && app) {
-                    splash.classList.add('hidden');
-                    setTimeout(function() {
-                        splash.style.display = 'none';
-                        app.style.display = 'block';
-                    }, 350);
-                }
-            }, 3000);
-            
-            // System Message Helper
-            window.showSystemMessage = function(title, message) {
-                var modal = document.getElementById('systemMessageModal');
-                var titleEl = document.getElementById('systemMessageTitle');
-                var msgEl = document.getElementById('systemMessageText');
-                if (titleEl) titleEl.textContent = title;
-                if (msgEl) msgEl.textContent = message;
-                if (modal) modal.classList.add('active');
-            };
-            
-            // Close System Message
-            var closeMsgBtn = document.getElementById('closeSystemMessageBtn');
-            if (closeMsgBtn) {
-                closeMsgBtn.addEventListener('click', function() {
-                    document.getElementById('systemMessageModal').classList.remove('active');
-                });
-            }
-            
-            // Close Modals on Outside Click
-            var modalIds = [
-                'newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 
-                'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 
-                'itemModal', 'systemMessageModal'
+            // ========== إغلاق النوافذ ==========
+            const closeModalButtons = [
+                'closeNewModalBtn', 'closeModalBtn', 'closeImportantModalBtn',
+                'closeSpicesExtraModalBtn', 'closeQuickModalBtn', 'closeBagsModalBtn',
+                'closeTawsayaModalBtn', 'closeEditModalBtn', 'closeSystemMessageBtn'
             ];
-            modalIds.forEach(function(id) {
-                var modal = document.getElementById(id);
-                if (modal) {
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === modal) {
-                            modal.classList.remove('active');
-                        }
-                    });
+            closeModalButtons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.onclick = function() {
+                        const modalId = btnId.replace('close', '').replace('ModalBtn', 'Modal');
+                        const modal = document.getElementById(modalId);
+                        if (modal) modal.classList.remove('active');
+                    };
                 }
             });
             
-            // Tawsaya Type Selection
-            var typeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-            var customGroup = document.getElementById('tawsayaCustomQtyGroup');
-            if (typeBtns.length && customGroup) {
-                typeBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        typeBtns.forEach(function(b) { b.classList.remove('active'); });
-                        this.classList.add('active');
-                        customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
-                    });
-                });
+            // ========== حفظ النوافذ ==========
+            const saveNewItem = document.getElementById('saveNewItemBtn');
+            if (saveNewItem && typeof addNewMaterialDirect === 'function') {
+                saveNewItem.onclick = addNewMaterialDirect;
             }
             
-            // Unit Buttons for Legacy Modal
-            var unitBtns = document.querySelectorAll('#itemModal .unit-btn');
-            var quantityField = document.getElementById('quantityFieldContainer');
-            if (unitBtns.length && quantityField) {
-                unitBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        unitBtns.forEach(function(b) { b.classList.remove('active'); });
-                        this.classList.add('active');
-                        var needsQuantity = this.getAttribute('data-unit') === 'kg';
-                        quantityField.style.display = needsQuantity ? 'block' : 'none';
-                    });
-                });
-                var defaultBtn = document.querySelector('#itemModal .unit-btn[data-unit="kg"]');
-                if (defaultBtn) defaultBtn.classList.add('active');
+            const saveMaterial = document.getElementById('saveMaterialBtn');
+            if (saveMaterial && typeof addMaterialLegacy === 'function') {
+                saveMaterial.onclick = addMaterialLegacy;
             }
+            
+            const saveImportant = document.getElementById('saveImportantBtn');
+            if (saveImportant && typeof addSelectedImportant === 'function') {
+                saveImportant.onclick = addSelectedImportant;
+            }
+            
+            const saveSpicesExtra = document.getElementById('saveSpicesExtraBtn');
+            if (saveSpicesExtra && typeof addSelectedSpicesExtra === 'function') {
+                saveSpicesExtra.onclick = addSelectedSpicesExtra;
+            }
+            
+            const saveQuick = document.getElementById('saveQuickBtn');
+            if (saveQuick && typeof addSelectedQuick === 'function') {
+                saveQuick.onclick = addSelectedQuick;
+            }
+            
+            const saveBags = document.getElementById('saveBagsBtn');
+            if (saveBags && typeof addSelectedBags === 'function') {
+                saveBags.onclick = addSelectedBags;
+            }
+            
+            const saveTawsaya = document.getElementById('saveTawsayaBtn');
+            if (saveTawsaya && typeof addTawsaya === 'function') {
+                saveTawsaya.onclick = addTawsaya;
+            }
+            
+            const saveEdit = document.getElementById('saveEditBtn');
+            if (saveEdit && typeof saveEditMaterial === 'function') {
+                saveEdit.onclick = saveEditMaterial;
+            }
+            
+            console.log('✅ Direct button binding complete');
         })();
     </script>
 </body>
