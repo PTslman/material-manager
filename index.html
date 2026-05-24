@@ -11,7 +11,6 @@
     
     <!-- PWA Manifest - المسار الصحيح لـ GitHub Pages -->
     <link rel="manifest" href="/material-manager/manifest.json">
-    
     <!-- أيقونات PWA للمتصفحات المختلفة -->
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
@@ -279,7 +278,9 @@
     <script src="/material-manager/js/ui.js"></script>
     <script src="/material-manager/js/app.js"></script>
     <script src="/material-manager/js/pwa.js"></script>
-
+<script>
+  navigator.serviceWorker.register('/material-manager/service-worker.js')
+</script>
     <script>
         // إخفاء بطاقة الترحيب بعد 40 ثانية
         setTimeout(function() {
