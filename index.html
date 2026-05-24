@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="/material-manager/css/style.css">
     
     <style>
+        /* تحسينات إضافية */
         .toolbar-row {
             display: flex;
             flex-wrap: wrap;
@@ -55,6 +56,9 @@
             align-items: center;
             gap: 8px;
         }
+        .action-btn:active {
+            transform: scale(0.97);
+        }
         .manage-data-btn {
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: white;
@@ -65,8 +69,26 @@
             color: white;
             border: none;
         }
+        .refresh-data-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+        }
+        .install-btn {
+            background: linear-gradient(135deg, #0A84FF, #0066CC);
+            color: white;
+            border: none;
+        }
+        .update-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+        }
         @media (max-width: 600px) {
-            .action-btn { padding: 6px 12px; font-size: 0.7rem; }
+            .action-btn {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
         }
     </style>
 </head>
@@ -82,13 +104,20 @@
     <!-- Main App Container -->
     <div id="appContainer" class="app-main" style="display: none;">
         
+        <!-- Header -->
         <header class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
+            <div class="badge-cloud">
+                <i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن
+            </div>
         </header>
         
-        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
+        <!-- Main Add Button -->
+        <button id="mainAddBtn" class="main-add-btn">
+            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
+        </button>
         
+        <!-- Toolbar -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
@@ -98,12 +127,17 @@
                 <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
                 <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
-                <button id="updateBtn" class="action-btn install-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
+                <button id="updateBtn" class="action-btn update-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
+            </div>
+            <div class="toolbar-row">
+                <button id="refreshDataBtn" class="action-btn refresh-data-btn">
+                    <i class="fas fa-database"></i> تحديث البيانات
+                </button>
                 <button class="action-btn manage-data-btn" onclick="window.location.href='manage-data.html'">
-                    <i class="fas fa-database"></i> البيانات
+                    <i class="fas fa-edit"></i> إدارة البيانات
                 </button>
                 <button class="action-btn manage-units-btn" onclick="window.location.href='manage-units.html'">
-                    <i class="fas fa-ruler-combined"></i> الوحدات
+                    <i class="fas fa-ruler-combined"></i> إدارة الوحدات
                 </button>
             </div>
             <div class="toolbar-row">
@@ -115,9 +149,13 @@
             </div>
         </div>
         
+        <!-- Materials Container -->
         <main id="materialsContainer"></main>
         
-        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
+        <!-- Clear All Button -->
+        <button id="clearAllBtn" class="clear-full-btn">
+            <i class="fas fa-trash-alt"></i> مسح جميع المواد
+        </button>
     </div>
 
     <!-- Sync Status Bar -->
@@ -130,13 +168,16 @@
             <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
         </div>
         <div class="sync-status-right">
-            <span id="syncRetry" class="retry-link" style="display: none;"><i class="fas fa-sync-alt"></i> إعادة المحاولة</span>
+            <span id="syncRetry" class="retry-link" style="display: none;">
+                <i class="fas fa-sync-alt"></i> إعادة المحاولة
+            </span>
             <span id="syncItemsCount" class="sync-text"><i class="fas fa-database"></i> 0 عنصر</span>
         </div>
     </footer>
 
     <!-- ==================== MODALS ==================== -->
 
+    <!-- New Item Modal -->
     <div id="newItemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -163,6 +204,7 @@
         </div>
     </div>
 
+    <!-- Legacy Item Modal -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة</h3>
@@ -197,12 +239,13 @@
         </div>
     </div>
 
+    <!-- Important Items Modal -->
     <div id="importantModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="importantSearchInput" class="search-input" placeholder="ابحث...">
+                <input type="text" id="importantSearchInput" class="search-input" placeholder="ابحث عن مادة...">
             </div>
             <div id="importantListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
@@ -212,12 +255,13 @@
         </div>
     </div>
 
+    <!-- Spices Extra Modal -->
     <div id="spicesExtraModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="ابحث...">
+                <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="ابحث عن مادة...">
             </div>
             <div id="spicesExtraListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
@@ -227,12 +271,13 @@
         </div>
     </div>
 
+    <!-- Quick Products Modal -->
     <div id="quickModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات واعشاب</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="quickSearchInput" class="search-input" placeholder="ابحث...">
+                <input type="text" id="quickSearchInput" class="search-input" placeholder="ابحث عن مادة...">
             </div>
             <div id="quickListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
@@ -242,6 +287,7 @@
         </div>
     </div>
 
+    <!-- Bags Modal -->
     <div id="bagsModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس التعبئة</h3>
@@ -253,6 +299,7 @@
         </div>
     </div>
 
+    <!-- Tawsaya Modal -->
     <div id="tawsayaModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
@@ -273,7 +320,7 @@
             </div>
             <div id="tawsayaCustomQtyGroup" style="display:none">
                 <div class="modern-field">
-                    <label>الكمية</label>
+                    <label>الكمية المخصصة</label>
                     <div class="field-container">
                         <div class="field-icon"><i class="fas fa-hashtag"></i></div>
                         <input type="number" id="tawsayaCustomQty" step="any" value="1">
@@ -288,6 +335,7 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
@@ -313,6 +361,7 @@
         </div>
     </div>
 
+    <!-- Confirm Delete Modal -->
     <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
             <div class="confirm-header">
@@ -329,6 +378,7 @@
         </div>
     </div>
 
+    <!-- System Message Modal -->
     <div id="systemMessageModal" class="modal">
         <div class="modal-content" style="text-align:center">
             <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
@@ -351,15 +401,30 @@
 
     <script>
         (function() {
-            // تحديث بيانات القوائم من localStorage
-            if (window.refreshConstantsData) window.refreshConstantsData();
+            // تحديث بيانات القوائم من localStorage عند التحميل
+            if (window.refreshConstantsData) {
+                window.refreshConstantsData();
+            }
+            
+            // زر تحديث البيانات
+            const refreshBtn = document.getElementById('refreshDataBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    if (window.refreshConstantsData) {
+                        window.refreshConstantsData();
+                        showToast('✓ تم تحديث البيانات بنجاح');
+                    } else {
+                        showToast('❌ خطأ في تحديث البيانات', true);
+                    }
+                });
+            }
             
             // Service Worker Registration
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                     navigator.serviceWorker.register('/material-manager/service-worker.js')
-                        .then(function(reg) { console.log('✅ SW registered:', reg.scope); })
-                        .catch(function(err) { console.error('❌ SW failed:', err); });
+                        .then(function(reg) { console.log('✅ Service Worker registered:', reg.scope); })
+                        .catch(function(err) { console.error('❌ Service Worker failed:', err); });
                 });
             }
             
@@ -369,7 +434,10 @@
                 var app = document.getElementById('appContainer');
                 if (splash && app) {
                     splash.classList.add('hidden');
-                    setTimeout(function() { splash.style.display = 'none'; app.style.display = 'block'; }, 350);
+                    setTimeout(function() {
+                        splash.style.display = 'none';
+                        app.style.display = 'block';
+                    }, 350);
                 }
             }, 3000);
             
@@ -383,6 +451,7 @@
                 if (modal) modal.classList.add('active');
             };
             
+            // Close System Message
             var closeMsgBtn = document.getElementById('closeSystemMessageBtn');
             if (closeMsgBtn) {
                 closeMsgBtn.addEventListener('click', function() {
@@ -391,11 +460,19 @@
             }
             
             // Close Modals on Outside Click
-            var modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'itemModal', 'systemMessageModal'];
+            var modalIds = [
+                'newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 
+                'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 
+                'itemModal', 'systemMessageModal'
+            ];
             modalIds.forEach(function(id) {
                 var modal = document.getElementById(id);
                 if (modal) {
-                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.classList.remove('active'); });
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.classList.remove('active');
+                        }
+                    });
                 }
             });
             
@@ -430,4 +507,4 @@
         })();
     </script>
 </body>
-</html>
+    </html>
