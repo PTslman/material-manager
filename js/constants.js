@@ -7,7 +7,7 @@ const STORAGE_KEYS = {
     EXTRA: 'material_extra_items'
 };
 
-// البيانات الافتراضية (تستخدم فقط عند عدم وجود بيانات)
+// البيانات الافتراضية
 const DEFAULT_IMPORTANT = [
     "شطه حلوة", "شطة حدة", "بابريكا مدخنة", "فلفل اسود ناعم", "كزبرة ناعمة", "كزبرة حب",
     "قرفة خشنة عيدان", "قرفة سيجار", "كمون ناعم", "كمون حب", "كاكاو نخب اول", "كاكاو نخب ثاني",
@@ -33,15 +33,16 @@ const DEFAULT_EXTRA = [
     "جوز هند ناعم", "بذور الشيا", "بذور الكتان", "بذور الرشاد", "رمان زركش"
 ];
 
-// دوال تحميل البيانات
+// دوال تحميل البيانات من localStorage
 function loadImportantItems() {
     const saved = localStorage.getItem(STORAGE_KEYS.IMPORTANT);
     if (saved && saved !== 'undefined') {
         try {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch(e) {}
+        } catch(e) { console.error('Error parsing important items:', e); }
     }
+    localStorage.setItem(STORAGE_KEYS.IMPORTANT, JSON.stringify(DEFAULT_IMPORTANT));
     return [...DEFAULT_IMPORTANT];
 }
 
@@ -51,8 +52,9 @@ function loadSpicesExtraItems() {
         try {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch(e) {}
+        } catch(e) { console.error('Error parsing spices items:', e); }
     }
+    localStorage.setItem(STORAGE_KEYS.SPICES_EXTRA, JSON.stringify(DEFAULT_SPICES));
     return [...DEFAULT_SPICES];
 }
 
@@ -62,25 +64,13 @@ function loadExtraItems() {
         try {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch(e) {}
+        } catch(e) { console.error('Error parsing extra items:', e); }
     }
+    localStorage.setItem(STORAGE_KEYS.EXTRA, JSON.stringify(DEFAULT_EXTRA));
     return [...DEFAULT_EXTRA];
 }
 
-// حفظ البيانات إلى localStorage
-function saveImportantItems(items) {
-    localStorage.setItem(STORAGE_KEYS.IMPORTANT, JSON.stringify(items));
-}
-
-function saveSpicesExtraItems(items) {
-    localStorage.setItem(STORAGE_KEYS.SPICES_EXTRA, JSON.stringify(items));
-}
-
-function saveExtraItems(items) {
-    localStorage.setItem(STORAGE_KEYS.EXTRA, JSON.stringify(items));
-}
-
-// المتغيرات العامة (تتحمل مرة واحدة عند بدء التشغيل)
+// المتغيرات العامة
 let importantItemsList = loadImportantItems();
 let spicesExtraItemsList = loadSpicesExtraItems();
 let extraItemsList = loadExtraItems();
@@ -98,35 +88,72 @@ function getSpicesExtraItems() {
     return spicesExtraItemsList.map(name => ({ name, type: "range", min: 1, max: 10, step: 1 })); 
 }
 
-// دالة لتحديث البيانات من localStorage (يتم استدعاؤها عند تغيير البيانات)
+// دالة لإعادة تحميل البيانات من localStorage
 window.refreshConstantsData = function() {
+    console.log('🔄 Refreshing constants data...');
     importantItemsList = loadImportantItems();
     spicesExtraItemsList = loadSpicesExtraItems();
     extraItemsList = loadExtraItems();
     
-    // تحديث النوافذ المنبثقة إذا كانت مفتوحة
+    // تحديث النوافذ المنبثقة
     if (window.renderImportantFiltered) {
-        const searchVal = document.getElementById('importantSearchInput')?.value || '';
-        window.renderImportantFiltered(searchVal);
+        window.renderImportantFiltered(document.getElementById('importantSearchInput')?.value || '');
     }
     if (window.renderSpicesExtraFiltered) {
-        const searchVal = document.getElementById('spicesExtraSearchInput')?.value || '';
-        window.renderSpicesExtraFiltered(searchVal);
+        window.renderSpicesExtraFiltered(document.getElementById('spicesExtraSearchInput')?.value || '');
     }
     if (window.renderQuickFiltered) {
-        const searchVal = document.getElementById('quickSearchInput')?.value || '';
-        window.renderQuickFiltered(searchVal);
+        window.renderQuickFiltered(document.getElementById('quickSearchInput')?.value || '');
     }
     
-    console.log('✅ Constants data refreshed from localStorage');
+    if (window.showToast) window.showToast('✓ تم تحديث البيانات');
+    return true;
+};
+
+// دالة لحفظ البيانات (للاستخدام من صفحات الإدارة)
+window.saveMaterialsData = function(important, spices, extra) {
+    if (important) {
+        localStorage.setItem(STORAGE_KEYS.IMPORTANT, JSON.stringify(important));
+        importantItemsList = important;
+    }
+    if (spices) {
+        localStorage.setItem(STORAGE_KEYS.SPICES_EXTRA, JSON.stringify(spices));
+        spicesExtraItemsList = spices;
+    }
+    if (extra) {
+        localStorage.setItem(STORAGE_KEYS.EXTRA, JSON.stringify(extra));
+        extraItemsList = extra;
+    }
+    console.log('✅ Data saved to localStorage');
+    return true;
 };
 
 // الاستماع لتغييرات localStorage
 window.addEventListener('storage', function(e) {
     if (e.key === STORAGE_KEYS.IMPORTANT || e.key === STORAGE_KEYS.SPICES_EXTRA || e.key === STORAGE_KEYS.EXTRA) {
-        console.log('🔄 Detected external change in:', e.key);
+        console.log('🔄 Storage changed:', e.key);
         window.refreshConstantsData();
     }
 });
 
-console.log('📦 Constants loaded from localStorage');
+// الاستماع للرسائل من صفحة الإدارة
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'SYNC_MATERIALS_DATA') {
+        console.log('📩 Received sync message');
+        if (event.data.important) {
+            localStorage.setItem(STORAGE_KEYS.IMPORTANT, JSON.stringify(event.data.important));
+            importantItemsList = event.data.important;
+        }
+        if (event.data.spices) {
+            localStorage.setItem(STORAGE_KEYS.SPICES_EXTRA, JSON.stringify(event.data.spices));
+            spicesExtraItemsList = event.data.spices;
+        }
+        if (event.data.extra) {
+            localStorage.setItem(STORAGE_KEYS.EXTRA, JSON.stringify(event.data.extra));
+            extraItemsList = event.data.extra;
+        }
+        window.refreshConstantsData();
+    }
+});
+
+console.log('📦 Constants loaded');
