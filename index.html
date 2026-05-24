@@ -7,74 +7,58 @@
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- ==================== FONTS ==================== -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- ==================== PWA ==================== -->
+    <!-- PWA -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
     
-    <!-- ==================== STYLES ==================== -->
+    <!-- Styles -->
     <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
-    <!-- ==================== SPLASH SCREEN ==================== -->
+    <!-- Splash Screen -->
     <div id="splashScreen" class="splash">
-        <div class="splash-logo">
-            <i class="fas fa-boxes"></i>
-        </div>
+        <div class="splash-logo"><i class="fas fa-boxes"></i></div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
         <div class="splash-version">نسخة احترافية v4.0</div>
     </div>
 
-    <!-- ==================== MAIN APP CONTAINER ==================== -->
+    <!-- Main App -->
     <div id="appContainer" class="app-main" style="display: none;">
         
-        <!-- ==================== HEADER ==================== -->
+        <!-- Header -->
         <div class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud">
-                <i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن
-            </div>
+            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
-        <!-- ==================== MAIN ADD BUTTON ==================== -->
-        <button id="mainAddBtn" class="main-add-btn">
-            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
-        </button>
+        <!-- Main Add Button -->
+        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
-        <!-- ==================== SYNC BAR ==================== -->
+        <!-- Sync Bar -->
         <div class="sync-bar">
-            <button id="syncBtn" class="sync-main-btn">
-                <i class="fas fa-sync-alt"></i> مزامنة البيانات
-            </button>
+            <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
         </div>
         
-        <!-- ==================== TOOLBAR ==================== -->
+        <!-- Toolbar -->
         <div class="toolbar">
             <div class="toolbar-row">
-                <button id="themeToggle" class="action-btn">
-                    <i class="fas fa-moon"></i> الوضع الليلي
-                </button>
+                <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
             </div>
             <div class="toolbar-row">
-                <button id="backupBtn" class="action-btn">
-                    <i class="fas fa-download"></i> نسخ احتياطي
-                </button>
-                <button id="restoreBtn" class="action-btn">
-                    <i class="fas fa-upload"></i> استعادة
-                </button>
-                <button id="installBtn" class="action-btn install-btn">
-                    <i class="fas fa-download"></i> تثبيت
-                </button>
+                <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
+                <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
+                <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
             </div>
         </div>
         
-        <!-- ==================== 4 CATEGORY CARDS ==================== -->
+        <!-- 4 Category Cards -->
         <div class="categories-container">
             <button class="category-card" id="importantProductsBtn">
                 <div class="category-icon"><i class="fas fa-star"></i></div>
@@ -99,19 +83,23 @@
                 <div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
+            
+            <button class="category-card" id="tawsayaQuickBtn">
+                <div class="category-icon"><i class="fas fa-gift"></i></div>
+                <div class="category-info"><h3 class="category-title">توصاية</h3></div>
+                <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+            </button>
         </div>
         
-        <!-- ==================== MATERIALS CONTAINER ==================== -->
+        <!-- Materials Container -->
         <div id="materialsContainer"></div>
         
-        <!-- ==================== CLEAR ALL BUTTON ==================== -->
-        <button id="clearAllBtn" class="clear-full-btn">
-            <i class="fas fa-trash-alt"></i> مسح جميع المواد
-        </button>
+        <!-- Clear All Button -->
+        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
         
     </div>
 
-    <!-- ==================== SYNC STATUS BAR ==================== -->
+    <!-- Sync Status Bar -->
     <div id="syncStatusBar" class="sync-status-bar">
         <div class="sync-indicator">
             <div id="syncDot" class="sync-dot"></div>
@@ -261,10 +249,7 @@
     <!-- Confirm Delete Modal -->
     <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
-            <div class="confirm-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>تأكيد الحذف</h3>
-            </div>
+            <div class="confirm-header"><i class="fas fa-exclamation-triangle"></i><h3>تأكيد الحذف</h3></div>
             <div class="confirm-body">
                 <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
                 <div class="confirm-buttons">
@@ -293,111 +278,58 @@
     
     <!-- Project Scripts -->
     <script src="/material-manager/js/firebase-config.js"></script>
+    <script src="/material-manager/js/utils.js"></script>
     <script src="/material-manager/js/app.js"></script>
-    <script src="/material-manager/js/pwa.js"></script>
 
-    <!-- ==================== INITIALIZATION ==================== -->
     <script>
-        (function() {
-            'use strict';
-            
-            console.log('🔧 Index.html initializing...');
-            
-            // ========== HIDE SPLASH SCREEN AFTER 2.5 SECONDS ==========
-            setTimeout(function() {
-                var splash = document.getElementById('splashScreen');
-                var app = document.getElementById('appContainer');
-                if (splash) {
-                    splash.classList.add('hidden');
-                    setTimeout(function() {
-                        splash.style.display = 'none';
-                        if (app) app.style.display = 'block';
-                        console.log('✅ Splash screen hidden');
-                    }, 500);
-                } else {
+        // إخفاء شاشة البداية بعد 2.5 ثانية
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            var app = document.getElementById('appContainer');
+            if (splash) {
+                splash.classList.add('hidden');
+                setTimeout(function() {
+                    splash.style.display = 'none';
                     if (app) app.style.display = 'block';
-                }
-            }, 2500);
-            
-            // ========== CLOSE ALL MODALS FUNCTION ==========
-            window.closeAllModals = function() {
-                var modals = [
-                    'newItemModal', 'importantModal', 'spicesExtraModal', 
-                    'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 
-                    'confirmDeleteModal', 'systemMessageModal'
-                ];
-                modals.forEach(function(id) {
-                    var el = document.getElementById(id);
-                    if (el) el.classList.remove('active');
-                });
-                console.log('✅ All modals closed');
-            };
-            
-            // ========== BIND CANCEL BUTTONS ==========
-            var cancelBtns = [
-                'closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn',
-                'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn',
-                'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'
-            ];
-            cancelBtns.forEach(function(btnId) {
-                var btn = document.getElementById(btnId);
-                if (btn) {
-                    btn.onclick = function(e) {
-                        e.preventDefault();
-                        window.closeAllModals();
-                        console.log('✅ Cancel button clicked:', btnId);
-                    };
-                }
-            });
-            
-            // ========== CLOSE MODALS ON OUTSIDE CLICK ==========
-            var modalIds = [
-                'newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal',
-                'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'
-            ];
-            modalIds.forEach(function(id) {
-                var modal = document.getElementById(id);
-                if (modal) {
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === modal) {
-                            window.closeAllModals();
-                        }
-                    });
-                }
-            });
-            
-            // ========== TAWSAYA TYPE TOGGLE ==========
-            var tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-            var tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
-            if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
-                tawsayaTypeBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        tawsayaTypeBtns.forEach(function(b) {
-                            b.classList.remove('active');
-                        });
-                        this.classList.add('active');
-                        var isCustom = this.getAttribute('data-type') === 'custom';
-                        tawsayaCustomGroup.style.display = isCustom ? 'block' : 'none';
-                        console.log('✅ Tawsaya type changed to:', this.getAttribute('data-type'));
-                    });
-                });
+                }, 500);
+            } else {
+                if (app) app.style.display = 'block';
             }
-            
-            // ========== SEARCH IN BAGS MODAL ==========
-            var bagsSearch = document.getElementById('bagsSearchInput');
-            if (bagsSearch) {
-                bagsSearch.addEventListener('input', function(e) {
-                    var searchTerm = e.target.value.toLowerCase();
-                    var items = document.querySelectorAll('#bagsListContainer .modern-item-card');
-                    items.forEach(function(item) {
-                        var name = item.querySelector('.item-name')?.innerText.toLowerCase() || '';
-                        item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
-                    });
-                });
-            }
-            
-            console.log('✅ Index.html initialized successfully');
-        })();
+        }, 2500);
+        
+        // إغلاق جميع النوافذ
+        window.closeAllModals = function() {
+            var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+            modals.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+        };
+        
+        // ربط أزرار الإلغاء
+        var cancelBtns = ['closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn', 'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn', 'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'];
+        cancelBtns.forEach(function(btnId) {
+            var btn = document.getElementById(btnId);
+            if (btn) btn.onclick = function(e) { e.preventDefault(); window.closeAllModals(); };
+        });
+        
+        // إغلاق النوافذ عند النقر خارجها
+        var modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+        modalIds.forEach(function(id) {
+            var modal = document.getElementById(id);
+            if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) window.closeAllModals(); });
+        });
+        
+        // تفعيل اختيار نوع الكمية في نافذة التوصاية
+        var typeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+        var customGroup = document.getElementById('tawsayaCustomQtyGroup');
+        typeBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                typeBtns.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+            });
+        });
     </script>
 </body>
 </html>
