@@ -2,6 +2,7 @@ let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
 let autoSyncInterval = null;
+let isDataLoaded = false;
 
 // ==================== القوائم الثابتة ====================
 const importantItemsList = [
@@ -46,7 +47,7 @@ function showToast(msg, isErr = false) {
     if (t) t.remove();
     let div = document.createElement('div');
     div.className = 'toast';
-    div.style.cssText = `position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:${isErr ? '#dc2626' : '#2e7d32'};color:white;padding:10px 24px;border-radius:40px;font-size:0.85rem;z-index:10001;font-weight:600;`;
+    div.style.background = isErr ? '#dc2626' : '#2e7d32';
     div.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 2500);
@@ -136,7 +137,7 @@ function renderMaterialCard(m) {
     </div>`;
 }
 
-// ==================== عرض القوائم ====================
+// ==================== عرض القوائم في النوافذ ====================
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
@@ -229,7 +230,7 @@ async function addSelectedSpicesExtra() {
         batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بهارات اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "spices_extra" });
     });
     await batch.commit();
-    showToast(`✓ تم إ添加 ${items.length} بهار`);
+    showToast(`✓ تم إضافة ${items.length} بهار`);
     document.getElementById('spicesExtraModal').classList.remove('active');
 }
 
@@ -304,7 +305,7 @@ async function addNewMaterialDirect() {
 
 // ==================== المزامنة مع Firebase ====================
 function startListener() {
-    console.log('🔄 Starting Firestore sync...');
+    console.log('🔄 بدء المزامنة مع Firebase...');
     
     const query = materialsCollection.orderBy('createdAt', 'desc');
     
@@ -329,7 +330,7 @@ function startListener() {
         });
         allMaterials = list;
         
-        console.log('✅ Data synced:', list.length, 'items');
+        console.log('✅ تم تحميل البيانات:', list.length, 'عنصر');
         
         // تحديث واجهة المستخدم
         const statusText = document.getElementById('syncStatusText');
@@ -344,24 +345,38 @@ function startListener() {
         
         renderAllMaterials(allMaterials);
         
-        // إخفاء شاشة البداية
-        const splash = document.getElementById('splashScreen');
-        const app = document.getElementById('appContainer');
-        if (splash && app && splash.style.display !== 'none') {
-            splash.classList.add('hidden');
-            setTimeout(() => {
-                splash.style.display = 'none';
-                app.style.display = 'block';
-            }, 500);
+        // إخفاء شاشة البداية بعد تحميل البيانات
+        if (!isDataLoaded) {
+            isDataLoaded = true;
+            hideSplashScreen();
         }
         
     }, (error) => {
-        console.error('❌ Firestore error:', error);
+        console.error('❌ خطأ في المزامنة:', error);
         const statusText = document.getElementById('syncStatusText');
         const syncDot = document.getElementById('syncDot');
         if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
         if (syncDot) syncDot.className = 'sync-dot offline';
+        
+        // حتى لو فشل الاتصال، نخفي شاشة البداية بعد 3 ثوان
+        if (!isDataLoaded) {
+            isDataLoaded = true;
+            setTimeout(hideSplashScreen, 3000);
+        }
     });
+}
+
+function hideSplashScreen() {
+    const splash = document.getElementById('splashScreen');
+    const app = document.getElementById('appContainer');
+    if (splash && app) {
+        splash.classList.add('hidden');
+        setTimeout(() => {
+            splash.style.display = 'none';
+            app.style.display = 'block';
+            console.log('✅ تم فتح التطبيق');
+        }, 500);
+    }
 }
 
 // ==================== المزامنة التلقائية ====================
@@ -372,29 +387,17 @@ function startAutoSync() {
     }
     
     autoSyncInterval = setInterval(function() {
-        console.log('🔄 Auto-sync at:', new Date().toLocaleTimeString());
+        console.log('🔄 مزامنة تلقائية:', new Date().toLocaleTimeString());
         
-        // إعادة تشغيل المستمع
         if (unsubscribe) {
             unsubscribe();
             unsubscribe = null;
         }
         startListener();
         
-        // إشعار قصير
-        const statusText = document.getElementById('syncStatusText');
-        if (statusText) {
-            statusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> تحديث...';
-            setTimeout(() => {
-                if (statusText.innerHTML.includes('تحديث')) {
-                    statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
-                }
-            }, 2000);
-        }
-        
     }, 30000); // كل 30 ثانية
     
-    console.log('✅ Auto-sync enabled (every 30 seconds)');
+    console.log('✅ المزامنة التلقائية مفعلة (كل 30 ثانية)');
 }
 
 // ==================== ربط الأحداث ====================
@@ -473,6 +476,8 @@ function bindEvents() {
     document.getElementById('closeBagsModalBtn').onclick = () => document.getElementById('bagsModal').classList.remove('active');
     document.getElementById('closeTawsayaModalBtn').onclick = () => document.getElementById('tawsayaModal').classList.remove('active');
     document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('editModal').classList.remove('active');
+    document.getElementById('closeSystemMessageBtn').onclick = () => document.getElementById('systemMessageModal').classList.remove('active');
+    document.getElementById('cancelDeleteBtn').onclick = () => document.getElementById('confirmDeleteModal').classList.remove('active');
     
     // أزرار الحفظ
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
@@ -482,6 +487,9 @@ function bindEvents() {
     document.getElementById('saveBagsBtn').onclick = addSelectedBags;
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
+    document.getElementById('confirmDeleteBtn').onclick = () => {
+        document.getElementById('confirmDeleteModal').classList.remove('active');
+    };
     
     // أزرار البحث
     document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
@@ -502,7 +510,7 @@ function bindEvents() {
     });
     
     // إغلاق النوافذ عند النقر خارجها
-    const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal'];
+    const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
     modals.forEach(id => {
         const modal = document.getElementById(id);
         if (modal) {
@@ -515,7 +523,7 @@ function bindEvents() {
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 App starting...');
+    console.log('🚀 تشغيل التطبيق...');
     bindEvents();
     startListener();      // مزامنة فورية عند الفتح
     startAutoSync();      // مزامنة تلقائية كل 30 ثانية
