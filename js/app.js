@@ -13,6 +13,7 @@ let lastSyncDate = null;
 let reconnectAttempts = 0;
 let splashHidden = false;
 let deferredPrompt = null;
+let connectionCheckInterval = null;
 
 // دوال التهيئة
 function forceHideSplash() {
@@ -65,9 +66,6 @@ function updateSyncUI(status, itemCount = null) {
     } else if (status === 'syncing') {
         if (syncDot) syncDot.className = 'sync-dot syncing';
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
-    } else if (status === 'checking') {
-        if (syncDot) syncDot.className = 'sync-dot syncing';
-        if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري التحقق...';
     }
     
     if (itemCount !== null && syncItemsCount) {
@@ -80,35 +78,53 @@ function updateSyncUI(status, itemCount = null) {
     }
 }
 
-// دالة للتحقق من الاتصال قبل المزامنة
-async function checkConnectionAndSync() {
-    updateSyncUI('checking');
-    
-    // محاولة جلب بيانات بسيطة للتحقق من الاتصال
-    try {
-        const testQuery = await materialsCollection.limit(1).get();
-        // إذا وصلنا هنا، الاتصال موجود
-        if (unsubscribe) unsubscribe();
-        startListener();
-        updateSyncUI('connected', allMaterials.length);
-        showToast("🔄 تمت المزامنة بنجاح");
-        return true;
-    } catch (error) {
-        console.error("فشل الاتصال:", error);
-        updateSyncUI('offline');
-        showToast("❌ لا يوجد اتصال بالإنترنت، يرجى التحقق من الشبكة", true);
-        return false;
+// دالة المزامنة الرئيسية - تعيد تشغيل المستمع
+function performSync() {
+    if (isSyncing) {
+        showToast("المزامنة قيد التنفيذ بالفعل");
+        return;
     }
+    
+    isSyncing = true;
+    updateSyncUI('syncing');
+    showToast("🔄 جاري المزامنة...");
+    
+    // إلغاء المستمع الحالي
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
+    
+    // بدء مستمع جديد
+    startListener(true); // true يعني أنها مزامنة يدوية
 }
 
-function startListener() {
+// دالة إعادة محاولة الاتصال
+function retryConnection() {
+    if (isSyncing) {
+        showToast("المزامنة قيد التنفيذ بالفعل");
+        return;
+    }
+    showToast("🔄 محاولة إعادة الاتصال...");
+    performSync();
+}
+
+// المستمع الرئيسي لـ Firestore
+function startListener(isManualSync = false) {
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
+    
     updateSyncUI('syncing');
-    if (unsubscribe) unsubscribe();
     
     const query = materialsCollection.orderBy('createdAt', 'desc');
     let firstSnapshot = true;
+    let hasError = false;
     
     unsubscribe = query.onSnapshot((snapshot) => {
+        // نجح الاتصال
+        hasError = false;
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -124,9 +140,9 @@ function startListener() {
         });
         allMaterials = list;
         lastSyncDate = new Date();
-        updateSyncUI('connected', list.length);
         
         // تحديث واجهة المستخدم
+        updateSyncUI('connected', list.length);
         if (window.renderAllMaterials) {
             window.renderAllMaterials(allMaterials);
         }
@@ -134,32 +150,68 @@ function startListener() {
         if (firstSnapshot) {
             firstSnapshot = false;
             forceHideSplash();
+            if (isManualSync) {
+                showToast("✓ تمت المزامنة بنجاح");
+            }
+        } else if (isManualSync) {
+            showToast("✓ تم تحديث البيانات");
         }
+        
         reconnectAttempts = 0;
+        isSyncing = false;
+        
     }, (error) => {
+        // فشل الاتصال
         console.error("Firestore error:", error);
+        hasError = true;
         updateSyncUI('offline');
-        forceHideSplash();
-        if (reconnectAttempts < 3) {
+        
+        if (firstSnapshot) {
+            firstSnapshot = false;
+            forceHideSplash();
+        }
+        
+        if (isManualSync) {
+            showToast("❌ لا يوجد اتصال بالإنترنت، يرجى التحقق من الشبكة", true);
+        }
+        
+        isSyncing = false;
+        
+        // محاولة إعادة الاتصال تلقائياً
+        if (reconnectAttempts < 5) {
             reconnectAttempts++;
             setTimeout(() => {
-                if (unsubscribe) {
-                    unsubscribe();
-                    startListener();
+                if (!unsubscribe && !isSyncing) {
+                    console.log(`محاولة إعادة الاتصال ${reconnectAttempts}/5`);
+                    startListener(false);
                 }
-            }, 3000);
+            }, 5000 * reconnectAttempts); // 5، 10، 15، 20، 25 ثانية
         }
     });
 }
 
+// مراقبة حالة الاتصال بشكل دوري
+function startConnectionMonitor() {
+    if (connectionCheckInterval) clearInterval(connectionCheckInterval);
+    
+    connectionCheckInterval = setInterval(() => {
+        // التحقق من وجود مستمع نشط
+        if (!unsubscribe && !isSyncing && !isConnected) {
+            console.log("مراقب الاتصال: محاولة إعادة الاتصال");
+            startListener(false);
+        }
+    }, 30000); // كل 30 ثانية
+}
+
 function startAutoSync() {
     if (autoSyncTimer) clearInterval(autoSyncTimer);
+    // مزامنة تلقائية كل 10 دقائق فقط إذا كان هناك اتصال
     autoSyncTimer = setInterval(() => {
-        if (unsubscribe) {
-            unsubscribe();
-            startListener();
+        if (isConnected && !isSyncing) {
+            console.log("مزامنة تلقائية...");
+            performSync();
         }
-    }, 15 * 60 * 1000);
+    }, 10 * 60 * 1000);
 }
 
 // دوال العمليات الأساسية
@@ -174,6 +226,12 @@ async function addNewMaterialDirect() {
         showToast("🔢 كمية صحيحة", true);
         return;
     }
+    
+    if (!isConnected) {
+        showToast("❌ لا يوجد اتصال بالإنترنت، لا يمكن إضافة المواد", true);
+        return;
+    }
+    
     showToast(`➕ جاري إضافة "${name}"...`);
     try {
         await materialsCollection.add({
@@ -189,7 +247,8 @@ async function addNewMaterialDirect() {
         const newItemModal = document.getElementById('newItemModal');
         if (newItemModal) newItemModal.classList.remove('active');
     } catch (e) {
-        showToast("❌ خطأ في الاتصال", true);
+        console.error(e);
+        showToast("❌ فشل الإضافة، يرجى التحقق من الاتصال", true);
     }
 }
 
@@ -198,6 +257,12 @@ async function clearAll() {
         showToast("📭 القائمة فارغة", true);
         return;
     }
+    
+    if (!isConnected) {
+        showToast("❌ لا يوجد اتصال بالإنترنت، لا يمكن مسح البيانات", true);
+        return;
+    }
+    
     if (!confirm("⚠️ حذف جميع المواد نهائياً؟")) return;
     try {
         let batch = db.batch();
@@ -210,6 +275,10 @@ async function clearAll() {
 }
 
 function backupData() {
+    if (allMaterials.length === 0) {
+        showToast("📭 لا توجد بيانات للنسخ", true);
+        return;
+    }
     let data = JSON.stringify(allMaterials, null, 2);
     let blob = new Blob([data], { type: 'application/json' });
     let a = document.createElement('a');
@@ -233,6 +302,12 @@ function restoreData() {
                 try {
                     let backup = JSON.parse(ev.target.result);
                     if (!Array.isArray(backup)) throw new Error();
+                    
+                    if (!isConnected) {
+                        showToast("❌ لا يوجد اتصال بالإنترنت، لا يمكن الاستعادة", true);
+                        return;
+                    }
+                    
                     if (confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) {
                         let batch = db.batch();
                         allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
@@ -240,8 +315,8 @@ function restoreData() {
                         for (let it of backup) {
                             await materialsCollection.add({
                                 name: it.name,
-                                unitType: it.unitType,
-                                quantity: it.quantity,
+                                unitType: it.unitType || 'kg',
+                                quantity: it.quantity || 1,
                                 notes: it.notes || "",
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                                 priority: it.priority || "main"
@@ -293,17 +368,21 @@ function bindEvents() {
     // أزرار رئيسية
     const mainAddBtn = document.getElementById('mainAddBtn');
     if (mainAddBtn) mainAddBtn.onclick = () => {
+        if (!isConnected) {
+            showToast("❌ لا يوجد اتصال بالإنترنت، يرجى الاتصال أولاً", true);
+            return;
+        }
         const newItemModal = document.getElementById('newItemModal');
         if (newItemModal) newItemModal.classList.add('active');
         const newMaterialName = document.getElementById('newMaterialName');
         if (newMaterialName) newMaterialName.focus();
     };
     
-    // زر المزامنة - يستخدم الدالة الجديدة للتحقق من الاتصال
+    // زر المزامنة - استخدام الدالة الجديدة
     const syncBtn = document.getElementById('syncBtn');
     if (syncBtn) {
         syncBtn.onclick = () => {
-            checkConnectionAndSync();
+            performSync();
         };
     }
     
@@ -324,7 +403,7 @@ function bindEvents() {
     const syncRetry = document.getElementById('syncRetry');
     if (syncRetry) {
         syncRetry.onclick = () => {
-            checkConnectionAndSync();
+            retryConnection();
         };
     }
     
@@ -372,6 +451,45 @@ function bindEvents() {
         });
     }
     
+    // نافذة إضافة مادة عادية
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    if (closeModalBtn) {
+        closeModalBtn.onclick = () => {
+            const itemModal = document.getElementById('itemModal');
+            if (itemModal) itemModal.classList.remove('active');
+        };
+    }
+    
+    const saveMaterialBtn = document.getElementById('saveMaterialBtn');
+    if (saveMaterialBtn) {
+        saveMaterialBtn.onclick = async () => {
+            let name = document.getElementById('materialName')?.value.trim();
+            if (!name) {
+                showToast("✏️ اكتب اسم المادة", true);
+                return;
+            }
+            if (!isConnected) {
+                showToast("❌ لا يوجد اتصال بالإنترنت", true);
+                return;
+            }
+            try {
+                await materialsCollection.add({
+                    name: name,
+                    unitType: currentUnit,
+                    quantity: parseFloat(document.getElementById('quantityValue')?.value) || 1,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    priority: "main"
+                });
+                showToast(`✓ تمت إضافة "${name}"`);
+                document.getElementById('materialName').value = "";
+                const itemModal = document.getElementById('itemModal');
+                if (itemModal) itemModal.classList.remove('active');
+            } catch (e) {
+                showToast("❌ فشل الإضافة", true);
+            }
+        };
+    }
+    
     // إغلاق النوافذ عند النقر خارجها
     const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmModal', 'itemModal'];
     modals.forEach(modalId => {
@@ -381,6 +499,21 @@ function bindEvents() {
                 if (e.target === modal) modal.classList.remove('active');
             });
         }
+    });
+    
+    // وحدات القياس
+    const unitButtons = document.querySelectorAll('.unit-btn');
+    unitButtons.forEach(btn => {
+        btn.onclick = () => {
+            unitButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentUnit = btn.getAttribute('data-unit');
+            const needsQuantity = btn.getAttribute('data-needs-quantity') === 'true';
+            const quantityFieldContainer = document.getElementById('quantityFieldContainer');
+            if (quantityFieldContainer) {
+                quantityFieldContainer.style.display = needsQuantity ? 'block' : 'none';
+            }
+        };
     });
 }
 
@@ -393,20 +526,43 @@ document.addEventListener('DOMContentLoaded', () => {
         setTheme('light');
     }
     
+    // تهيئة الوحدة الافتراضية
+    const defaultUnit = document.querySelector('.unit-btn[data-unit="kg"]');
+    if (defaultUnit) {
+        defaultUnit.classList.add('active');
+        currentUnit = "kg";
+    }
+    
     // إعداد PWA
     setupPWA();
     
     // ربط الأحداث
     bindEvents();
     
-    // بدء الاستماع للتغييرات
-    startListener();
+    // بدء المستمع
+    startListener(false);
+    
+    // بدء المراقبة
+    startConnectionMonitor();
     startAutoSync();
     
     // إخفاء شاشة البداية بعد 3 ثوان كحد أقصى
     setTimeout(() => {
         forceHideSplash();
     }, 3000);
+});
+
+// تنظيف عند إغلاق الصفحة
+window.addEventListener('beforeunload', () => {
+    if (unsubscribe) {
+        unsubscribe();
+    }
+    if (connectionCheckInterval) {
+        clearInterval(connectionCheckInterval);
+    }
+    if (autoSyncTimer) {
+        clearInterval(autoSyncTimer);
+    }
 });
 
 // تسجيل Service Worker
@@ -420,4 +576,4 @@ if ('serviceWorker' in navigator) {
                 console.error('فشل تسجيل Service Worker:', error);
             });
     });
-}
+        }
