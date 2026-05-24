@@ -7,59 +7,68 @@
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <meta name="keywords" content="مخزون, بهارات, إدارة, مواد, PWA">
     <meta name="author" content="مدير المواد">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <!-- ==================== PWA Manifest ==================== -->
+    <link rel="manifest" href="/material-manager/manifest.json">
     
-    <!-- أيقونات PWA للمتصفحات المختلفة -->
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="/icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="/icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="/icons/icon-152x152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="/icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
+    <!-- ==================== PWA Icons ==================== -->
+    <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
-    <!-- الخطوط والمكتبات الخارجية -->
+    <!-- ==================== Fonts & Libraries ==================== -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- ملفات المشروع -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- ==================== Project Styles ==================== -->
+    <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
-    <!-- شاشة البداية (Splash Screen) -->
+    <!-- ==================== SPLASH SCREEN ==================== -->
     <div id="splashScreen" class="splash">
         <div class="spinner"></div>
         <h2>مدير المواد</h2>
         <div class="version-badge">نسخة احترافية v4.0</div>
     </div>
 
-    <!-- حاوية التطبيق الرئيسية -->
+    <!-- ==================== MAIN APP CONTAINER ==================== -->
     <div id="appContainer" class="app-main" style="display: none;">
         
-        <!-- الهيدر -->
-        <div class="hero">
+        <!-- Header Section -->
+        <header class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
-        </div>
+            <div class="badge-cloud">
+                <i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن
+            </div>
+        </header>
         
-        <!-- بطاقة الترحيب (تختفي بعد 40 ثانية) -->
-        <div id="welcomeCard" class="welcome-card">
+        <!-- Welcome Card (disappears after 40 seconds) -->
+        <section class="welcome-card" id="welcomeCard">
             <i class="fas fa-store"></i>
             <h2>مرحباً بك في مدير المواد</h2>
             <p>نظام متكامل لإدارة المخزون والبهارات، مع مزامنة فورية وسحابية آمنة. يمكنك تثبيت التطبيق على جهازك للوصول السريع.</p>
-            <button id="installWelcomeBtn" class="install-welcome-btn"><i class="fas fa-download"></i> تثبيت التطبيق للوصول السريع</button>
-        </div>
+            <button id="installWelcomeBtn" class="install-welcome-btn">
+                <i class="fas fa-download"></i> تثبيت التطبيق للوصول السريع
+            </button>
+        </section>
         
-        <!-- زر إضافة مادة رئيسي -->
-        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
+        <!-- Main Action Button -->
+        <button id="mainAddBtn" class="main-add-btn">
+            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
+        </button>
         
-        <!-- شريط الأدوات -->
+        <!-- Toolbar Section -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
@@ -69,7 +78,7 @@
                 <button id="backupBtn" class="action-btn backup-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
                 <button id="restoreBtn" class="action-btn backup-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت التطبيق</button>
-                <button id="updateBtn" class="action-btn install-btn"><i class="fas fa-sync-alt"></i> تحديث التطبيق</button>
+                <button id="updateBtn" class="action-btn update-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
             </div>
             <div class="toolbar-row">
                 <button id="importantProductsBtn" class="action-btn"><i class="fas fa-star"></i> بهارات هامة</button>
@@ -80,15 +89,17 @@
             </div>
         </div>
         
-        <!-- حاوية عرض المواد -->
-        <div id="materialsContainer"></div>
+        <!-- Materials Container -->
+        <main id="materialsContainer"></main>
         
-        <!-- زر مسح الكل -->
-        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
+        <!-- Clear All Button -->
+        <button id="clearAllBtn" class="clear-full-btn">
+            <i class="fas fa-trash-alt"></i> مسح جميع المواد
+        </button>
     </div>
 
-    <!-- شريط حالة المزامنة -->
-    <div id="syncStatusBar" class="sync-status-bar">
+    <!-- ==================== SYNC STATUS BAR ==================== -->
+    <footer id="syncStatusBar" class="sync-status-bar">
         <div class="sync-status-left">
             <div class="sync-indicator">
                 <div id="syncDot" class="sync-dot"></div>
@@ -97,16 +108,18 @@
             <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
         </div>
         <div class="sync-status-right">
-            <span id="syncRetry" class="retry-link" style="display: none;"><i class="fas fa-sync-alt"></i> إعادة المحاولة</span>
+            <span id="syncRetry" class="retry-link" style="display: none;">
+                <i class="fas fa-sync-alt"></i> إعادة المحاولة
+            </span>
             <span id="syncItemsCount" class="sync-text"><i class="fas fa-database"></i> 0 عنصر</span>
         </div>
-    </div>
+    </footer>
 
-    <!-- ==================== جميع النوافذ المنبثقة (Modals) ==================== -->
+    <!-- ==================== MODALS ==================== -->
 
-    <!-- نافذة إضافة مادة جديدة (المطورة) -->
-    <div id="newItemModal" class="new-item-modal">
-        <div class="new-modal-content">
+    <!-- New Item Modal (Modern) -->
+    <div id="newItemModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
             <div class="modern-field">
                 <label>اسم المادة</label>
@@ -118,20 +131,20 @@
             <div class="modern-field">
                 <label>الكمية (كيلوغرام)</label>
                 <div class="qty-picker">
-                    <button id="decrementQty" type="button">-</button>
+                    <button type="button" id="decrementQty">-</button>
                     <input type="number" id="newQuantityValue" step="0.25" value="1">
-                    <button id="incrementQty" type="button">+</button>
+                    <button type="button" id="incrementQty">+</button>
                     <span class="qty-unit-label">kg</span>
                 </div>
             </div>
-            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 24px;">
+            <div class="modal-buttons">
                 <button id="saveNewItemBtn" class="btn-save">إضافة</button>
                 <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة إضافة مادة عادية (للتوافق) -->
+    <!-- Legacy Item Modal -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -159,76 +172,76 @@
                     <button type="button" class="unit-btn" data-unit="oke" data-needs-quantity="false">لوقية</button>
                 </div>
             </div>
-            <div class="modal-buttons" style="display: flex; gap: 12px;">
+            <div class="modal-buttons">
                 <button id="saveMaterialBtn" class="btn-save">حفظ</button>
                 <button id="closeModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة بهارات هامة -->
-    <div id="importantModal" class="important-modal">
-        <div class="important-modal-content">
+    <!-- Important Items Modal -->
+    <div id="importantModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="importantSearchInput" class="search-input" placeholder="ابحث عن مادة...">
             </div>
             <div id="importantListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons-modern" style="display: flex; gap: 12px;">
-                <button id="saveImportantBtn" class="btn-save-important" style="flex:1;">إضافة المحددة</button>
-                <button id="closeImportantModalBtn" class="btn-cancel" style="flex:1;">إلغاء</button>
+            <div class="modal-buttons">
+                <button id="saveImportantBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة بهارات اضافية -->
-    <div id="spicesExtraModal" class="spices-extra-modal">
-        <div class="spices-extra-modal-content">
+    <!-- Spices Extra Modal -->
+    <div id="spicesExtraModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="ابحث عن مادة...">
             </div>
             <div id="spicesExtraListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons-modern" style="display: flex; gap: 12px;">
-                <button id="saveSpicesExtraBtn" class="btn-save-important" style="flex:1;">إضافة المحددة</button>
-                <button id="closeSpicesExtraModalBtn" class="btn-cancel" style="flex:1;">إلغاء</button>
+            <div class="modal-buttons">
+                <button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة بذوريات واعشاب -->
-    <div id="quickModal" class="quick-modal">
-        <div class="quick-modal-content">
+    <!-- Quick Products Modal -->
+    <div id="quickModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات واعشاب</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="quickSearchInput" class="search-input" placeholder="ابحث عن مادة...">
             </div>
             <div id="quickListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons-modern" style="display: flex; gap: 12px;">
-                <button id="saveQuickBtn" class="btn-save-quick" style="flex:1;">إضافة</button>
-                <button id="closeQuickModalBtn" class="btn-cancel" style="flex:1;">إلغاء</button>
+            <div class="modal-buttons">
+                <button id="saveQuickBtn" class="btn-save">إضافة</button>
+                <button id="closeQuickModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة أكياس التعبئة -->
-    <div id="bagsModal" class="bags-modal">
-        <div class="bags-modal-content">
+    <!-- Bags Modal -->
+    <div id="bagsModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس التعبئة</h3>
             <div id="bagsListContainer" class="modern-card-list"></div>
-            <div class="modal-buttons-modern" style="display: flex; gap: 12px;">
-                <button id="saveBagsBtn" class="btn-save-bags" style="flex:1;">إضافة</button>
-                <button id="closeBagsModalBtn" class="btn-cancel" style="flex:1;">إلغاء</button>
+            <div class="modal-buttons">
+                <button id="saveBagsBtn" class="btn-save">إضافة</button>
+                <button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة توصاية -->
-    <div id="tawsayaModal" class="tawsaya-modal">
-        <div class="tawsaya-modal-content">
+    <!-- Tawsaya Modal -->
+    <div id="tawsayaModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
             <div class="modern-field">
                 <label>المنتج</label>
@@ -237,34 +250,34 @@
                     <input id="tawsayaName" placeholder="ورق عنب...">
                 </div>
             </div>
-            <div class="radio-group-modern" style="display: flex; gap: 12px; margin: 15px 0;" id="tawsayaTypeGroup">
-                <label class="radio-option" data-value="kg" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
-                    <input type="radio" name="tawsayaType" value="kg" checked> كيلو
-                </label>
-                <label class="radio-option" data-value="half" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
-                    <input type="radio" name="tawsayaType" value="half"> نصف كيلو
-                </label>
-                <label class="radio-option" data-value="custom" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
-                    <input type="radio" name="tawsayaType" value="custom"> مخصص
-                </label>
-            </div>
-            <div id="tawsayaCustomQtyGroup" style="display:none">
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-hashtag"></i></div>
-                    <input type="number" id="tawsayaCustomQty" step="any" value="1">
-                    <div class="quantity-unit">kg</div>
+            <div class="units-group">
+                <label>نوع الكمية</label>
+                <div class="units-buttons" id="tawsayaTypeGroup">
+                    <button type="button" class="unit-btn active" data-type="kg">كيلو</button>
+                    <button type="button" class="unit-btn" data-type="half">نصف كيلو</button>
+                    <button type="button" class="unit-btn" data-type="custom">مخصص</button>
                 </div>
             </div>
-            <div class="modal-buttons" style="display: flex; gap: 12px;">
-                <button id="saveTawsayaBtn" class="btn-save-tawsaya">إضافة</button>
+            <div id="tawsayaCustomQtyGroup" style="display: none;">
+                <div class="modern-field">
+                    <label>الكمية المخصصة</label>
+                    <div class="field-container">
+                        <div class="field-icon"><i class="fas fa-hashtag"></i></div>
+                        <input type="number" id="tawsayaCustomQty" step="any" value="1">
+                        <div class="quantity-unit">kg</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="saveTawsayaBtn" class="btn-save">إضافة</button>
                 <button id="closeTawsayaModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة تعديل الكمية -->
-    <div id="editModal" class="edit-modal">
-        <div class="edit-modal-content">
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
             <div class="modern-field">
                 <label>المادة</label>
@@ -281,126 +294,163 @@
                     <div class="quantity-unit">kg</div>
                 </div>
             </div>
-            <div class="modal-buttons" style="display: flex; gap: 12px;">
-                <button id="saveEditBtn" class="btn-save-edit">تحديث</button>
+            <div class="modal-buttons">
+                <button id="saveEditBtn" class="btn-save">تحديث</button>
                 <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة تأكيد الحذف -->
-    <div id="confirmDeleteModal" class="confirm-modal">
+    <!-- Confirm Delete Modal -->
+    <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
             <div class="confirm-header">
                 <i class="fas fa-exclamation-triangle"></i>
                 <h3>تأكيد الحذف</h3>
             </div>
-            <div class="confirm-body" style="padding: 20px;">
+            <div class="confirm-body">
                 <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
-                <div class="confirm-buttons" style="display: flex; gap: 12px; margin-top: 20px;">
-                    <button id="confirmDeleteBtn" class="btn-confirm" style="background: #ef4444; color: white; padding: 10px; border-radius: 40px; flex:1; border: none; cursor: pointer;">نعم، احذف</button>
-                    <button id="cancelDeleteBtn" class="btn-cancel" style="flex:1;">إلغاء</button>
+                <div class="confirm-buttons">
+                    <button id="confirmDeleteBtn" class="btn-confirm">نعم، احذف</button>
+                    <button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة رسالة النظام -->
-    <div id="systemMessageModal" class="modal" style="z-index: 10010;">
-        <div class="modal-content" style="text-align: center; max-width: 350px;">
-            <i class="fas fa-info-circle" style="font-size: 3rem; color: var(--accent, #2e7d32); margin-bottom: 1rem;"></i>
+    <!-- System Message Modal -->
+    <div id="systemMessageModal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <i class="fas fa-info-circle" style="font-size: 3rem; color: #2e7d32; margin-bottom: 1rem;"></i>
             <h3 id="systemMessageTitle">رسالة</h3>
             <p id="systemMessageText" style="margin: 1rem 0;"></p>
-            <button id="closeSystemMessageBtn" class="btn-save" style="margin-top: 0.5rem;">حسناً</button>
+            <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
         </div>
     </div>
 
-    <!-- تحميل Firebase والمكتبات -->
+    <!-- ==================== SCRIPTS ==================== -->
+    
+    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
-    <!-- ملفات المشروع -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/constants.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/pwa.js"></script>
+    <!-- Project Scripts -->
+    <script src="/material-manager/js/firebase-config.js"></script>
+    <script src="/material-manager/js/constants.js"></script>
+    <script src="/material-manager/js/utils.js"></script>
+    <script src="/material-manager/js/ui.js"></script>
+    <script src="/material-manager/js/app.js"></script>
+    <script src="/material-manager/js/pwa.js"></script>
 
-    <!-- تسجيل Service Worker -->
+    <!-- ==================== INITIALIZATION ==================== -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker registered successfully:', registration.scope);
-                        
-                        // التحقق من وجود تحديث
-                        registration.addEventListener('updatefound', function() {
-                            const newWorker = registration.installing;
-                            console.log('🔄 New Service Worker installing...');
+        (function() {
+            'use strict';
+            
+            // ========== Service Worker Registration ==========
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/material-manager/sw.js')
+                        .then(function(registration) {
+                            console.log('✅ Service Worker registered successfully:', registration.scope);
                             
-                            newWorker.addEventListener('statechange', function() {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('✅ Update available, please refresh');
-                                }
+                            // Check for updates
+                            registration.addEventListener('updatefound', function() {
+                                const newWorker = registration.installing;
+                                console.log('🔄 New Service Worker installing...');
+                                
+                                newWorker.addEventListener('statechange', function() {
+                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        console.log('✅ Update available');
+                                        showSystemMessage('تحديث متاح', 'يتوفر إصدار جديد من التطبيق. قم بتحديث الصفحة للحصول على أحدث الميزات.');
+                                    }
+                                });
                             });
+                        })
+                        .catch(function(error) {
+                            console.error('❌ Service Worker registration failed:', error);
                         });
-                    })
-                    .catch(function(error) {
-                        console.error('❌ Service Worker registration failed:', error);
-                    });
-            });
-        }
-        
-        // إخفاء بطاقة الترحيب بعد 40 ثانية
-        setTimeout(function() {
-            const welcomeCard = document.getElementById('welcomeCard');
-            if (welcomeCard) {
-                welcomeCard.style.transition = 'opacity 0.5s ease';
-                welcomeCard.style.opacity = '0';
-                setTimeout(function() {
-                    if (welcomeCard) welcomeCard.style.display = 'none';
-                }, 500);
-            }
-        }, 40000);
-        
-        // إظهار التطبيق بعد 3 ثوان
-        setTimeout(function() {
-            const splash = document.getElementById('splashScreen');
-            const app = document.getElementById('appContainer');
-            if (splash && app) {
-                splash.classList.add('hidden');
-                setTimeout(function() {
-                    splash.style.display = 'none';
-                    app.style.display = 'block';
-                }, 350);
-            }
-        }, 3000);
-        
-        // إغلاق نوافذ النظام
-        const closeSystemMsgBtn = document.getElementById('closeSystemMessageBtn');
-        if (closeSystemMsgBtn) {
-            closeSystemMsgBtn.addEventListener('click', function() {
-                document.getElementById('systemMessageModal').classList.remove('active');
-            });
-        }
-        
-        // إغلاق النوافذ عند النقر خارجها
-        const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 
-                          'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 
-                          'itemModal', 'systemMessageModal'];
-        
-        modalIds.forEach(function(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        modal.classList.remove('active');
-                    }
                 });
             }
-        });
+            
+            // ========== Hide Welcome Card After 40 Seconds ==========
+            setTimeout(function() {
+                const welcomeCard = document.getElementById('welcomeCard');
+                if (welcomeCard) {
+                    welcomeCard.style.transition = 'opacity 0.5s ease';
+                    welcomeCard.style.opacity = '0';
+                    setTimeout(function() {
+                        if (welcomeCard) welcomeCard.style.display = 'none';
+                    }, 500);
+                }
+            }, 40000);
+            
+            // ========== Hide Splash Screen After 3 Seconds ==========
+            setTimeout(function() {
+                const splash = document.getElementById('splashScreen');
+                const app = document.getElementById('appContainer');
+                if (splash && app) {
+                    splash.classList.add('hidden');
+                    setTimeout(function() {
+                        splash.style.display = 'none';
+                        app.style.display = 'block';
+                    }, 350);
+                }
+            }, 3000);
+            
+            // ========== System Message Helper ==========
+            window.showSystemMessage = function(title, message) {
+                const modal = document.getElementById('systemMessageModal');
+                const titleEl = document.getElementById('systemMessageTitle');
+                const messageEl = document.getElementById('systemMessageText');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (messageEl) messageEl.textContent = message;
+                if (modal) modal.classList.add('active');
+            };
+            
+            // ========== Close System Message Modal ==========
+            const closeSystemMsgBtn = document.getElementById('closeSystemMessageBtn');
+            if (closeSystemMsgBtn) {
+                closeSystemMsgBtn.addEventListener('click', function() {
+                    document.getElementById('systemMessageModal').classList.remove('active');
+                });
+            }
+            
+            // ========== Close Modals When Clicking Outside ==========
+            const modalIds = [
+                'newItemModal', 'importantModal', 'spicesExtraModal', 
+                'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 
+                'confirmDeleteModal', 'itemModal', 'systemMessageModal'
+            ];
+            
+            modalIds.forEach(function(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.classList.remove('active');
+                        }
+                    });
+                }
+            });
+            
+            // ========== Tawsaya Type Selection ==========
+            const tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+            const tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
+            
+            if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
+                tawsayaTypeBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        tawsayaTypeBtns.forEach(function(b) { b.classList.remove('active'); });
+                        this.classList.add('active');
+                        
+                        const type = this.getAttribute('data-type');
+                        tawsayaCustomGroup.style.display = type === 'custom' ? 'block' : 'none';
+                    });
+                });
+            }
+        })();
     </script>
 </body>
-</html>
+    </html>
