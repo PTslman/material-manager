@@ -1,13 +1,13 @@
 {
-  "name": "مدير المواد الذكي",
+  "name": "مدير المواد",
   "short_name": "مدير المواد",
   "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية",
-  "start_url": "/material-manager/index.html",
-  "scope": "/material-manager/",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
-  "theme_color": "#10b981",
-  "background_color": "#1a1d21",
+  "theme_color": "#2e7d32",
+  "background_color": "#fef9e6",
   "orientation": "portrait",
   "categories": ["business", "productivity", "utilities"],
   "lang": "ar",
@@ -61,12 +61,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "icons/maskable-icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -74,7 +68,7 @@
       "name": "إضافة مادة",
       "short_name": "إضافة",
       "description": "إضافة مادة جديدة إلى المخزون",
-      "url": "/material-manager/index.html?action=add",
+      "url": "/index.html?action=add",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
@@ -83,10 +77,10 @@
       ]
     },
     {
-      "name": "البهارات الهامة",
-      "short_name": "بهارات",
-      "description": "إضافة بهارات هامة",
-      "url": "/material-manager/index.html?action=important",
+      "name": "عرض المخزون",
+      "short_name": "المخزون",
+      "description": "عرض جميع المواد في المخزون",
+      "url": "/index.html?action=inventory",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
