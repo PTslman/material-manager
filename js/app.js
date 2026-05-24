@@ -1,3 +1,37 @@
+// تحميل نظام إدارة الوحدات
+function loadUnitsConfig() {
+    const saved = localStorage.getItem('units_config');
+    if (saved) {
+        try {
+            const config = JSON.parse(saved);
+            if (config.unitsConfig) window.unitsConfig = config.unitsConfig;
+            if (config.customUnits) window.customUnits = config.customUnits;
+            if (config.defaultUnit) window.defaultUnit = config.defaultUnit;
+        } catch(e) {}
+    }
+}
+
+loadUnitsConfig();
+
+// دالة للحصول على الوحدات المفعلة
+function getEnabledUnits() {
+    const units = [];
+    if (window.unitsConfig) {
+        Object.keys(window.unitsConfig).forEach(key => {
+            if (window.unitsConfig[key].enabled) {
+                units.push({ id: key, ...window.unitsConfig[key] });
+            }
+        });
+    }
+    if (window.customUnits) {
+        window.customUnits.forEach(unit => {
+            if (unit.enabled !== false) {
+                units.push({ id: unit.id, ...unit });
+            }
+        });
+    }
+    return units;
+}
 // app.js - الملف الرئيسي للتطبيق
 
 // المتغيرات العامة
