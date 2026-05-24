@@ -34,7 +34,6 @@
     <link rel="stylesheet" href="/material-manager/css/style.css">
     
     <style>
-        /* تحسينات إضافية للواجهة */
         .toolbar-row {
             display: flex;
             flex-wrap: wrap;
@@ -42,40 +41,32 @@
             gap: 10px;
             margin-bottom: 12px;
         }
-        
         .action-btn {
-            background: var(--btn-secondary-bg);
-            border: 1px solid var(--border-light);
+            background: var(--btn-secondary-bg, #f3f4f6);
+            border: 1px solid var(--border-light, #e5e7eb);
             padding: 8px 16px;
             border-radius: 40px;
             font-weight: 600;
             font-size: 0.8rem;
             cursor: pointer;
-            color: var(--text-primary);
+            color: var(--text-primary, #1a1a1a);
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
-        
-        .action-btn:active {
-            transform: scale(0.97);
-        }
-        
         .manage-data-btn {
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: white;
             border: none;
         }
-        
+        .manage-units-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            border: none;
+        }
         @media (max-width: 600px) {
-            .action-btn {
-                padding: 6px 12px;
-                font-size: 0.7rem;
-            }
-            .toolbar-row {
-                gap: 8px;
-            }
+            .action-btn { padding: 6px 12px; font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -91,20 +82,13 @@
     <!-- Main App Container -->
     <div id="appContainer" class="app-main" style="display: none;">
         
-        <!-- Header -->
         <header class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud">
-                <i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن
-            </div>
+            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </header>
         
-        <!-- Main Add Button -->
-        <button id="mainAddBtn" class="main-add-btn">
-            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
-        </button>
+        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
-        <!-- Toolbar -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
@@ -115,8 +99,11 @@
                 <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
                 <button id="updateBtn" class="action-btn install-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
-                <button id="manageDataBtn" class="action-btn manage-data-btn" onclick="window.location.href='manage-data.html'">
-                    <i class="fas fa-database"></i> إدارة البيانات
+                <button class="action-btn manage-data-btn" onclick="window.location.href='manage-data.html'">
+                    <i class="fas fa-database"></i> البيانات
+                </button>
+                <button class="action-btn manage-units-btn" onclick="window.location.href='manage-units.html'">
+                    <i class="fas fa-ruler-combined"></i> الوحدات
                 </button>
             </div>
             <div class="toolbar-row">
@@ -126,18 +113,11 @@
                 <button id="bagsManagerBtn" class="action-btn"><i class="fas fa-shopping-bag"></i> أكياس</button>
                 <button id="tawsayaQuickBtn" class="action-btn tawsaya-btn"><i class="fas fa-gift"></i> توصاية</button>
             </div>
-            <button id="manageUnitsBtn" class="action-btn" onclick="window.location.href='manage-units.html'">
-    <i class="fas fa-ruler-combined"></i> الوحدات
-            </button>
         </div>
         
-        <!-- Materials Container -->
         <main id="materialsContainer"></main>
         
-        <!-- Clear All Button -->
-        <button id="clearAllBtn" class="clear-full-btn">
-            <i class="fas fa-trash-alt"></i> مسح جميع المواد
-        </button>
+        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
     </div>
 
     <!-- Sync Status Bar -->
@@ -150,16 +130,13 @@
             <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
         </div>
         <div class="sync-status-right">
-            <span id="syncRetry" class="retry-link" style="display: none;">
-                <i class="fas fa-sync-alt"></i> إعادة المحاولة
-            </span>
+            <span id="syncRetry" class="retry-link" style="display: none;"><i class="fas fa-sync-alt"></i> إعادة المحاولة</span>
             <span id="syncItemsCount" class="sync-text"><i class="fas fa-database"></i> 0 عنصر</span>
         </div>
     </footer>
 
     <!-- ==================== MODALS ==================== -->
 
-    <!-- New Item Modal -->
     <div id="newItemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -186,7 +163,6 @@
         </div>
     </div>
 
-    <!-- Legacy Item Modal -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة</h3>
@@ -221,7 +197,6 @@
         </div>
     </div>
 
-    <!-- Important Items Modal -->
     <div id="importantModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
@@ -237,7 +212,6 @@
         </div>
     </div>
 
-    <!-- Spices Extra Modal -->
     <div id="spicesExtraModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
@@ -253,7 +227,6 @@
         </div>
     </div>
 
-    <!-- Quick Products Modal -->
     <div id="quickModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات واعشاب</h3>
@@ -269,7 +242,6 @@
         </div>
     </div>
 
-    <!-- Bags Modal -->
     <div id="bagsModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس التعبئة</h3>
@@ -281,7 +253,6 @@
         </div>
     </div>
 
-    <!-- Tawsaya Modal -->
     <div id="tawsayaModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
@@ -317,7 +288,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
@@ -343,7 +313,6 @@
         </div>
     </div>
 
-    <!-- Confirm Delete Modal -->
     <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
             <div class="confirm-header">
@@ -360,7 +329,6 @@
         </div>
     </div>
 
-    <!-- System Message Modal -->
     <div id="systemMessageModal" class="modal">
         <div class="modal-content" style="text-align:center">
             <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
@@ -383,10 +351,13 @@
 
     <script>
         (function() {
+            // تحديث بيانات القوائم من localStorage
+            if (window.refreshConstantsData) window.refreshConstantsData();
+            
             // Service Worker Registration
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/material-manager/sw.js')
+                    navigator.serviceWorker.register('/material-manager/service-worker.js')
                         .then(function(reg) { console.log('✅ SW registered:', reg.scope); })
                         .catch(function(err) { console.error('❌ SW failed:', err); });
                 });
@@ -412,7 +383,6 @@
                 if (modal) modal.classList.add('active');
             };
             
-            // Close System Message
             var closeMsgBtn = document.getElementById('closeSystemMessageBtn');
             if (closeMsgBtn) {
                 closeMsgBtn.addEventListener('click', function() {
@@ -454,11 +424,10 @@
                         quantityField.style.display = needsQuantity ? 'block' : 'none';
                     });
                 });
-                // Set default
                 var defaultBtn = document.querySelector('#itemModal .unit-btn[data-unit="kg"]');
                 if (defaultBtn) defaultBtn.classList.add('active');
             }
         })();
     </script>
 </body>
-    </html>
+</html>
