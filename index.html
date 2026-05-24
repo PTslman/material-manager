@@ -48,12 +48,6 @@
                 <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
                 <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
                 <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
-                <button id="updateBtn" class="action-btn update-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
-                <button id="refreshDataBtn" class="action-btn refresh-btn"><i class="fas fa-database"></i> تحديث البيانات</button>
-            </div>
-            <div class="toolbar-row">
-                <button id="manageDataBtn" class="action-btn manage-data-btn"><i class="fas fa-edit"></i> إدارة البيانات</button>
-                <button id="manageUnitsBtn" class="action-btn manage-units-btn"><i class="fas fa-ruler-combined"></i> إدارة الوحدات</button>
             </div>
             <div class="toolbar-row">
                 <button id="importantProductsBtn" class="action-btn"><i class="fas fa-star"></i> بهارات هامة</button>
@@ -253,21 +247,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
     <script src="/material-manager/js/firebase-config.js"></script>
-    <script src="/material-manager/js/constants.js"></script>
     <script src="/material-manager/js/utils.js"></script>
-    <script src="/material-manager/js/ui.js"></script>
     <script src="/material-manager/js/app.js"></script>
-    <script src="/material-manager/js/pwa.js"></script>
 
     <script>
-        if (window.refreshConstantsData) window.refreshConstantsData();
-        
-        document.getElementById('manageDataBtn')?.addEventListener('click', () => window.location.href = 'manage-data.html');
-        document.getElementById('manageUnitsBtn')?.addEventListener('click', () => window.location.href = 'manage-units.html');
-        document.getElementById('refreshDataBtn')?.addEventListener('click', () => {
-            if (window.refreshConstantsData) { window.refreshConstantsData(); showToast('✓ تم تحديث البيانات'); }
-        });
-        
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             const app = document.getElementById('appContainer');
@@ -278,4 +261,4 @@
         }, 2500);
     </script>
 </body>
-                    </html>
+</html>
