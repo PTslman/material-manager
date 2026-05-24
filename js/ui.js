@@ -438,9 +438,10 @@ async function addTawsaya() {
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('tawsayaName').value = "";
         document.getElementById('tawsayaCustomQty').value = "1";
-        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="kg"]').classList.add('active');
-        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="half"]').classList.remove('active');
-        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="custom"]').classList.remove('active');
+        const defaultBtn = document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="kg"]');
+        if (defaultBtn) defaultBtn.classList.add('active');
+        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="half"]')?.classList.remove('active');
+        document.querySelector('#tawsayaTypeGroup .unit-btn[data-type="custom"]')?.classList.remove('active');
         document.getElementById('tawsayaCustomQtyGroup').style.display = 'none';
         document.getElementById('tawsayaModal').classList.remove('active');
     } catch (e) {
@@ -470,6 +471,7 @@ async function saveEdit() {
 function bindModalEvents() {
     // Important Items
     document.getElementById('importantProductsBtn')?.addEventListener('click', () => {
+        if (window.refreshConstantsData) window.refreshConstantsData();
         renderImportantFiltered('');
         document.getElementById('importantModal').classList.add('active');
         document.getElementById('importantSearchInput')?.focus();
@@ -484,6 +486,7 @@ function bindModalEvents() {
     
     // Spices Extra
     document.getElementById('spicesExtraBtn')?.addEventListener('click', () => {
+        if (window.refreshConstantsData) window.refreshConstantsData();
         renderSpicesExtraFiltered('');
         document.getElementById('spicesExtraModal').classList.add('active');
         document.getElementById('spicesExtraSearchInput')?.focus();
@@ -498,6 +501,7 @@ function bindModalEvents() {
     
     // Quick Products
     document.getElementById('quickProductsBtn')?.addEventListener('click', () => {
+        if (window.refreshConstantsData) window.refreshConstantsData();
         renderQuickFiltered('');
         document.getElementById('quickModal').classList.add('active');
         document.getElementById('quickSearchInput')?.focus();
@@ -535,9 +539,22 @@ function bindModalEvents() {
         document.getElementById('editModal').classList.remove('active');
     });
     document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
+    
+    // Tawsaya type selection
+    const typeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+    const customGroup = document.getElementById('tawsayaCustomQtyGroup');
+    if (typeBtns.length && customGroup) {
+        typeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                typeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+            });
+        });
+    }
 }
 
-// تصدير الدوال للنطاق العام
+// تصدير الدوال
 window.renderAllMaterials = renderAllMaterials;
 window.renderImportantFiltered = renderImportantFiltered;
 window.renderQuickFiltered = renderQuickFiltered;
@@ -551,7 +568,7 @@ window.addTawsaya = addTawsaya;
 window.saveEdit = saveEdit;
 window.showConfirmDialog = showConfirmDialog;
 
-// ربط الأحداث عند تحميل الصفحة
+// التهيئة
 document.addEventListener('DOMContentLoaded', () => {
     bindModalEvents();
 });
