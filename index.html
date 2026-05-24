@@ -7,88 +7,21 @@
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- Fonts -->
+    <!-- ==================== FONTS ==================== -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- PWA -->
+    <!-- ==================== PWA ==================== -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
     
-    <!-- Styles -->
+    <!-- ==================== STYLES ==================== -->
     <link rel="stylesheet" href="/material-manager/css/style.css">
-    
-    <style>
-        /* شريط المزامنة العريض المنفصل */
-        .sync-bar {
-            background: linear-gradient(135deg, var(--primary-bg), var(--bg-surface));
-            border-radius: 60px;
-            padding: 6px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .sync-main-btn {
-            width: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 60px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .sync-main-btn i {
-            font-size: 1.1rem;
-        }
-        
-        .sync-main-btn:active {
-            transform: scale(0.98);
-        }
-        
-        .sync-main-btn:hover {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            box-shadow: var(--shadow-md);
-        }
-        
-        /* تعديل شريط الأدوات العلوي */
-        .toolbar {
-            margin-bottom: 16px;
-        }
-        
-        .toolbar-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        /* زر المزامنة القديم تم إخفاؤه */
-        #syncBtn {
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            .sync-main-btn {
-                padding: 12px 16px;
-                font-size: 0.9rem;
-            }
-        }
-    </style>
 </head>
 <body>
 
-    <!-- Splash Screen -->
+    <!-- ==================== SPLASH SCREEN ==================== -->
     <div id="splashScreen" class="splash">
         <div class="splash-logo">
             <i class="fas fa-boxes"></i>
@@ -98,36 +31,50 @@
         <div class="splash-version">نسخة احترافية v4.0</div>
     </div>
 
-    <!-- Main App -->
+    <!-- ==================== MAIN APP CONTAINER ==================== -->
     <div id="appContainer" class="app-main" style="display: none;">
         
+        <!-- ==================== HEADER ==================== -->
         <div class="hero">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
+            <div class="badge-cloud">
+                <i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن
+            </div>
         </div>
         
-        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
+        <!-- ==================== MAIN ADD BUTTON ==================== -->
+        <button id="mainAddBtn" class="main-add-btn">
+            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
+        </button>
         
-        <!-- شريط المزامنة العريض المنفصل -->
+        <!-- ==================== SYNC BAR (عريض منفصل) ==================== -->
         <div class="sync-bar">
             <button id="syncBtn" class="sync-main-btn">
                 <i class="fas fa-sync-alt"></i> مزامنة البيانات
             </button>
         </div>
         
-        <!-- شريط الأدوات -->
+        <!-- ==================== TOOLBAR ==================== -->
         <div class="toolbar">
             <div class="toolbar-row">
-                <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
+                <button id="themeToggle" class="action-btn">
+                    <i class="fas fa-moon"></i> الوضع الليلي
+                </button>
             </div>
             <div class="toolbar-row">
-                <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
-                <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
-                <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
+                <button id="backupBtn" class="action-btn">
+                    <i class="fas fa-download"></i> نسخ احتياطي
+                </button>
+                <button id="restoreBtn" class="action-btn">
+                    <i class="fas fa-upload"></i> استعادة
+                </button>
+                <button id="installBtn" class="action-btn install-btn">
+                    <i class="fas fa-download"></i> تثبيت
+                </button>
             </div>
         </div>
         
-        <!-- 4 أزرار الجداول -->
+        <!-- ==================== 4 CATEGORY CARDS ==================== -->
         <div class="categories-container">
             <button class="category-card" id="importantProductsBtn">
                 <div class="category-icon"><i class="fas fa-star"></i></div>
@@ -154,12 +101,17 @@
             </button>
         </div>
         
+        <!-- ==================== MATERIALS CONTAINER ==================== -->
         <div id="materialsContainer"></div>
         
-        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
+        <!-- ==================== CLEAR ALL BUTTON ==================== -->
+        <button id="clearAllBtn" class="clear-full-btn">
+            <i class="fas fa-trash-alt"></i> مسح جميع المواد
+        </button>
+        
     </div>
 
-    <!-- Sync Status -->
+    <!-- ==================== SYNC STATUS BAR ==================== -->
     <div id="syncStatusBar" class="sync-status-bar">
         <div class="sync-indicator">
             <div id="syncDot" class="sync-dot"></div>
@@ -169,8 +121,9 @@
         <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
     </div>
 
-    <!-- ==================== النوافذ المنبثقة ==================== -->
+    <!-- ==================== MODALS ==================== -->
     
+    <!-- New Item Modal -->
     <div id="newItemModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -197,6 +150,7 @@
         </div>
     </div>
 
+    <!-- Important Spices Modal -->
     <div id="importantModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-star"></i> بهارات هامة</h3>
@@ -209,6 +163,7 @@
         </div>
     </div>
 
+    <!-- Extra Spices Modal -->
     <div id="spicesExtraModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
@@ -221,6 +176,7 @@
         </div>
     </div>
 
+    <!-- Quick Products Modal -->
     <div id="quickModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-seedling"></i> بذوريات وأعشاب</h3>
@@ -233,6 +189,7 @@
         </div>
     </div>
 
+    <!-- Bags Modal -->
     <div id="bagsModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-bag-shopping"></i> أكياس تعبئة</h3>
@@ -245,6 +202,7 @@
         </div>
     </div>
 
+    <!-- Tawsaya Modal -->
     <div id="tawsayaModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-gift"></i> توصاية</h3>
@@ -274,6 +232,7 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
@@ -299,9 +258,13 @@
         </div>
     </div>
 
+    <!-- Confirm Delete Modal -->
     <div id="confirmDeleteModal" class="modal">
         <div class="confirm-card">
-            <div class="confirm-header"><i class="fas fa-exclamation-triangle"></i><h3>تأكيد الحذف</h3></div>
+            <div class="confirm-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>تأكيد الحذف</h3>
+            </div>
             <div class="confirm-body">
                 <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
                 <div class="confirm-buttons">
@@ -312,6 +275,7 @@
         </div>
     </div>
 
+    <!-- System Message Modal -->
     <div id="systemMessageModal" class="modal">
         <div class="modal-content" style="text-align:center">
             <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
@@ -322,17 +286,22 @@
     </div>
 
     <!-- ==================== SCRIPTS ==================== -->
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
+    <!-- Project Scripts -->
     <script src="/material-manager/js/firebase-config.js"></script>
     <script src="/material-manager/js/app.js"></script>
     <script src="/material-manager/js/pwa.js"></script>
 
-    <!-- كود إخفاء شاشة البداية بعد 2.5 ثانية -->
+    <!-- ==================== INITIALIZATION ==================== -->
     <script>
         (function() {
-            // إخفاء شاشة البداية بعد 2.5 ثانية
+            'use strict';
+            
+            // ========== HIDE SPLASH SCREEN AFTER 2.5 SECONDS ==========
             setTimeout(function() {
                 var splash = document.getElementById('splashScreen');
                 var app = document.getElementById('appContainer');
@@ -347,16 +316,25 @@
                 }
             }, 2500);
             
-            // ربط أزرار الإلغاء
+            // ========== CLOSE ALL MODALS FUNCTION ==========
             window.closeAllModals = function() {
-                var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+                var modals = [
+                    'newItemModal', 'importantModal', 'spicesExtraModal', 
+                    'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 
+                    'confirmDeleteModal', 'systemMessageModal'
+                ];
                 modals.forEach(function(id) {
                     var el = document.getElementById(id);
                     if (el) el.classList.remove('active');
                 });
             };
             
-            var cancelBtns = ['closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn', 'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn', 'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'];
+            // ========== BIND CANCEL BUTTONS ==========
+            var cancelBtns = [
+                'closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn',
+                'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn',
+                'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'
+            ];
             cancelBtns.forEach(function(btnId) {
                 var btn = document.getElementById(btnId);
                 if (btn) {
@@ -366,6 +344,40 @@
                     };
                 }
             });
+            
+            // ========== CLOSE MODALS ON OUTSIDE CLICK ==========
+            var modalIds = [
+                'newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal',
+                'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'
+            ];
+            modalIds.forEach(function(id) {
+                var modal = document.getElementById(id);
+                if (modal) {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            window.closeAllModals();
+                        }
+                    });
+                }
+            });
+            
+            // ========== TAWSAYA TYPE TOGGLE ==========
+            var tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+            var tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
+            if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
+                tawsayaTypeBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        tawsayaTypeBtns.forEach(function(b) {
+                            b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        var isCustom = this.getAttribute('data-type') === 'custom';
+                        tawsayaCustomGroup.style.display = isCustom ? 'block' : 'none';
+                    });
+                });
+            }
+            
+            console.log('✅ Index.html initialized successfully');
         })();
     </script>
 </body>
