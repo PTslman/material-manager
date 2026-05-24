@@ -9,10 +9,10 @@
     <meta name="author" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- PWA Manifest -->
+    <!-- PWA Manifest - المسار الصحيح لـ GitHub Pages -->
     <link rel="manifest" href="/material-manager/manifest.json">
     
-    <!-- أيقونات PWA -->
+    <!-- أيقونات PWA للمتصفحات المختلفة -->
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
     <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
@@ -36,7 +36,7 @@
     <div id="splashScreen" class="splash">
         <div class="spinner"></div>
         <h2>مدير المواد</h2>
-        <div class="version-badge">نسخة احترافية v3.0</div>
+        <div class="version-badge">نسخة احترافية v4.0</div>
     </div>
 
     <!-- حاوية التطبيق الرئيسية -->
@@ -102,7 +102,7 @@
 
     <!-- ==================== جميع النوافذ المنبثقة (Modals) ==================== -->
 
-    <!-- نافذة إضافة مادة جديدة (المطورة) -->
+    <!-- نافذة إضافة مادة جديدة -->
     <div id="newItemModal" class="new-item-modal">
         <div class="new-modal-content">
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
@@ -125,41 +125,6 @@
             <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 24px;">
                 <button id="saveNewItemBtn" class="btn-save">إضافة</button>
                 <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة إضافة مادة عادية (للتوافق) -->
-    <div id="itemModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
-            <div class="modern-field">
-                <label>اسم المادة</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-tag"></i></div>
-                    <input type="text" id="materialName" placeholder="فلفل أسود، كمون...">
-                </div>
-            </div>
-            <div class="modern-field" id="quantityFieldContainer">
-                <label>الكمية</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
-                    <input type="number" id="quantityValue" step="0.25" value="1">
-                    <div class="quantity-unit">kg</div>
-                </div>
-            </div>
-            <div class="units-group">
-                <label>وحدة القياس</label>
-                <div class="units-buttons">
-                    <button type="button" class="unit-btn" data-unit="kg" data-needs-quantity="true">كيلو</button>
-                    <button type="button" class="unit-btn" data-unit="half" data-needs-quantity="false">نصف كيلو</button>
-                    <button type="button" class="unit-btn" data-unit="quarter" data-needs-quantity="false">ربع كيلو</button>
-                    <button type="button" class="unit-btn" data-unit="oke" data-needs-quantity="false">لوقية</button>
-                </div>
-            </div>
-            <div class="modal-buttons" style="display: flex; gap: 12px;">
-                <button id="saveMaterialBtn" class="btn-save">حفظ</button>
-                <button id="closeModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
@@ -235,14 +200,14 @@
                     <input id="tawsayaName" placeholder="ورق عنب...">
                 </div>
             </div>
-            <div class="radio-group-modern" style="display: flex; gap: 12px; margin: 15px 0;" id="tawsayaTypeGroup">
-                <label class="radio-option" data-value="kg" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
+            <div class="radio-group-modern" style="display: flex; gap: 12px; margin: 15px 0;">
+                <label class="radio-option">
                     <input type="radio" name="tawsayaType" value="kg" checked> كيلو
                 </label>
-                <label class="radio-option" data-value="half" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
+                <label class="radio-option">
                     <input type="radio" name="tawsayaType" value="half"> نصف كيلو
                 </label>
-                <label class="radio-option" data-value="custom" style="background: var(--btn-secondary-bg); padding: 8px 16px; border-radius: 40px; cursor: pointer;">
+                <label class="radio-option">
                     <input type="radio" name="tawsayaType" value="custom"> مخصص
                 </label>
             </div>
@@ -328,11 +293,11 @@
             }
         }, 40000);
         
-        // إظهار التطبيق بعد 3 ثوان كحد أقصى
+        // إظهار التطبيق بعد 3 ثوان
         setTimeout(function() {
             const splash = document.getElementById('splashScreen');
             const app = document.getElementById('appContainer');
-            if (splash && app && splash.style.display !== 'none') {
+            if (splash && app) {
                 splash.classList.add('hidden');
                 setTimeout(function() {
                     splash.style.display = 'none';
@@ -340,19 +305,6 @@
                 }, 350);
             }
         }, 3000);
-        
-        // تسجيل Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/material-manager/service-worker.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.error('❌ Service Worker registration failed:', error);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
