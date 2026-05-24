@@ -249,5 +249,31 @@
             }
         }, 2500);
     </script>
+    <script>
+    // تفعيل المزامنة التلقائية
+    (function() {
+        let autoSyncInterval = null;
+        
+        function performAutoSync() {
+            console.log('🔄 مزامنة تلقائية...', new Date().toLocaleTimeString());
+            if (typeof startListener === 'function') {
+                if (window.unsubscribe) window.unsubscribe();
+                startListener();
+                if (typeof showToast === 'function') {
+                    showToast('🔄 مزامنة تلقائية', 'info');
+                }
+            }
+        }
+        
+        function startAutoSync() {
+            if (autoSyncInterval) clearInterval(autoSyncInterval);
+            autoSyncInterval = setInterval(performAutoSync, 30000); // كل 30 ثانية
+            console.log('✅ المزامنة التلقائية مفعلة (كل 30 ثانية)');
+        }
+        
+        // البدء بعد تحميل الصفحة بـ 5 ثوان
+        setTimeout(startAutoSync, 5000);
+    })();
+    </script>
 </body>
     </html>
