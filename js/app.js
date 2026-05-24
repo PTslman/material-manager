@@ -1,4 +1,4 @@
-// app.js - الملف الرئيسي للتطبيق مع دعم مزامنة البيانات
+// app.js - الملف الرئيسي للتطبيق
 
 // ==================== المتغيرات العامة ====================
 let allMaterials = [];
@@ -13,64 +13,6 @@ let lastSyncDate = null;
 let reconnectAttempts = 0;
 let splashHidden = false;
 let deferredPrompt = null;
-
-// ==================== تحميل البيانات من localStorage ====================
-function loadMaterialsDataFromStorage() {
-    const savedImportant = localStorage.getItem('global_important_items');
-    const savedSpices = localStorage.getItem('global_spices_items');
-    const savedExtra = localStorage.getItem('global_extra_items');
-    
-    if (savedImportant && window.importantItemsList) {
-        try {
-            const items = JSON.parse(savedImportant);
-            window.importantItemsList.length = 0;
-            window.importantItemsList.push(...items);
-        } catch(e) {}
-    }
-    if (savedSpices && window.spicesExtraItemsList) {
-        try {
-            const items = JSON.parse(savedSpices);
-            window.spicesExtraItemsList.length = 0;
-            window.spicesExtraItemsList.push(...items);
-        } catch(e) {}
-    }
-    if (savedExtra && window.extraItemsList) {
-        try {
-            const items = JSON.parse(savedExtra);
-            window.extraItemsList.length = 0;
-            window.extraItemsList.push(...items);
-        } catch(e) {}
-    }
-}
-
-// الاستماع لتغييرات localStorage
-window.addEventListener('storage', function(event) {
-    if (event.key === 'global_important_items' || event.key === 'global_spices_items' || event.key === 'global_extra_items') {
-        loadMaterialsDataFromStorage();
-        if (window.renderAllMaterials && window.allMaterials) window.renderAllMaterials(window.allMaterials);
-        showToast('✓ تم تحديث البيانات', 'success');
-    }
-});
-
-// الاستماع للرسائل من صفحة الإدارة
-window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'SYNC_MATERIALS_DATA') {
-        if (event.data.important && window.importantItemsList) {
-            window.importantItemsList.length = 0;
-            window.importantItemsList.push(...event.data.important);
-        }
-        if (event.data.spices && window.spicesExtraItemsList) {
-            window.spicesExtraItemsList.length = 0;
-            window.spicesExtraItemsList.push(...event.data.spices);
-        }
-        if (event.data.extra && window.extraItemsList) {
-            window.extraItemsList.length = 0;
-            window.extraItemsList.push(...event.data.extra);
-        }
-        if (window.renderAllMaterials && window.allMaterials) window.renderAllMaterials(window.allMaterials);
-        showToast('✓ تم تحديث البيانات من صفحة الإدارة', 'success');
-    }
-});
 
 // ==================== دوال التهيئة ====================
 function forceHideSplash() {
@@ -104,6 +46,7 @@ function updateSyncUI(status, itemCount = null) {
     const syncRetry = document.getElementById('syncRetry');
     const syncItemsCount = document.getElementById('syncItemsCount');
     const syncLastTime = document.getElementById('syncLastTime');
+    
     if (status === 'connected') {
         if (syncDot) syncDot.className = 'sync-dot';
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
@@ -118,6 +61,7 @@ function updateSyncUI(status, itemCount = null) {
         if (syncDot) syncDot.className = 'sync-dot syncing';
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
     }
+    
     if (itemCount !== null && syncItemsCount) syncItemsCount.innerHTML = `<i class="fas fa-database"></i> ${itemCount} عنصر`;
     if (lastSyncDate && syncLastTime) {
         let d = new Date(lastSyncDate);
@@ -128,17 +72,28 @@ function updateSyncUI(status, itemCount = null) {
 function startListener() {
     updateSyncUI('syncing');
     if (unsubscribe) unsubscribe();
+    
     const query = materialsCollection.orderBy('createdAt', 'desc');
     let firstSnapshot = true;
+    
     unsubscribe = query.onSnapshot((snapshot) => {
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            list.push({ id: doc.id, name: data.name, unitType: data.unitType, quantity: data.quantity, notes: data.notes || "", createdAt: data.createdAt, priority: data.priority || "main" });
+            list.push({
+                id: doc.id,
+                name: data.name,
+                unitType: data.unitType,
+                quantity: data.quantity,
+                notes: data.notes || "",
+                createdAt: data.createdAt,
+                priority: data.priority || "main"
+            });
         });
         allMaterials = list;
         lastSyncDate = new Date();
         updateSyncUI('connected', list.length);
+        
         if (window.renderAllMaterials) window.renderAllMaterials(allMaterials);
         if (firstSnapshot) { firstSnapshot = false; forceHideSplash(); }
         reconnectAttempts = 0;
@@ -166,7 +121,13 @@ async function addNewMaterialDirect() {
     if (isNaN(quantity) || quantity <= 0) { showToast("🔢 كمية صحيحة", true); return; }
     showToast(`➕ جاري إضافة "${name}"...`);
     try {
-        await materialsCollection.add({ name: name, unitType: 'kg', quantity: quantity, createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+        await materialsCollection.add({
+            name: name,
+            unitType: 'kg',
+            quantity: quantity,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            priority: "main"
+        });
         showToast(`✓ تمت إضافة "${name}"`);
         if (document.getElementById('newMaterialName')) document.getElementById('newMaterialName').value = "";
         if (document.getElementById('newQuantityValue')) document.getElementById('newQuantityValue').value = "1";
@@ -214,7 +175,16 @@ function restoreData() {
                         let batch = db.batch();
                         allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
                         await batch.commit();
-                        for (let it of backup) { await materialsCollection.add({ name: it.name, unitType: it.unitType || 'kg', quantity: it.quantity || 1, notes: it.notes || "", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: it.priority || "main" }); }
+                        for (let it of backup) {
+                            await materialsCollection.add({
+                                name: it.name,
+                                unitType: it.unitType || 'kg',
+                                quantity: it.quantity || 1,
+                                notes: it.notes || "",
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                priority: it.priority || "main"
+                            });
+                        }
                         showToast(`✓ تم استعادة ${backup.length} عنصر`);
                     }
                 } catch (err) { showToast("❌ ملف غير صالح", true); }
@@ -231,10 +201,9 @@ function setupPWA() {
         e.preventDefault();
         deferredPrompt = e;
         const installBtn = document.getElementById('installBtn');
-        const installWelcomeBtn = document.getElementById('installWelcomeBtn');
         if (installBtn) installBtn.style.display = 'inline-flex';
-        if (installWelcomeBtn) installWelcomeBtn.style.display = 'inline-flex';
     });
+    
     const installBtn = document.getElementById('installBtn');
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
@@ -244,59 +213,108 @@ function setupPWA() {
                 if (outcome === 'accepted') showToast('✓ تم تثبيت التطبيق');
                 deferredPrompt = null;
                 if (installBtn) installBtn.style.display = 'none';
-                const welcomeBtn = document.getElementById('installWelcomeBtn');
-                if (welcomeBtn) welcomeBtn.style.display = 'none';
             } else { showToast('يمكنك التثبيت من قائمة المتصفح', false); }
         });
     }
-    const welcomeBtn = document.getElementById('installWelcomeBtn');
-    if (welcomeBtn) {
-        welcomeBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') showToast('✓ تم تثبيت التطبيق');
-                deferredPrompt = null;
-                if (installBtn) installBtn.style.display = 'none';
-                if (welcomeBtn) welcomeBtn.style.display = 'none';
-            } else { showToast('يمكنك التثبيت من قائمة المتصفح', false); }
-        });
-    }
+    
     if (window.matchMedia('(display-mode: standalone)').matches) {
         if (installBtn) installBtn.style.display = 'none';
-        if (welcomeBtn) welcomeBtn.style.display = 'none';
     }
 }
 
+// ==================== ربط الأحداث ====================
 function bindEvents() {
     const mainAddBtn = document.getElementById('mainAddBtn');
-    if (mainAddBtn) mainAddBtn.onclick = () => { document.getElementById('newItemModal')?.classList.add('active'); document.getElementById('newMaterialName')?.focus(); };
+    if (mainAddBtn) mainAddBtn.onclick = () => {
+        document.getElementById('newItemModal')?.classList.add('active');
+        document.getElementById('newMaterialName')?.focus();
+    };
+    
     const syncBtn = document.getElementById('syncBtn');
     if (syncBtn) syncBtn.onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 مزامنة يدوية"); };
+    
     const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) themeToggle.onclick = () => { document.body.classList.contains('dark') ? setTheme('light') : setTheme('dark'); };
+    if (themeToggle) themeToggle.onclick = () => {
+        document.body.classList.contains('dark') ? setTheme('light') : setTheme('dark');
+    };
+    
     const backupBtn = document.getElementById('backupBtn');
     if (backupBtn) backupBtn.onclick = backupData;
+    
     const restoreBtn = document.getElementById('restoreBtn');
     if (restoreBtn) restoreBtn.onclick = restoreData;
+    
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) clearAllBtn.onclick = clearAll;
+    
     const syncRetry = document.getElementById('syncRetry');
     if (syncRetry) syncRetry.onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 محاولة إعادة الاتصال..."); };
+    
+    // زر تحديث البيانات من localStorage
+    const refreshDataBtn = document.getElementById('refreshDataBtn');
+    if (refreshDataBtn) {
+        refreshDataBtn.onclick = function() {
+            if (window.refreshConstantsData) {
+                window.refreshConstantsData();
+                showToast('✓ تم تحديث البيانات بنجاح');
+            } else {
+                showToast('❌ خطأ في تحديث البيانات', true);
+            }
+        };
+    }
+    
+    // أزرار النوافذ المنبثقة
     const closeNewModalBtn = document.getElementById('closeNewModalBtn');
     if (closeNewModalBtn) closeNewModalBtn.onclick = () => { document.getElementById('newItemModal')?.classList.remove('active'); };
+    
     const saveNewItemBtn = document.getElementById('saveNewItemBtn');
     if (saveNewItemBtn) saveNewItemBtn.onclick = addNewMaterialDirect;
+    
+    // أزرار الكمية
     const decrementQty = document.getElementById('decrementQty');
     const incrementQty = document.getElementById('incrementQty');
     const newQuantityValue = document.getElementById('newQuantityValue');
-    if (decrementQty) decrementQty.addEventListener('click', () => { if (newQuantityValue) { let val = parseFloat(newQuantityValue.value) || 1; val = Math.max(0.25, val - 0.25); newQuantityValue.value = val; } });
-    if (incrementQty) incrementQty.addEventListener('click', () => { if (newQuantityValue) { let val = parseFloat(newQuantityValue.value) || 1; val = val + 0.25; newQuantityValue.value = val; } });
-    if (newQuantityValue) newQuantityValue.addEventListener('change', () => { let val = parseFloat(newQuantityValue.value); if (isNaN(val) || val <= 0) newQuantityValue.value = 1; });
-    const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'itemModal'];
-    modals.forEach(modalId => { const modal = document.getElementById(modalId); if (modal) { modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); }); } });
+    
+    if (decrementQty) {
+        decrementQty.addEventListener('click', () => {
+            if (newQuantityValue) {
+                let val = parseFloat(newQuantityValue.value) || 1;
+                val = Math.max(0.25, val - 0.25);
+                newQuantityValue.value = val;
+            }
+        });
+    }
+    
+    if (incrementQty) {
+        incrementQty.addEventListener('click', () => {
+            if (newQuantityValue) {
+                let val = parseFloat(newQuantityValue.value) || 1;
+                val = val + 0.25;
+                newQuantityValue.value = val;
+            }
+        });
+    }
+    
+    if (newQuantityValue) {
+        newQuantityValue.addEventListener('change', () => {
+            let val = parseFloat(newQuantityValue.value);
+            if (isNaN(val) || val <= 0) newQuantityValue.value = 1;
+        });
+    }
+    
+    // إغلاق النوافذ
+    const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'itemModal'];
+    modalIds.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+        }
+    });
+    
+    // نافذة إضافة مادة قديمة
     const closeModalBtn = document.getElementById('closeModalBtn');
     if (closeModalBtn) closeModalBtn.onclick = () => { document.getElementById('itemModal')?.classList.remove('active'); };
+    
     const saveMaterialBtn = document.getElementById('saveMaterialBtn');
     if (saveMaterialBtn) {
         saveMaterialBtn.onclick = async () => {
@@ -304,41 +322,54 @@ function bindEvents() {
             if (!name) { showToast("✏️ اكتب اسم المادة", true); return; }
             if (!isConnected) { showToast("❌ لا يوجد اتصال بالإنترنت", true); return; }
             try {
-                await materialsCollection.add({ name: name, unitType: currentUnit, quantity: parseFloat(document.getElementById('quantityValue')?.value) || 1, createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+                await materialsCollection.add({
+                    name: name,
+                    unitType: currentUnit,
+                    quantity: parseFloat(document.getElementById('quantityValue')?.value) || 1,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    priority: "main"
+                });
                 showToast(`✓ تمت إضافة "${name}"`);
                 document.getElementById('materialName').value = "";
                 document.getElementById('itemModal')?.classList.remove('active');
             } catch (e) { showToast("❌ فشل الإضافة", true); }
         };
     }
-    const unitButtons = document.querySelectorAll('.unit-btn');
+    
+    // وحدات القياس
+    const unitButtons = document.querySelectorAll('#itemModal .unit-btn');
     unitButtons.forEach(btn => {
         btn.onclick = () => {
             unitButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentUnit = btn.getAttribute('data-unit');
-            const needsQuantity = btn.getAttribute('data-needs-quantity') === 'true';
-            const quantityFieldContainer = document.getElementById('quantityFieldContainer');
-            if (quantityFieldContainer) quantityFieldContainer.style.display = needsQuantity ? 'block' : 'none';
+            const needsQuantity = currentUnit === 'kg';
+            const quantityField = document.getElementById('quantityFieldContainer');
+            if (quantityField) quantityField.style.display = needsQuantity ? 'block' : 'none';
         };
     });
 }
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
-    loadMaterialsDataFromStorage();
     if (localStorage.getItem('theme') === 'dark') setTheme('dark'); else setTheme('light');
-    const defaultUnit = document.querySelector('.unit-btn[data-unit="kg"]');
+    
+    const defaultUnit = document.querySelector('#itemModal .unit-btn[data-unit="kg"]');
     if (defaultUnit) { defaultUnit.classList.add('active'); currentUnit = "kg"; }
+    
     setupPWA();
     bindEvents();
     startListener();
     startAutoSync();
+    
     setTimeout(() => forceHideSplash(), 3000);
 });
 
+// Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/material-manager/service-worker.js').then(reg => console.log('✅ SW registered:', reg.scope)).catch(err => console.error('❌ SW failed:', err));
+        navigator.serviceWorker.register('/material-manager/service-worker.js')
+            .then(reg => console.log('✅ SW registered:', reg.scope))
+            .catch(err => console.error('❌ SW failed:', err));
     });
-                    }
+                                }
