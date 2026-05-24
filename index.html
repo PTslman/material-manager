@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#2e7d32">
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="stylesheet" href="/material-manager/css/style.css">
@@ -27,273 +27,270 @@
     <div id="splashScreen" class="splash">
         <div class="spinner"></div>
         <h2>مدير المواد</h2>
-        <div class="version-badge">Professional v4.0</div>
+        <div class="version-badge">نسخة احترافية v4.0</div>
     </div>
 
     <div id="appContainer" class="app-main" style="display: none;">
         
         <div class="hero">
-            <h1>Material Manager</h1>
-            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> Instant Sync + Cloud Secure</div>
+            <h1>مدير المواد والمخزون</h1>
+            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
-        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> Add New Material</button>
+        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
-        <!-- Toolbar -->
         <div class="toolbar">
             <div class="toolbar-row">
-                <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> Sync</button>
-                <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> Dark Mode</button>
+                <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
+                <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
             </div>
             <div class="toolbar-row">
-                <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> Backup</button>
-                <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> Restore</button>
-                <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> Install</button>
+                <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
+                <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
+                <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
             </div>
         </div>
         
-        <!-- 4 Category Cards - New Design -->
+        <!-- ==================== 4 مستطيلات عريضة للجداول ==================== -->
         <div class="categories-container">
             
-            <!-- Category 1: Important Spices -->
-            <div class="category-card" data-category="important">
+            <div class="category-card" id="importantCard">
                 <div class="category-header" id="importantProductsBtn">
-                    <div class="category-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
+                    <div class="category-icon"><i class="fas fa-star"></i></div>
                     <div class="category-info">
-                        <h3 class="category-title">Important Spices</h3>
-                        <p class="category-desc">البهارات الهامة - Essential spices for daily use</p>
+                        <h3 class="category-title">بهارات هامة</h3>
+                        <p class="category-desc">البهارات الأساسية التي لا غنى عنها في المطبخ</p>
                     </div>
-                    <div class="category-arrow">
-                        <i class="fas fa-chevron-left"></i>
-                    </div>
+                    <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                 </div>
                 <div class="category-preview" id="importantPreview">
-                    <!-- سيتم ملؤه بالعناصر -->
+                    <span class="preview-tag">شطه حلوة</span>
+                    <span class="preview-tag">شطة حدة</span>
+                    <span class="preview-tag">بابريكا</span>
+                    <span class="preview-tag">فلفل اسود</span>
+                    <span class="preview-tag">كزبرة</span>
+                    <span class="preview-tag">كمون</span>
                 </div>
             </div>
             
-            <!-- Category 2: Extra Spices -->
-            <div class="category-card" data-category="spices">
+            <div class="category-card" id="spicesCard">
                 <div class="category-header" id="spicesExtraBtn">
-                    <div class="category-icon">
-                        <i class="fas fa-leaf"></i>
-                    </div>
+                    <div class="category-icon"><i class="fas fa-leaf"></i></div>
                     <div class="category-info">
-                        <h3 class="category-title">Extra Spices</h3>
-                        <p class="category-desc">بهارات اضافية - Additional aromatic spices</p>
+                        <h3 class="category-title">بهارات اضافية</h3>
+                        <p class="category-desc">بهارات مميزة لإضافة نكهات فريدة</p>
                     </div>
-                    <div class="category-arrow">
-                        <i class="fas fa-chevron-left"></i>
-                    </div>
+                    <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                 </div>
                 <div class="category-preview" id="spicesPreview">
-                    <!-- سيتم ملؤه بالعناصر -->
+                    <span class="preview-tag">زعفران</span>
+                    <span class="preview-tag">هيل</span>
+                    <span class="preview-tag">قرنفل</span>
+                    <span class="preview-tag">جوزة الطيب</span>
+                    <span class="preview-tag">يانسون</span>
+                    <span class="preview-tag">شمرة</span>
                 </div>
             </div>
             
-            <!-- Category 3: Seeds & Herbs -->
-            <div class="category-card" data-category="quick">
+            <div class="category-card" id="quickCard">
                 <div class="category-header" id="quickProductsBtn">
-                    <div class="category-icon">
-                        <i class="fas fa-seedling"></i>
-                    </div>
+                    <div class="category-icon"><i class="fas fa-seedling"></i></div>
                     <div class="category-info">
-                        <h3 class="category-title">Seeds & Herbs</h3>
-                        <p class="category-desc">بذوريات وأعشاب - Natural seeds and herbs</p>
+                        <h3 class="category-title">بذوريات وأعشاب</h3>
+                        <p class="category-desc">بذور وأعشاب طبيعية صحية</p>
                     </div>
-                    <div class="category-arrow">
-                        <i class="fas fa-chevron-left"></i>
-                    </div>
+                    <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                 </div>
                 <div class="category-preview" id="quickPreview">
-                    <!-- سيتم ملؤه بالعناصر -->
+                    <span class="preview-tag">بذر دوار شمس</span>
+                    <span class="preview-tag">بذر كتان</span>
+                    <span class="preview-tag">بذر شيا</span>
+                    <span class="preview-tag">سمسم</span>
+                    <span class="preview-tag">نعنع يابس</span>
+                    <span class="preview-tag">زهورات</span>
                 </div>
             </div>
             
-            <!-- Category 4: Packaging Bags -->
-            <div class="category-card" data-category="bags">
+            <div class="category-card" id="bagsCard">
                 <div class="category-header" id="bagsManagerBtn">
-                    <div class="category-icon">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
+                    <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
                     <div class="category-info">
-                        <h3 class="category-title">Packaging Bags</h3>
-                        <p class="category-desc">أكياس تعبئة - Various bag sizes for packaging</p>
+                        <h3 class="category-title">أكياس تعبئة</h3>
+                        <p class="category-desc">أكياس بأحجام مختلفة للتغليف والتعبئة</p>
                     </div>
-                    <div class="category-arrow">
-                        <i class="fas fa-chevron-left"></i>
-                    </div>
+                    <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
                 </div>
                 <div class="category-preview" id="bagsPreview">
-                    <!-- سيتم ملؤه بالعناصر -->
+                    <span class="preview-tag">شفاف 10×12</span>
+                    <span class="preview-tag">شفاف 20×12</span>
+                    <span class="preview-tag">شفاف 25×17</span>
+                    <span class="preview-tag">أسود 30</span>
+                    <span class="preview-tag">أسود 40</span>
+                    <span class="preview-tag">صيدلية</span>
                 </div>
             </div>
             
         </div>
         
-        <!-- Materials Container -->
         <div id="materialsContainer"></div>
         
-        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> Clear All Materials</button>
+        <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
     </div>
 
-    <!-- Sync Status Bar -->
     <div id="syncStatusBar" class="sync-status-bar">
         <div class="sync-status-left">
             <div class="sync-indicator">
                 <div id="syncDot" class="sync-dot"></div>
-                <span id="syncStatusText" class="sync-text">Connecting...</span>
+                <span id="syncStatusText" class="sync-text">جاري الاتصال...</span>
             </div>
             <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
         </div>
         <div class="sync-status-right">
-            <span id="syncRetry" class="retry-link" style="display: none;"><i class="fas fa-sync-alt"></i> Retry</span>
-            <span id="syncItemsCount" class="sync-text"><i class="fas fa-database"></i> 0 items</span>
+            <span id="syncRetry" class="retry-link" style="display: none;"><i class="fas fa-sync-alt"></i> إعادة المحاولة</span>
+            <span id="syncItemsCount" class="sync-text"><i class="fas fa-database"></i> 0 عنصر</span>
         </div>
     </div>
 
-    <!-- Modals (Same as before) -->
+    <!-- النوافذ المنبثقة -->
     <div id="newItemModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-plus-circle"></i> Add New Material</h3>
+            <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
             <div class="modern-field">
-                <label>Material Name</label>
+                <label>اسم المادة</label>
                 <div class="field-container">
                     <div class="field-icon"><i class="fas fa-tag"></i></div>
-                    <input type="text" id="newMaterialName" placeholder="Example: Black Pepper, Cumin...">
+                    <input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون...">
                 </div>
             </div>
             <div class="modern-field">
-                <label>Quantity (kg)</label>
+                <label>الكمية (كيلوغرام)</label>
                 <div class="qty-picker">
                     <button id="decrementQty">-</button>
                     <input type="number" id="newQuantityValue" step="0.25" value="1">
                     <button id="incrementQty">+</button>
-                    <span class="qty-unit-label">kg</span>
+                    <span class="qty-unit-label">كجم</span>
                 </div>
             </div>
             <div class="modal-buttons">
-                <button id="saveNewItemBtn" class="btn-save">Add</button>
-                <button id="closeNewModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveNewItemBtn" class="btn-save">إضافة</button>
+                <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
     <div id="importantModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-star"></i> Important Spices</h3>
+            <h3><i class="fas fa-star"></i> بهارات هامة</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="importantSearchInput" class="search-input" placeholder="Search spice...">
+                <input type="text" id="importantSearchInput" class="search-input" placeholder="ابحث عن بهار...">
             </div>
             <div id="importantListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveImportantBtn" class="btn-save">Add Selected</button>
-                <button id="closeImportantModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveImportantBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
     <div id="spicesExtraModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-leaf"></i> Extra Spices</h3>
+            <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="Search spice...">
+                <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="ابحث عن بهار...">
             </div>
             <div id="spicesExtraListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveSpicesExtraBtn" class="btn-save">Add Selected</button>
-                <button id="closeSpicesExtraModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
     <div id="quickModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-seedling"></i> Seeds & Herbs</h3>
+            <h3><i class="fas fa-seedling"></i> بذوريات وأعشاب</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="quickSearchInput" class="search-input" placeholder="Search herb...">
+                <input type="text" id="quickSearchInput" class="search-input" placeholder="ابحث عن منتج...">
             </div>
             <div id="quickListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveQuickBtn" class="btn-save">Add Selected</button>
-                <button id="closeQuickModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveQuickBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeQuickModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
     <div id="bagsModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-bag-shopping"></i> Packaging Bags</h3>
+            <h3><i class="fas fa-bag-shopping"></i> أكياس تعبئة</h3>
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="bagsSearchInput" class="search-input" placeholder="Search bag type...">
+                <input type="text" id="bagsSearchInput" class="search-input" placeholder="ابحث عن نوع كيس...">
             </div>
             <div id="bagsListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveBagsBtn" class="btn-save">Add Selected</button>
-                <button id="closeBagsModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveBagsBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
     <div id="tawsayaModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-gift"></i> Special Order</h3>
+            <h3><i class="fas fa-gift"></i> توصاية</h3>
             <div class="modern-field">
-                <label>Product Name</label>
+                <label>المنتج</label>
                 <div class="field-container">
                     <div class="field-icon"><i class="fas fa-box"></i></div>
-                    <input id="tawsayaName" placeholder="Product name...">
+                    <input id="tawsayaName" placeholder="اسم المنتج...">
                 </div>
             </div>
             <div class="units-group">
-                <label>Quantity Type</label>
+                <label>نوع الكمية</label>
                 <div class="units-buttons" id="tawsayaTypeGroup">
-                    <button type="button" class="unit-btn active" data-type="kg">kg</button>
-                    <button type="button" class="unit-btn" data-type="half">Half kg</button>
-                    <button type="button" class="unit-btn" data-type="custom">Custom</button>
+                    <button type="button" class="unit-btn active" data-type="kg">كيلو</button>
+                    <button type="button" class="unit-btn" data-type="half">نصف كيلو</button>
+                    <button type="button" class="unit-btn" data-type="custom">مخصص</button>
                 </div>
             </div>
             <div id="tawsayaCustomQtyGroup" style="display:none">
                 <div class="field-container">
                     <div class="field-icon"><i class="fas fa-hashtag"></i></div>
                     <input type="number" id="tawsayaCustomQty" step="any" value="1">
-                    <div class="quantity-unit">kg</div>
+                    <div class="quantity-unit">كجم</div>
                 </div>
             </div>
             <div class="modal-buttons">
-                <button id="saveTawsayaBtn" class="btn-save">Add</button>
-                <button id="closeTawsayaModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveTawsayaBtn" class="btn-save">إضافة</button>
+                <button id="closeTawsayaModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
 
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-edit"></i> Edit Quantity</h3>
+            <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
             <div class="modern-field">
-                <label>Material</label>
+                <label>المادة</label>
                 <div class="field-container">
                     <div class="field-icon"><i class="fas fa-tag"></i></div>
                     <input id="editMaterialName" readonly>
                 </div>
             </div>
             <div class="modern-field">
-                <label>New Quantity</label>
+                <label>الكمية الجديدة</label>
                 <div class="field-container">
                     <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
                     <input type="number" id="editQuantityValue" step="0.25">
-                    <div class="quantity-unit">kg</div>
+                    <div class="quantity-unit">كجم</div>
                 </div>
             </div>
             <div class="modal-buttons">
-                <button id="saveEditBtn" class="btn-save">Update</button>
-                <button id="closeEditModalBtn" class="btn-cancel">Cancel</button>
+                <button id="saveEditBtn" class="btn-save">تحديث</button>
+                <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
@@ -302,13 +299,13 @@
         <div class="confirm-card">
             <div class="confirm-header">
                 <i class="fas fa-exclamation-triangle"></i>
-                <h3>Confirm Delete</h3>
+                <h3>تأكيد الحذف</h3>
             </div>
             <div class="confirm-body">
-                <p id="confirmDeleteMessage">Are you sure you want to delete this material?</p>
+                <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
                 <div class="confirm-buttons">
-                    <button id="confirmDeleteBtn" class="btn-confirm">Yes, Delete</button>
-                    <button id="cancelDeleteBtn" class="btn-cancel">Cancel</button>
+                    <button id="confirmDeleteBtn" class="btn-confirm">نعم، احذف</button>
+                    <button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button>
                 </div>
             </div>
         </div>
@@ -316,14 +313,14 @@
 
     <div id="systemMessageModal" class="modal">
         <div class="modal-content" style="text-align:center">
-            <i class="fas fa-info-circle" style="font-size:3rem;color:#10b981;margin-bottom:1rem"></i>
-            <h3 id="systemMessageTitle">Message</h3>
+            <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
+            <h3 id="systemMessageTitle">رسالة</h3>
             <p id="systemMessageText" style="margin:1rem 0"></p>
-            <button id="closeSystemMessageBtn" class="btn-save">OK</button>
+            <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
         </div>
     </div>
 
-    <!-- Firebase & Scripts -->
+    <!-- Firebase والمكتبات -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
@@ -332,53 +329,6 @@
     <script src="/material-manager/js/app.js"></script>
 
     <script>
-        // Category preview data
-        const importantPreviewList = [
-            "Black Pepper", "Cumin", "Turmeric", "Coriander", "Paprika", "Cinnamon"
-        ];
-        const spicesPreviewList = [
-            "Saffron", "Cardamom", "Clove", "Nutmeg", "Fennel", "Anise"
-        ];
-        const quickPreviewList = [
-            "Flax Seeds", "Chia Seeds", "Sesame", "Sunflower", "Pumpkin Seeds"
-        ];
-        const bagsPreviewList = [
-            "10×12 cm", "20×12 cm", "25×17 cm", "30×20 cm"
-        ];
-        
-        function renderPreviews() {
-            const importantPreview = document.getElementById('importantPreview');
-            const spicesPreview = document.getElementById('spicesPreview');
-            const quickPreview = document.getElementById('quickPreview');
-            const bagsPreview = document.getElementById('bagsPreview');
-            
-            if (importantPreview) {
-                importantPreview.innerHTML = importantPreviewList.map(item => 
-                    `<span class="preview-tag">${item}</span>`
-                ).join('');
-            }
-            
-            if (spicesPreview) {
-                spicesPreview.innerHTML = spicesPreviewList.map(item => 
-                    `<span class="preview-tag">${item}</span>`
-                ).join('');
-            }
-            
-            if (quickPreview) {
-                quickPreview.innerHTML = quickPreviewList.map(item => 
-                    `<span class="preview-tag">${item}</span>`
-                ).join('');
-            }
-            
-            if (bagsPreview) {
-                bagsPreview.innerHTML = bagsPreviewList.map(item => 
-                    `<span class="preview-tag">${item}</span>`
-                ).join('');
-            }
-        }
-        
-        renderPreviews();
-        
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             const app = document.getElementById('appContainer');
@@ -389,4 +339,4 @@
         }, 2500);
     </script>
 </body>
-</html>
+                    </html>
