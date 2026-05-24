@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة وحدات القياس - مدير المواد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --primary-light: #4caf50;
+            --primary-bg: #e8f5e9;
+            --bg-page: #fef9e6;
+            --bg-surface: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --danger: #dc2626;
+            --danger-dark: #b91c1c;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+        }
+        
+        body {
+            font-family: 'Inter', 'Tajawal', system-ui, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 24px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-light);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            background: var(--primary-bg);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .card-header h2 {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .units-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .unit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-page);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .unit-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .unit-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-bg);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .unit-details {
+            flex: 1;
+        }
+        
+        .unit-name {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .unit-value {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .unit-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .toggle-btn {
+            width: 50px;
+            height: 28px;
+            background: #cbd5e1;
+            border-radius: 40px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .toggle-btn.active {
+            background: var(--primary);
+        }
+        
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            right: 4px;
+            transition: transform 0.2s;
+        }
+        
+        .toggle-btn.active::after {
+            transform: translateX(-22px);
+        }
+        
+        .radio-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .radio-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: inset 0 0 0 3px white;
+        }
+        
+        .edit-unit, .delete-unit {
+            background: none;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .edit-unit { color: var(--warning); }
+        .delete-unit { color: var(--danger); }
+        
+        .edit-unit:hover { background: #fef3c7; }
+        .delete-unit:hover { background: #fee2e2; }
+        
+        .add-unit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: var(--bg-surface);
+            width: 92%;
+            max-width: 450px;
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            animation: fadeSlideUp 0.2s ease;
+        }
+        
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+        
+        .modal-field {
+            margin-bottom: 20px;
+        }
+        
+        .modal-field label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+        
+        .modal-field input, .modal-field select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        
+        .modal-field input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .save-modal-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+        
+        .cancel-modal-btn {
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            z-index: 1001;
+            font-weight: 600;
+            animation: fadeUp 0.2s ease;
+        }
+        
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .info-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .unit-item { flex-direction: column; align-items: stretch; }
+            .unit-actions { justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-ruler-combined"></i> إدارة وحدات القياس</h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-right"></i> العودة
+            </button>
+        </div>
+        
+        <!-- الوحدات الأساسية -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-cubes"></i> الوحدات الأساسية</h2>
+            </div>
+            <div class="card-body">
+                <div class="units-list" id="basicUnitsList"></div>
+                <div class="info-text" style="margin-top: 16px;">
+                    <i class="fas fa-info-circle"></i> يمكنك تعطيل أي وحدة أو جعلها افتراضية
+                </div>
+            </div>
+        </div>
+        
+        <!-- الوحدات المخصصة -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-plus-circle"></i> الوحدات المخصصة</h2>
+                <button class="add-unit-btn" id="addCustomUnitBtn">
+                    <i class="fas fa-plus"></i> إضافة وحدة
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="units-list" id="customUnitsList"></div>
+                <div class="info-text" id="noCustomUnits" style="display: none;">
+                    <i class="fas fa-info-circle"></i> لا توجد وحدات مخصصة. اضغط "إضافة وحدة" لإنشاء وحدة جديدة
+                </div>
+            </div>
+        </div>
+        
+        <!-- معاينة -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-eye"></i> معاينة الوحدات</h2>
+            </div>
+            <div class="card-body">
+                <div id="previewUnits" class="units-buttons" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Unit Modal -->
+    <div id="unitModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"><i class="fas fa-plus"></i> إضافة وحدة جديدة</h3>
+            <div class="modal-field">
+                <label>اسم الوحدة</label>
+                <input type="text" id="unitName" placeholder="مثال: لتر، كيس، علبة...">
+            </div>
+            <div class="modal-field">
+                <label>القيمة (بالكيلوغرام)</label>
+                <input type="number" id="unitValue" step="0.01" placeholder="مثال: 0.5 = نصف كيلو">
+            </div>
+            <div class="modal-field">
+                <label>الأيقونة</label>
+                <select id="unitIcon">
+                    <option value="fa-weight-hanging">⚖️ ميزان</option>
+                    <option value="fa-box">📦 صندوق</option>
+                    <option value="fa-cube">🧊 مكعب</option>
+                    <option value="fa-flask">🧪 قارورة</option>
+                    <option value="fa-mortar-pestle">🥣 هاون</option>
+                    <option value="fa-bag-shopping">🛍️ كيس</option>
+                    <option value="fa-mug-saucer">☕ كوب</option>
+                    <option value="fa-bottle-water">💧 قارورة</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button id="saveUnitBtn" class="save-modal-btn">حفظ</button>
+                <button id="cancelUnitBtn" class="cancel-modal-btn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // تحميل الوحدات من localStorage أو استخدام الافتراضية
+        let unitsConfig = {
+            kg: { name: 'كيلو', icon: 'fa-weight-hanging', enabled: true, value: 1 },
+            half: { name: 'نصف كيلو', icon: 'fa-balance-scale', enabled: true, value: 0.5 },
+            quarter: { name: 'ربع كيلو', icon: 'fa-chart-pie', enabled: true, value: 0.25 },
+            oke: { name: 'لوقية', icon: 'fa-gem', enabled: true, value: 0.2 }
+        };
+        
+        let customUnits = [];
+        let defaultUnit = 'kg';
+        let editingUnitId = null;
+        
+        function loadData() {
+            const saved = localStorage.getItem('units_manager_config');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (data.unitsConfig) unitsConfig = { ...unitsConfig, ...data.unitsConfig };
+                    if (data.customUnits) customUnits = data.customUnits;
+                    if (data.defaultUnit) defaultUnit = data.defaultUnit;
+                } catch(e) {}
+            }
+        }
+        
+        function saveData() {
+            localStorage.setItem('units_manager_config', JSON.stringify({
+                unitsConfig: unitsConfig,
+                customUnits: customUnits,
+                defaultUnit: defaultUnit
+            }));
+        }
+        
+        function renderBasicUnits() {
+            const container = document.getElementById('basicUnitsList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const order = ['kg', 'half', 'quarter', 'oke'];
+            
+            order.forEach(unitId => {
+                const unit = unitsConfig[unitId];
+                if (!unit) return;
+                
+                const div = document.createElement('div');
+                div.className = 'unit-item';
+                div.innerHTML = `
+                    <div class="unit-info">
+                        <div class="unit-icon"><i class="fas ${unit.icon}"></i></div>
+                        <div class="unit-details">
+                            <div class="unit-name">${unit.name}</div>
+                            <div class="unit-value">${unit.value} كجم</div>
+                        </div>
+                    </div>
+                    <div class="unit-actions">
+                        <div class="toggle-btn ${unit.enabled ? 'active' : ''}" data-unit="${unitId}" data-action="toggle"></div>
+                        <div class="radio-btn ${defaultUnit === unitId ? 'active' : ''}" data-unit="${unitId}" data-action="default"></div>
+                        <button class="edit-unit" data-unit="${unitId}" data-action="edit"><i class="fas fa-edit"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function renderCustomUnits() {
+            const container = document.getElementById('customUnitsList');
+            const noCustomMsg = document.getElementById('noCustomUnits');
+            if (!container) return;
+            
+            if (customUnits.length === 0) {
+                if (noCustomMsg) noCustomMsg.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+            
+            if (noCustomMsg) noCustomMsg.style.display = 'none';
+            
+            container.innerHTML = '';
+            customUnits.forEach((unit, index) => {
+                const div = document.createElement('div');
+                div.className = 'unit-item';
+                div.innerHTML = `
+                    <div class="unit-info">
+                        <div class="unit-icon"><i class="fas ${unit.icon || 'fa-cube'}"></i></div>
+                        <div class="unit-details">
+                            <div class="unit-name">${unit.name}</div>
+                            <div class="unit-value">${unit.value} كجم</div>
+                        </div>
+                    </div>
+                    <div class="unit-actions">
+                        <div class="toggle-btn ${unit.enabled !== false ? 'active' : ''}" data-unit="${unit.id}" data-action="toggle-custom"></div>
+                        <div class="radio-btn ${defaultUnit === unit.id ? 'active' : ''}" data-unit="${unit.id}" data-action="default-custom"></div>
+                        <button class="edit-unit" data-unit="${unit.id}" data-action="edit-custom"><i class="fas fa-edit"></i></button>
+                        <button class="delete-unit" data-unit="${unit.id}" data-action="delete-custom"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function renderPreview() {
+            const container = document.getElementById('previewUnits');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // الوحدات الأساسية المفعلة
+            Object.keys(unitsConfig).forEach(unitId => {
+                if (unitsConfig[unitId].enabled) {
+                    const btn = document.createElement('button');
+                    btn.className = 'unit-btn';
+                    btn.innerHTML = `<i class="fas ${unitsConfig[unitId].icon}"></i> ${unitsConfig[unitId].name}`;
+                    container.appendChild(btn);
+                }
+            });
+            
+            // الوحدات المخصصة المفعلة
+            customUnits.forEach(unit => {
+                if (unit.enabled !== false) {
+                    const btn = document.createElement('button');
+                    btn.className = 'unit-btn';
+                    btn.innerHTML = `<i class="fas ${unit.icon || 'fa-cube'}"></i> ${unit.name}`;
+                    container.appendChild(btn);
+                }
+            });
+        }
+        
+        function setupEventListeners() {
+            // Toggle events for basic units
+            document.querySelectorAll('[data-action="toggle"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    unitsConfig[unitId].enabled = !unitsConfig[unitId].enabled;
+                    saveData();
+                    renderBasicUnits();
+                    renderPreview();
+                    setupEventListeners();
+                    syncWithMainApp();
+                    showToast(unitsConfig[unitId].enabled ? 'تم تفعيل الوحدة' : 'تم تعطيل الوحدة');
+                });
+            });
+            
+            // Default unit events for basic units
+            document.querySelectorAll('[data-action="default"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    defaultUnit = unitId;
+                    saveData();
+                    renderBasicUnits();
+                    renderCustomUnits();
+                    renderPreview();
+                    setupEventListeners();
+                    syncWithMainApp();
+                    showToast(`تم تعيين ${unitsConfig[unitId].name} كوحدة افتراضية`);
+                });
+            });
+            
+            // Edit events for basic units
+            document.querySelectorAll('[data-action="edit"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    openEditModal(unitId);
+                });
+            });
+            
+            // Custom unit events
+            document.querySelectorAll('[data-action="toggle-custom"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    const unit = customUnits.find(u => u.id === unitId);
+                    if (unit) {
+                        unit.enabled = !(unit.enabled === false);
+                        saveData();
+                        renderCustomUnits();
+                        renderPreview();
+                        setupEventListeners();
+                        syncWithMainApp();
+                        showToast(unit.enabled ? 'تم تفعيل الوحدة' : 'تم تعطيل الوحدة');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('[data-action="default-custom"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    defaultUnit = unitId;
+                    saveData();
+                    renderBasicUnits();
+                    renderCustomUnits();
+                    renderPreview();
+                    setupEventListeners();
+                    syncWithMainApp();
+                    const unit = customUnits.find(u => u.id === unitId);
+                    showToast(`تم تعيين ${unit?.name} كوحدة افتراضية`);
+                });
+            });
+            
+            document.querySelectorAll('[data-action="edit-custom"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    const unit = customUnits.find(u => u.id === unitId);
+                    if (unit) openEditCustomModal(unit);
+                });
+            });
+            
+            document.querySelectorAll('[data-action="delete-custom"]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const unitId = el.getAttribute('data-unit');
+                    if (confirm('هل أنت متأكد من حذف هذه الوحدة؟')) {
+                        customUnits = customUnits.filter(u => u.id !== unitId);
+                        if (defaultUnit === unitId) defaultUnit = 'kg';
+                        saveData();
+                        renderCustomUnits();
+                        renderPreview();
+                        setupEventListeners();
+                        syncWithMainApp();
+                        showToast('تم حذف الوحدة بنجاح');
+                    }
+                });
+            });
+        }
+        
+        function openEditModal(unitId) {
+            editingUnitId = unitId;
+            const unit = unitsConfig[unitId];
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل الوحدة';
+            document.getElementById('unitName').value = unit.name;
+            document.getElementById('unitValue').value = unit.value;
+            document.getElementById('unitIcon').value = unit.icon;
+            document.getElementById('unitModal').classList.add('active');
+        }
+        
+        function openEditCustomModal(unit) {
+            editingUnitId = unit.id;
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل الوحدة';
+            document.getElementById('unitName').value = unit.name;
+            document.getElementById('unitValue').value = unit.value;
+            document.getElementById('unitIcon').value = unit.icon || 'fa-cube';
+            document.getElementById('unitModal').classList.add('active');
+        }
+        
+        function addCustomUnit() {
+            const name = document.getElementById('unitName').value.trim();
+            const value = parseFloat(document.getElementById('unitValue').value);
+            const icon = document.getElementById('unitIcon').value;
+            
+            if (!name) {
+                showToast('الرجاء إدخال اسم الوحدة', 'error');
+                return;
+            }
+            if (isNaN(value) || value <= 0) {
+                showToast('الرجاء إدخال قيمة صحيحة (أكبر من 0)', 'error');
+                return;
+            }
+            
+            const newUnit = {
+                id: `custom_${Date.now()}`,
+                name: name,
+                value: value,
+                icon: icon,
+                enabled: true
+            };
+            
+            customUnits.push(newUnit);
+            saveData();
+            renderCustomUnits();
+            renderPreview();
+            setupEventListeners();
+            syncWithMainApp();
+            showToast(`✓ تمت إضافة وحدة "${name}" بنجاح`);
+        }
+        
+        function updateUnit() {
+            const name = document.getElementById('unitName').value.trim();
+            const value = parseFloat(document.getElementById('unitValue').value);
+            const icon = document.getElementById('unitIcon').value;
+            
+            if (!name) {
+                showToast('الرجاء إدخال اسم الوحدة', 'error');
+                return;
+            }
+            if (isNaN(value) || value <= 0) {
+                showToast('الرجاء إدخال قيمة صحيحة (أكبر من 0)', 'error');
+                return;
+            }
+            
+            if (unitsConfig[editingUnitId]) {
+                unitsConfig[editingUnitId].name = name;
+                unitsConfig[editingUnitId].value = value;
+                unitsConfig[editingUnitId].icon = icon;
+            } else {
+                const unitIndex = customUnits.findIndex(u => u.id === editingUnitId);
+                if (unitIndex !== -1) {
+                    customUnits[unitIndex].name = name;
+                    customUnits[unitIndex].value = value;
+                    customUnits[unitIndex].icon = icon;
+                }
+            }
+            
+            saveData();
+            renderBasicUnits();
+            renderCustomUnits();
+            renderPreview();
+            setupEventListeners();
+            syncWithMainApp();
+            showToast(`✓ تم تعديل الوحدة "${name}" بنجاح`);
+        }
+        
+        function syncWithMainApp() {
+            // مزامنة مع التطبيق الرئيسي
+            const config = {
+                unitsConfig: unitsConfig,
+                customUnits: customUnits,
+                defaultUnit: defaultUnit
+            };
+            localStorage.setItem('units_config', JSON.stringify(config));
+            
+            // تحديث global unitsManager إذا كان موجوداً
+            if (window.unitsManager) {
+                window.unitsManager.loadFromStorage();
+                window.unitsManager.syncWithUI();
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'error' ? '#dc2626' : '#2e7d32';
+            toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+        
+        // Modal handlers
+        document.getElementById('addCustomUnitBtn')?.addEventListener('click', () => {
+            editingUnitId = null;
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> إضافة وحدة جديدة';
+            document.getElementById('unitName').value = '';
+            document.getElementById('unitValue').value = '';
+            document.getElementById('unitIcon').value = 'fa-cube';
+            document.getElementById('unitModal').classList.add('active');
+        });
+        
+        document.getElementById('saveUnitBtn')?.addEventListener('click', () => {
+            if (editingUnitId) {
+                updateUnit();
+            } else {
+                addCustomUnit();
+            }
+            document.getElementById('unitModal').classList.remove('active');
+        });
+        
+        document.getElementById('cancelUnitBtn')?.addEventListener('click', () => {
+            document.getElementById('unitModal').classList.remove('active');
+        });
+        
+        document.getElementById('unitModal')?.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('unitModal')) {
+                document.getElementById('unitModal').classList.remove('active');
+            }
+        });
+        
+        // Initialize
+        loadData();
+        renderBasicUnits();
+        renderCustomUnits();
+        renderPreview();
+        setupEventListeners();
+    </script>
+</body>
+  </html>
