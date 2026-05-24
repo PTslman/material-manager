@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>إدارة البيانات - مدير المواد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --primary-light: #4caf50;
+            --primary-bg: #e8f5e9;
+            --bg-page: #fef9e6;
+            --bg-surface: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --danger: #dc2626;
+            --danger-dark: #b91c1c;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+        }
+
+        body {
+            font-family: 'Inter', 'Tajawal', system-ui, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 24px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        .tab-btn i {
+            font-size: 1rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+            background: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* Panel Header */
+        .panel-header {
+            padding: 20px 24px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .panel-header h2 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+        }
+
+        .add-item-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .add-item-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Search */
+        .search-box {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            padding: 0 24px 24px 24px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: right;
+            padding: 12px 16px;
+            background: var(--primary-bg);
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:hover {
+            background: var(--primary-bg);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .edit-btn {
+            color: var(--warning);
+        }
+
+        .edit-btn:hover {
+            background: #fef3c7;
+        }
+
+        .delete-btn {
+            color: var(--danger);
+        }
+
+        .delete-btn:hover {
+            background: #fee2e2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            width: 92%;
+            max-width: 480px;
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeSlideUp 0.2s ease;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+
+        .modal-field {
+            margin-bottom: 20px;
+        }
+
+        .modal-field label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .modal-field input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .modal-field input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .save-modal-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .save-modal-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .cancel-modal-btn {
+            background: var(--bg-page);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            z-index: 1001;
+            font-weight: 600;
+            animation: fadeUp 0.2s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Confirm Modal */
+        .confirm-modal .modal-content {
+            text-align: center;
+            max-width: 360px;
+        }
+
+        .confirm-modal i {
+            font-size: 2.5rem;
+            color: var(--danger);
+            margin-bottom: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .tabs {
+                justify-content: center;
+            }
+
+            .tab-btn {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+
+            .panel-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .data-table th, .data-table td {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-database"></i> إدارة البيانات</h1>
+        <button class="back-btn" onclick="window.location.href='/material-manager/index.html'">
+            <i class="fas fa-arrow-right"></i> العودة للتطبيق
+        </button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="important">
+            <i class="fas fa-star"></i> بهارات هامة
+            <span id="importantCount" class="count-badge"></span>
+        </button>
+        <button class="tab-btn" data-tab="spices">
+            <i class="fas fa-leaf"></i> بهارات اضافية
+            <span id="spicesCount" class="count-badge"></span>
+        </button>
+        <button class="tab-btn" data-tab="extra">
+            <i class="fas fa-seedling"></i> بذوريات واعشاب
+            <span id="extraCount" class="count-badge"></span>
+        </button>
+    </div>
+
+    <!-- Important Items Panel -->
+    <div id="importantPanel" class="panel active">
+        <div class="panel-header">
+            <h2><i class="fas fa-star"></i> قائمة البهارات الهامة</h2>
+            <button class="add-item-btn" onclick="openAddModal('important')">
+                <i class="fas fa-plus"></i> إضافة بهار جديد
+            </button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="importantSearch" class="search-input" placeholder="🔍 بحث عن بهار...">
+        </div>
+        <div class="table-container">
+            <table class="data-table" id="importantTable">
+                <thead>
+                    <tr><th>#</th><th>اسم البهار</th><th>الإجراءات</th></tr>
+                </thead>
+                <tbody id="importantTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Spices Extra Panel -->
+    <div id="spicesPanel" class="panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-leaf"></i> قائمة البهارات الاضافية</h2>
+            <button class="add-item-btn" onclick="openAddModal('spices')">
+                <i class="fas fa-plus"></i> إضافة بهار جديد
+            </button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="spicesSearch" class="search-input" placeholder="🔍 بحث عن بهار...">
+        </div>
+        <div class="table-container">
+            <table class="data-table" id="spicesTable">
+                <thead><tr><th>#</th><th>اسم البهار</th><th>الإجراءات</th></tr>
+                </thead>
+                <tbody id="spicesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Extra Items Panel -->
+    <div id="extraPanel" class="panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-seedling"></i> قائمة البذوريات والأعشاب</h2>
+            <button class="add-item-btn" onclick="openAddModal('extra')">
+                <i class="fas fa-plus"></i> إضافة منتج جديد
+            </button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="extraSearch" class="search-input" placeholder="🔍 بحث عن منتج...">
+        </div>
+        <div class="table-container">
+            <table class="data-table" id="extraTable">
+                <thead><tr><th>#</th><th>اسم المنتج</th><th>الإجراءات</th></tr>
+                </thead>
+                <tbody id="extraTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"><i class="fas fa-plus"></i> إضافة عنصر جديد</h3>
+            <div class="modal-field">
+                <label>الاسم</label>
+                <input type="text" id="itemName" placeholder="أدخل الاسم...">
+            </div>
+            <div class="modal-buttons">
+                <button id="saveModalBtn" class="save-modal-btn">حفظ</button>
+                <button id="cancelModalBtn" class="cancel-modal-btn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="confirmModal" class="modal confirm-modal">
+        <div class="modal-content">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>تأكيد الحذف</h3>
+            <p id="confirmMessage">هل أنت متأكد من حذف هذا العنصر؟</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteBtn" class="save-modal-btn" style="background: var(--danger);">نعم، احذف</button>
+                <button id="cancelConfirmBtn" class="cancel-modal-btn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // البيانات الأولية
+        let importantItems = [
+            "شطه حلوة", "شطة حدة", "بابريكا مدخنة", "فلفل اسود ناعم", "كزبرة ناعمة",
+            "كزبرة حب", "قرفة خشنة عيدان", "قرفة سيجار", "كمون ناعم", "كمون حب",
+            "كاكاو نخب اول", "كاكاو نخب ثاني", "كركم", "كريمة محلاية", "كبسة ناعمة",
+            "كبسة خليجية", "كاري", "مندي", "زنجبيل خشن", "زنجبيل ناعم", "سمسم",
+            "سماق ناعم", "شيش", "شاورما", "حبة البركة", "ثوم ناعم", "بصل ناعم",
+            "ملح ليمون", "ملح صيني", "ماجي صفراء", "ماجي بيضاء", "مشكلة", "مشكلة بيضاء",
+            "نشا مصري", "هيل ناعم", "هيل حب"
+        ];
+
+        let spicesExtraItems = [
+            "عصفر", "توابل هندية حارة", "صفار الزعفران", "صفار البيض", "فلفل اسود حب",
+            "فلفل ابيض ناعم", "فلافل", "فاهيتا", "قرنفل ناعم", "قرنفل حب", "قرفة ناعمة",
+            "قلي", "كتشب", "كراوية", "كريسبي", "بطاطا", "بروستد", "زعتر اوريجانو",
+            "بيتزا", "جوزة الطيب ناعمة", "جوزة الطيب حب", "حلبة حب", "حلبة ناعمة",
+            "خل نكهة", "خميرة", "لحمة خاروف", "مكسيكي", "مشاوي", "مدخنة", "محاشي",
+            "نشا درس", "يانسون ناعم", "سدر ناعم", "سمك", "سجق", "سحلب", "شبة ناعمة", "نوديلز اندومي"
+        ];
+
+        let extraItems = [
+            "بذر دوار شمس ملكي", "بذر دوار شمس الشبح", "بذر اصفر ملكي", "بذر اسود ملكي",
+            "بذر كوسا", "بذر ابيض عريض", "فستق مدخن", "فستق مملح", "ذرة الفوشار", "شوفان",
+            "نعنع يابس", "نسكافية خشنة", "اشلميش", "لوز ني", "كاجو ني", "لوز بقشرو",
+            "فستق ني", "لبان الدكر", "لومي", "لومي اسود", "كركدية", "زهرة الالماسة",
+            "شمرا ناعمة", "شمرا حب", "زهورات مشكلة", "جوز امريكي", "تمر سري", "جوز هند خشن",
+            "جوز هند ناعم", "بذور الشيا", "بذور الكتان", "بذور الرشاد", "رمان زركش"
+        ];
+
+        // State variables
+        let currentType = 'important';
+        let currentEditIndex = null;
+        let currentDeleteIndex = null;
+        let currentSearch = {
+            important: '',
+            spices: '',
+            extra: ''
+        };
+
+        // Initialize
+        function init() {
+            loadFromLocalStorage();
+            renderAllTables();
+            setupEventListeners();
+            updateCounters();
+        }
+
+        // Load/Save to localStorage
+        function loadFromLocalStorage() {
+            const savedImportant = localStorage.getItem('manage_important_items');
+            const savedSpices = localStorage.getItem('manage_spices_items');
+            const savedExtra = localStorage.getItem('manage_extra_items');
+            
+            if (savedImportant) importantItems = JSON.parse(savedImportant);
+            if (savedSpices) spicesExtraItems = JSON.parse(savedSpices);
+            if (savedExtra) extraItems = JSON.parse(savedExtra);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('manage_important_items', JSON.stringify(importantItems));
+            localStorage.setItem('manage_spices_items', JSON.stringify(spicesExtraItems));
+            localStorage.setItem('manage_extra_items', JSON.stringify(extraItems));
+        }
+
+        // Sync with main app (update constants.js style)
+        function syncWithMainApp() {
+            // تحديث المتغيرات العامة في التطبيق الرئيسي إذا كانت موجودة
+            if (window.importantItemsList) {
+                window.importantItemsList = [...importantItems];
+            }
+            if (window.spicesExtraItemsList) {
+                window.spicesExtraItemsList = [...spicesExtraItems];
+            }
+            if (window.extraItemsList) {
+                window.extraItemsList = [...extraItems];
+            }
+            
+            // حفظ في localStorage للمزامنة
+            localStorage.setItem('global_important_items', JSON.stringify(importantItems));
+            localStorage.setItem('global_spices_items', JSON.stringify(spicesExtraItems));
+            localStorage.setItem('global_extra_items', JSON.stringify(extraItems));
+        }
+
+        // Render tables
+        function renderAllTables() {
+            renderTable('important', importantItems, 'importantTableBody', currentSearch.important);
+            renderTable('spices', spicesExtraItems, 'spicesTableBody', currentSearch.spices);
+            renderTable('extra', extraItems, 'extraTableBody', currentSearch.extra);
+            updateCounters();
+            syncWithMainApp();
+        }
+
+        function renderTable(type, items, tbodyId, searchTerm) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+            
+            const filtered = items.filter(item => 
+                item.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>لا توجد بيانات</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map((item, idx) => {
+                const originalIndex = items.indexOf(item);
+                return `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${escapeHtml(item)}</strong></td>
+                        <td class="action-buttons">
+                            <button class="edit-btn" onclick="openEditModal('${type}', ${originalIndex})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="openConfirmModal('${type}', ${originalIndex})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Update counters
+        function updateCounters() {
+            document.getElementById('importantCount').textContent = importantItems.length;
+            document.getElementById('spicesCount').textContent = spicesExtraItems.length;
+            document.getElementById('extraCount').textContent = extraItems.length;
+        }
+
+        // CRUD Operations
+        function addItem(type, name) {
+            if (!name.trim()) {
+                showToast('الرجاء إدخال اسم صحيح', 'error');
+                return false;
+            }
+            
+            if (name.length < 2) {
+                showToast('الاسم قصير جداً (يجب أن يكون حرفين على الأقل)', 'error');
+                return false;
+            }
+            
+            let items;
+            switch(type) {
+                case 'important': items = importantItems; break;
+                case 'spices': items = spicesExtraItems; break;
+                case 'extra': items = extraItems; break;
+                default: return false;
+            }
+            
+            if (items.includes(name.trim())) {
+                showToast('هذا العنصر موجود بالفعل!', 'error');
+                return false;
+            }
+            
+            items.push(name.trim());
+            saveToLocalStorage();
+            renderAllTables();
+            showToast(`✓ تمت إضافة "${name}" بنجاح`, 'success');
+            return true;
+        }
+
+        function updateItem(type, index, newName) {
+            if (!newName.trim()) {
+                showToast('الرجاء إدخال اسم صحيح', 'error');
+                return false;
+            }
+            
+            let items;
+            switch(type) {
+                case 'important': items = importantItems; break;
+                case 'spices': items = spicesExtraItems; break;
+                case 'extra': items = extraItems; break;
+                default: return false;
+            }
+            
+            if (index < 0 || index >= items.length) return false;
+            
+            const oldName = items[index];
+            items[index] = newName.trim();
+            saveToLocalStorage();
+            renderAllTables();
+            showToast(`✓ تم تعديل "${oldName}" إلى "${newName}"`, 'success');
+            return true;
+        }
+
+        function deleteItem(type, index) {
+            let items;
+            let typeName;
+            switch(type) {
+                case 'important': items = importantItems; typeName = 'البهار'; break;
+                case 'spices': items = spicesExtraItems; typeName = 'البهار'; break;
+                case 'extra': items = extraItems; typeName = 'المنتج'; break;
+                default: return;
+            }
+            
+            if (index < 0 || index >= items.length) return;
+            
+            const deletedName = items[index];
+            items.splice(index, 1);
+            saveToLocalStorage();
+            renderAllTables();
+            showToast(`✓ تم حذف ${typeName} "${deletedName}" بنجاح`, 'success');
+        }
+
+        // Modal Functions
+        function openAddModal(type) {
+            currentType = type;
+            currentEditIndex = null;
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> إضافة عنصر جديد';
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemModal').classList.add('active');
+            document.getElementById('itemName').focus();
+        }
+
+        function openEditModal(type, index) {
+            currentType = type;
+            currentEditIndex = index;
+            
+            let items;
+            switch(type) {
+                case 'important': items = importantItems; break;
+                case 'spices': items = spicesExtraItems; break;
+                case 'extra': items = extraItems; break;
+                default: return;
+            }
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل العنصر';
+            document.getElementById('itemName').value = items[index];
+            document.getElementById('itemModal').classList.add('active');
+            document.getElementById('itemName').focus();
+        }
+
+        function openConfirmModal(type, index) {
+            currentType = type;
+            currentDeleteIndex = index;
+            
+            let items;
+            switch(type) {
+                case 'important': items = importantItems; break;
+                case 'spices': items = spicesExtraItems; break;
+                case 'extra': items = extraItems; break;
+                default: return;
+            }
+            
+            document.getElementById('confirmMessage').textContent = `هل أنت متأكد من حذف "${items[index]}"؟`;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeModals() {
+            document.getElementById('itemModal').classList.remove('active');
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function saveModal() {
+            const name = document.getElementById('itemName').value;
+            
+            if (currentEditIndex !== null) {
+                updateItem(currentType, currentEditIndex, name);
+            } else {
+                addItem(currentType, name);
+            }
+            
+            closeModals();
+        }
+
+        function confirmDelete() {
+            if (currentDeleteIndex !== null) {
+                deleteItem(currentType, currentDeleteIndex);
+            }
+            closeModals();
+        }
+
+        // Search handlers
+        function setupSearch() {
+            const importantSearch = document.getElementById('importantSearch');
+            const spicesSearch = document.getElementById('spicesSearch');
+            const extraSearch = document.getElementById('extraSearch');
+            
+            if (importantSearch) {
+                importantSearch.addEventListener('input', (e) => {
+                    currentSearch.important = e.target.value;
+                    renderTable('important', importantItems, 'importantTableBody', currentSearch.important);
+                });
+            }
+            
+            if (spicesSearch) {
+                spicesSearch.addEventListener('input', (e) => {
+                    currentSearch.spices = e.target.value;
+                    renderTable('spices', spicesExtraItems, 'spicesTableBody', currentSearch.spices);
+                });
+            }
+            
+            if (extraSearch) {
+                extraSearch.addEventListener('input', (e) => {
+                    currentSearch.extra = e.target.value;
+                    renderTable('extra', extraItems, 'extraTableBody', currentSearch.extra);
+                });
+            }
+        }
+
+        // Tab switching
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    document.querySelectorAll('.panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    
+                    if (tabId === 'important') document.getElementById('importantPanel').classList.add('active');
+                    if (tabId === 'spices') document.getElementById('spicesPanel').classList.add('active');
+                    if (tabId === 'extra') document.getElementById('extraPanel').classList.add('active');
+                });
+            });
+        }
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'error' ? '#dc2626' : '#2e7d32';
+            toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            document.getElementById('saveModalBtn').addEventListener('click', saveModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModals);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+            document.getElementById('cancelConfirmBtn').addEventListener('click', closeModals);
+            
+            // Enter key in modal input
+            document.getElementById('itemName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') saveModal();
+            });
+            
+            // Close modal on outside click
+            document.getElementById('itemModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('itemModal')) closeModals();
+            });
+            document.getElementById('confirmModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('confirmModal')) closeModals();
+            });
+        }
+
+        // Export functions to global
+        window.openAddModal = openAddModal;
+        window.openEditModal = openEditModal;
+        window.openConfirmModal = openConfirmModal;
+        window.closeModals = closeModals;
+        window.saveModal = saveModal;
+        window.confirmDelete = confirmDelete;
+
+        // Initialize
+        init();
+        setupTabs();
+        setupSearch();
+        
+        console.log('✅ إدارة البيانات جاهزة');
+    </script>
+</body>
+  </html>
