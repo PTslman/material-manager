@@ -50,7 +50,7 @@ function showToast(msg, isErr = false) {
     div.style.background = isErr ? '#dc2626' : '#2e7d32';
     div.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
     document.body.appendChild(div);
-    setTimeout(() => div.remove(), 2500);
+    setTimeout(() => div.remove(), 3000);
 }
 
 function escapeHtml(str) {
@@ -104,7 +104,9 @@ function renderAllMaterials(materials) {
             const id = btn.getAttribute('data-id');
             const material = allMaterials.find(m => m.id === id);
             if (confirm(`⚠️ هل أنت متأكد من حذف "${material?.name}"؟`)) {
-                materialsCollection.doc(id).delete().then(() => showToast("✅ تم حذف المادة")).catch(e => showToast("❌ فشل الحذف", true));
+                materialsCollection.doc(id).delete().then(() => {
+                    showToast("✅ تم حذف المادة");
+                }).catch(e => showToast("❌ فشل الحذف", true));
             }
         };
     });
@@ -143,6 +145,7 @@ function renderImportantFiltered(filter = '') {
     if (!container) return;
     const filtered = importantItemsList.filter(item => item.includes(filter));
     container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="imp_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="imp_qty_${idx}" value="1" min="1" max="5" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
+    
     document.querySelectorAll('#importantListContainer .qty-btn').forEach(btn => {
         btn.onclick = () => {
             let idx = btn.dataset.idx;
@@ -160,6 +163,7 @@ function renderSpicesExtraFiltered(filter = '') {
     if (!container) return;
     const filtered = spicesExtraItemsList.filter(item => item.includes(filter));
     container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="sp_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="sp_qty_${idx}" value="1" min="1" max="10" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
+    
     document.querySelectorAll('#spicesExtraListContainer .qty-btn').forEach(btn => {
         btn.onclick = () => {
             let idx = btn.dataset.idx;
@@ -177,6 +181,7 @@ function renderQuickFiltered(filter = '') {
     if (!container) return;
     const filtered = extraItemsList.filter(item => item.includes(filter));
     container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="quick_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="quick_qty_${idx}" value="1" min="1" max="10" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
+    
     document.querySelectorAll('#quickListContainer .qty-btn').forEach(btn => {
         btn.onclick = () => {
             let idx = btn.dataset.idx;
@@ -195,112 +200,295 @@ function renderBags() {
     container.innerHTML = bagTypesList.map((b, i) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="bag_chk_${i}"><span>${escapeHtml(b)}</span></div></div>`).join('');
 }
 
-// ==================== دوال الإضافة ====================
+// ==================== دوال الإضافة إلى Firebase ====================
 async function addSelectedImportant() {
+    console.log('📦 addSelectedImportant called');
     let items = [];
     for (let i = 0; i < importantItemsList.length; i++) {
-        if (document.getElementById(`imp_chk_${i}`)?.checked) {
+        const chk = document.getElementById(`imp_chk_${i}`);
+        if (chk && chk.checked) {
             let qty = parseInt(document.getElementById(`imp_qty_${i}`).value);
             items.push({ name: importantItemsList[i], quantity: qty });
+            console.log(`✅ Selected: ${importantItemsList[i]} x ${qty}`);
         }
     }
-    if (items.length === 0) { showToast("⭐ اختر مادة", true); return; }
-    let batch = db.batch();
-    items.forEach(p => {
-        let ref = materialsCollection.doc();
-        batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "مواد هامة", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
-    });
-    await batch.commit();
-    showToast(`✓ تم إضافة ${items.length} مادة`);
-    document.getElementById('importantModal').classList.remove('active');
+    
+    if (items.length === 0) {
+        showToast("⭐ اختر مادة هامة على الأقل", true);
+        return;
+    }
+    
+    try {
+        let batch = db.batch();
+        items.forEach(p => {
+            let ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: p.name,
+                unitType: 'kg',
+                quantity: p.quantity,
+                notes: "مواد هامة سريعة",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "main"
+            });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} مادة بنجاح`);
+        
+        // إغلاق النافذة
+        document.getElementById('importantModal').classList.remove('active');
+        
+        // تنظيف التحديدات
+        for (let i = 0; i < importantItemsList.length; i++) {
+            const chk = document.getElementById(`imp_chk_${i}`);
+            if (chk) chk.checked = false;
+            const qtyInput = document.getElementById(`imp_qty_${i}`);
+            if (qtyInput) qtyInput.value = "1";
+        }
+        
+        // تحديث شريط الحالة
+        const itemsCount = document.getElementById('syncItemsCount');
+        if (itemsCount) {
+            const currentCount = parseInt(itemsCount.innerText.match(/\d+/) || 0);
+            itemsCount.innerHTML = `<i class="fas fa-database"></i> ${currentCount + items.length} عنصر`;
+        }
+        
+    } catch (error) {
+        console.error('Error adding items:', error);
+        showToast("❌ فشل إضافة المواد", true);
+    }
 }
 
 async function addSelectedSpicesExtra() {
+    console.log('📦 addSelectedSpicesExtra called');
     let items = [];
     for (let i = 0; i < spicesExtraItemsList.length; i++) {
-        if (document.getElementById(`sp_chk_${i}`)?.checked) {
+        const chk = document.getElementById(`sp_chk_${i}`);
+        if (chk && chk.checked) {
             let qty = parseInt(document.getElementById(`sp_qty_${i}`).value);
             items.push({ name: spicesExtraItemsList[i], quantity: qty });
+            console.log(`✅ Selected: ${spicesExtraItemsList[i]} x ${qty}`);
         }
     }
-    if (items.length === 0) { showToast("🌿 اختر بهار", true); return; }
-    let batch = db.batch();
-    items.forEach(p => {
-        let ref = materialsCollection.doc();
-        batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بهارات اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "spices_extra" });
-    });
-    await batch.commit();
-    showToast(`✓ تم إضافة ${items.length} بهار`);
-    document.getElementById('spicesExtraModal').classList.remove('active');
+    
+    if (items.length === 0) {
+        showToast("🌿 اختر بهاراً على الأقل", true);
+        return;
+    }
+    
+    try {
+        let batch = db.batch();
+        items.forEach(p => {
+            let ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: p.name,
+                unitType: 'kg',
+                quantity: p.quantity,
+                notes: "بهارات اضافية",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "spices_extra"
+            });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} بهار بنجاح`);
+        
+        document.getElementById('spicesExtraModal').classList.remove('active');
+        
+        for (let i = 0; i < spicesExtraItemsList.length; i++) {
+            const chk = document.getElementById(`sp_chk_${i}`);
+            if (chk) chk.checked = false;
+            const qtyInput = document.getElementById(`sp_qty_${i}`);
+            if (qtyInput) qtyInput.value = "1";
+        }
+        
+    } catch (error) {
+        console.error('Error adding items:', error);
+        showToast("❌ فشل إضافة البهارات", true);
+    }
 }
 
 async function addSelectedQuick() {
+    console.log('📦 addSelectedQuick called');
     let items = [];
     for (let i = 0; i < extraItemsList.length; i++) {
-        if (document.getElementById(`quick_chk_${i}`)?.checked) {
+        const chk = document.getElementById(`quick_chk_${i}`);
+        if (chk && chk.checked) {
             let qty = parseInt(document.getElementById(`quick_qty_${i}`).value);
             items.push({ name: extraItemsList[i], quantity: qty });
+            console.log(`✅ Selected: ${extraItemsList[i]} x ${qty}`);
         }
     }
-    if (items.length === 0) { showToast("🌱 اختر منتج", true); return; }
-    let batch = db.batch();
-    items.forEach(p => {
-        let ref = materialsCollection.doc();
-        batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بذوريات", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
-    });
-    await batch.commit();
-    showToast(`✓ تم إضافة ${items.length} منتج`);
-    document.getElementById('quickModal').classList.remove('active');
+    
+    if (items.length === 0) {
+        showToast("🌱 اختر منتجاً على الأقل", true);
+        return;
+    }
+    
+    try {
+        let batch = db.batch();
+        items.forEach(p => {
+            let ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: p.name,
+                unitType: 'kg',
+                quantity: p.quantity,
+                notes: "بذوريات وأعشاب",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "extra"
+            });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} منتج بنجاح`);
+        
+        document.getElementById('quickModal').classList.remove('active');
+        
+        for (let i = 0; i < extraItemsList.length; i++) {
+            const chk = document.getElementById(`quick_chk_${i}`);
+            if (chk) chk.checked = false;
+            const qtyInput = document.getElementById(`quick_qty_${i}`);
+            if (qtyInput) qtyInput.value = "1";
+        }
+        
+    } catch (error) {
+        console.error('Error adding items:', error);
+        showToast("❌ فشل إضافة المنتجات", true);
+    }
 }
 
 async function addSelectedBags() {
+    console.log('📦 addSelectedBags called');
     let selected = [];
     for (let i = 0; i < bagTypesList.length; i++) {
-        if (document.getElementById(`bag_chk_${i}`)?.checked) selected.push(bagTypesList[i]);
+        if (document.getElementById(`bag_chk_${i}`)?.checked) {
+            selected.push(bagTypesList[i]);
+            console.log(`✅ Selected bag: ${bagTypesList[i]}`);
+        }
     }
-    if (selected.length === 0) { showToast("📦 اختر كيس", true); return; }
-    let batch = db.batch();
-    selected.forEach(b => {
-        let ref = materialsCollection.doc();
-        batch.set(ref, { name: `كيس تعبئة - ${b}`, unitType: 'bag', quantity: 1, notes: "أكياس", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
-    });
-    await batch.commit();
-    showToast(`✓ تم إضافة ${selected.length} نوع`);
-    document.getElementById('bagsModal').classList.remove('active');
+    
+    if (selected.length === 0) {
+        showToast("📦 اختر نوع كيس على الأقل", true);
+        return;
+    }
+    
+    try {
+        let batch = db.batch();
+        selected.forEach(b => {
+            let ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: `كيس تعبئة - ${b}`,
+                unitType: 'bag',
+                quantity: 1,
+                notes: "أكياس تعبئة",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "extra"
+            });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${selected.length} نوع كيس بنجاح`);
+        
+        document.getElementById('bagsModal').classList.remove('active');
+        
+        for (let i = 0; i < bagTypesList.length; i++) {
+            const chk = document.getElementById(`bag_chk_${i}`);
+            if (chk) chk.checked = false;
+        }
+        
+    } catch (error) {
+        console.error('Error adding bags:', error);
+        showToast("❌ فشل إضافة الأكياس", true);
+    }
 }
 
 async function addTawsaya() {
     let name = document.getElementById('tawsayaName')?.value.trim();
-    if (!name) { showToast("✏️ اسم المنتج", true); return; }
+    if (!name) {
+        showToast("✏️ اكتب اسم المنتج", true);
+        return;
+    }
+    
     let type = document.querySelector('#tawsayaTypeGroup .unit-btn.active')?.getAttribute('data-type');
     let qty = 1;
-    if (type === 'kg') qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
-    else if (type === 'half') qty = 0.5;
-    else qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
-    if (isNaN(qty) || qty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-    await materialsCollection.add({ name, unitType: 'kg', quantity: qty, notes: "توصاية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "tawsaya" });
-    showToast(`✓ تمت إضافة "${name}"`);
-    document.getElementById('tawsayaModal').classList.remove('active');
+    
+    if (type === 'kg') {
+        qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    } else if (type === 'half') {
+        qty = 0.5;
+    } else {
+        qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    }
+    
+    if (isNaN(qty) || qty <= 0) {
+        showToast("🔢 كمية صحيحة", true);
+        return;
+    }
+    
+    try {
+        await materialsCollection.add({
+            name: name,
+            unitType: 'kg',
+            quantity: qty,
+            notes: "توصاية",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            priority: "tawsaya"
+        });
+        showToast(`✓ تمت إضافة "${name}"`);
+        
+        document.getElementById('tawsayaName').value = "";
+        document.getElementById('tawsayaCustomQty').value = "1";
+        document.getElementById('tawsayaModal').classList.remove('active');
+        
+    } catch (error) {
+        console.error('Error adding tawsaya:', error);
+        showToast("❌ فشل إضافة التوصاية", true);
+    }
 }
 
 async function saveEdit() {
     if (!currentEditId) return;
     let newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
-    if (isNaN(newQty) || newQty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-    await materialsCollection.doc(currentEditId).update({ quantity: newQty });
-    showToast("✓ تم تحديث الكمية");
-    document.getElementById('editModal').classList.remove('active');
-    currentEditId = null;
+    if (isNaN(newQty) || newQty <= 0) {
+        showToast("🔢 كمية صحيحة", true);
+        return;
+    }
+    try {
+        await materialsCollection.doc(currentEditId).update({ quantity: newQty });
+        showToast("✓ تم تحديث الكمية");
+        document.getElementById('editModal').classList.remove('active');
+        currentEditId = null;
+    } catch (error) {
+        console.error('Error updating quantity:', error);
+        showToast("❌ فشل التحديث", true);
+    }
 }
 
 async function addNewMaterialDirect() {
     let name = document.getElementById('newMaterialName')?.value.trim();
-    if (!name) { showToast("✏️ اكتب اسم المادة", true); return; }
+    if (!name) {
+        showToast("✏️ اكتب اسم المادة", true);
+        return;
+    }
     let quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
-    if (isNaN(quantity) || quantity <= 0) { showToast("🔢 كمية صحيحة", true); return; }
-    await materialsCollection.add({ name, unitType: 'kg', quantity, createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
-    showToast(`✓ تمت إضافة "${name}"`);
-    document.getElementById('newItemModal').classList.remove('active');
+    if (isNaN(quantity) || quantity <= 0) {
+        showToast("🔢 كمية صحيحة", true);
+        return;
+    }
+    try {
+        await materialsCollection.add({
+            name: name,
+            unitType: 'kg',
+            quantity: quantity,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            priority: "main"
+        });
+        showToast(`✓ تمت إضافة "${name}"`);
+        
+        document.getElementById('newMaterialName').value = "";
+        document.getElementById('newQuantityValue').value = "1";
+        document.getElementById('newItemModal').classList.remove('active');
+        
+    } catch (error) {
+        console.error('Error adding material:', error);
+        showToast("❌ خطأ في الاتصال", true);
+    }
 }
 
 // ==================== المزامنة مع Firebase ====================
@@ -358,7 +546,6 @@ function startListener() {
         if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
         if (syncDot) syncDot.className = 'sync-dot offline';
         
-        // حتى لو فشل الاتصال، نخفي شاشة البداية بعد 3 ثوان
         if (!isDataLoaded) {
             isDataLoaded = true;
             setTimeout(hideSplashScreen, 3000);
@@ -379,7 +566,6 @@ function hideSplashScreen() {
     }
 }
 
-// ==================== المزامنة التلقائية ====================
 function startAutoSync() {
     if (autoSyncInterval) {
         clearInterval(autoSyncInterval);
@@ -395,34 +581,47 @@ function startAutoSync() {
         }
         startListener();
         
-    }, 30000); // كل 30 ثانية
+    }, 30000);
     
     console.log('✅ المزامنة التلقائية مفعلة (كل 30 ثانية)');
 }
 
 // ==================== ربط الأحداث ====================
 function bindEvents() {
-    document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
+    // زر إضافة مادة رئيسي
+    document.getElementById('mainAddBtn').onclick = () => {
+        document.getElementById('newItemModal').classList.add('active');
+        document.getElementById('newMaterialName').focus();
+    };
     
+    // زر المزامنة
     document.getElementById('syncBtn').onclick = () => {
         if (unsubscribe) unsubscribe();
         startListener();
         showToast("🔄 جاري المزامنة...");
     };
     
-    document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
+    // زر تغيير الثيم
+    document.getElementById('themeToggle').onclick = () => {
+        document.body.classList.toggle('dark');
+    };
     
+    // زر النسخ الاحتياطي
     document.getElementById('backupBtn').onclick = () => {
-        if (allMaterials.length === 0) { showToast("📭 لا توجد بيانات", true); return; }
+        if (allMaterials.length === 0) {
+            showToast("📭 لا توجد بيانات", true);
+            return;
+        }
         let data = JSON.stringify(allMaterials, null, 2);
         let blob = new Blob([data]);
         let a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `backup_${new Date().toISOString().slice(0,19)}.json`;
         a.click();
-        showToast("💾 تم النسخ");
+        showToast("💾 تم نسخ البيانات");
     };
     
+    // زر الاستعادة
     document.getElementById('restoreBtn').onclick = () => {
         let input = document.createElement('input');
         input.type = 'file';
@@ -444,70 +643,168 @@ function bindEvents() {
                         if (unsubscribe) unsubscribe();
                         startListener();
                     }
-                } catch(e) { showToast("❌ ملف غير صالح", true); }
+                } catch(e) {
+                    showToast("❌ ملف غير صالح", true);
+                }
             };
             reader.readAsText(file);
         };
         input.click();
     };
     
+    // زر مسح الكل
     document.getElementById('clearAllBtn').onclick = async () => {
-        if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
+        if (allMaterials.length === 0) {
+            showToast("📭 القائمة فارغة", true);
+            return;
+        }
         if (confirm("⚠️ حذف جميع المواد نهائياً؟")) {
             let batch = db.batch();
             allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
             await batch.commit();
-            showToast("✓ تم المسح");
+            showToast("✓ تم مسح القائمة");
         }
     };
     
     // أزرار الجداول الأربعة
-    document.getElementById('importantProductsBtn').onclick = () => { renderImportantFiltered(''); document.getElementById('importantModal').classList.add('active'); };
-    document.getElementById('spicesExtraBtn').onclick = () => { renderSpicesExtraFiltered(''); document.getElementById('spicesExtraModal').classList.add('active'); };
-    document.getElementById('quickProductsBtn').onclick = () => { renderQuickFiltered(''); document.getElementById('quickModal').classList.add('active'); };
-    document.getElementById('bagsManagerBtn').onclick = () => { renderBags(); document.getElementById('bagsModal').classList.add('active'); };
-    document.getElementById('tawsayaQuickBtn').onclick = () => document.getElementById('tawsayaModal').classList.add('active');
-    
-    // أزرار الإغلاق
-    document.getElementById('closeNewModalBtn').onclick = () => document.getElementById('newItemModal').classList.remove('active');
-    document.getElementById('closeImportantModalBtn').onclick = () => document.getElementById('importantModal').classList.remove('active');
-    document.getElementById('closeSpicesExtraModalBtn').onclick = () => document.getElementById('spicesExtraModal').classList.remove('active');
-    document.getElementById('closeQuickModalBtn').onclick = () => document.getElementById('quickModal').classList.remove('active');
-    document.getElementById('closeBagsModalBtn').onclick = () => document.getElementById('bagsModal').classList.remove('active');
-    document.getElementById('closeTawsayaModalBtn').onclick = () => document.getElementById('tawsayaModal').classList.remove('active');
-    document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('editModal').classList.remove('active');
-    document.getElementById('closeSystemMessageBtn').onclick = () => document.getElementById('systemMessageModal').classList.remove('active');
-    document.getElementById('cancelDeleteBtn').onclick = () => document.getElementById('confirmDeleteModal').classList.remove('active');
-    
-    // أزرار الحفظ
-    document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
-    document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
-    document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
-    document.getElementById('saveQuickBtn').onclick = addSelectedQuick;
-    document.getElementById('saveBagsBtn').onclick = addSelectedBags;
-    document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
-    document.getElementById('saveEditBtn').onclick = saveEdit;
-    document.getElementById('confirmDeleteBtn').onclick = () => {
-        document.getElementById('confirmDeleteModal').classList.remove('active');
+    document.getElementById('importantProductsBtn').onclick = () => {
+        renderImportantFiltered('');
+        document.getElementById('importantModal').classList.add('active');
+        document.getElementById('importantSearchInput').focus();
     };
     
+    document.getElementById('spicesExtraBtn').onclick = () => {
+        renderSpicesExtraFiltered('');
+        document.getElementById('spicesExtraModal').classList.add('active');
+        document.getElementById('spicesExtraSearchInput').focus();
+    };
+    
+    document.getElementById('quickProductsBtn').onclick = () => {
+        renderQuickFiltered('');
+        document.getElementById('quickModal').classList.add('active');
+        document.getElementById('quickSearchInput').focus();
+    };
+    
+    document.getElementById('bagsManagerBtn').onclick = () => {
+        renderBags();
+        document.getElementById('bagsModal').classList.add('active');
+        document.getElementById('bagsSearchInput').focus();
+    };
+    
+    document.getElementById('tawsayaQuickBtn').onclick = () => {
+        document.getElementById('tawsayaModal').classList.add('active');
+        document.getElementById('tawsayaName').focus();
+    };
+    
+    // أزرار إضافة المحددة في النوافذ
+    const saveImportantBtn = document.getElementById('saveImportantBtn');
+    if (saveImportantBtn) {
+        saveImportantBtn.onclick = addSelectedImportant;
+        console.log('✅ saveImportantBtn bound');
+    }
+    
+    const saveSpicesExtraBtn = document.getElementById('saveSpicesExtraBtn');
+    if (saveSpicesExtraBtn) {
+        saveSpicesExtraBtn.onclick = addSelectedSpicesExtra;
+        console.log('✅ saveSpicesExtraBtn bound');
+    }
+    
+    const saveQuickBtn = document.getElementById('saveQuickBtn');
+    if (saveQuickBtn) {
+        saveQuickBtn.onclick = addSelectedQuick;
+        console.log('✅ saveQuickBtn bound');
+    }
+    
+    const saveBagsBtn = document.getElementById('saveBagsBtn');
+    if (saveBagsBtn) {
+        saveBagsBtn.onclick = addSelectedBags;
+        console.log('✅ saveBagsBtn bound');
+    }
+    
+    const saveTawsayaBtn = document.getElementById('saveTawsayaBtn');
+    if (saveTawsayaBtn) {
+        saveTawsayaBtn.onclick = addTawsaya;
+        console.log('✅ saveTawsayaBtn bound');
+    }
+    
+    const saveNewItemBtn = document.getElementById('saveNewItemBtn');
+    if (saveNewItemBtn) {
+        saveNewItemBtn.onclick = addNewMaterialDirect;
+        console.log('✅ saveNewItemBtn bound');
+    }
+    
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    if (saveEditBtn) {
+        saveEditBtn.onclick = saveEdit;
+        console.log('✅ saveEditBtn bound');
+    }
+    
+    // أزرار الإغلاق
+    const closeModalButtons = [
+        'closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn',
+        'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn',
+        'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'
+    ];
+    
+    closeModalButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.onclick = () => {
+                const modalId = btnId.replace('close', '').replace('ModalBtn', 'Modal').replace('cancelDeleteBtn', 'confirmDeleteModal');
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.remove('active');
+            };
+        }
+    });
+    
     // أزرار البحث
-    document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
-    document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
-    document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
+    const importantSearch = document.getElementById('importantSearchInput');
+    if (importantSearch) {
+        importantSearch.oninput = (e) => renderImportantFiltered(e.target.value);
+    }
+    
+    const spicesExtraSearch = document.getElementById('spicesExtraSearchInput');
+    if (spicesExtraSearch) {
+        spicesExtraSearch.oninput = (e) => renderSpicesExtraFiltered(e.target.value);
+    }
+    
+    const quickSearch = document.getElementById('quickSearchInput');
+    if (quickSearch) {
+        quickSearch.oninput = (e) => renderQuickFiltered(e.target.value);
+    }
+    
+    const bagsSearch = document.getElementById('bagsSearchInput');
+    if (bagsSearch) {
+        bagsSearch.oninput = (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('#bagsListContainer .modern-item-card');
+            items.forEach(item => {
+                const name = item.querySelector('.item-name')?.innerText.toLowerCase() || '';
+                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+            });
+        };
+    }
     
     // أزرار الكمية
-    document.getElementById('decrementQty').onclick = () => { let val = parseFloat(document.getElementById('newQuantityValue').value) || 1; val = Math.max(0.25, val - 0.25); document.getElementById('newQuantityValue').value = val; };
-    document.getElementById('incrementQty').onclick = () => { let val = parseFloat(document.getElementById('newQuantityValue').value) || 1; val = val + 0.25; document.getElementById('newQuantityValue').value = val; };
+    const decrementQty = document.getElementById('decrementQty');
+    const incrementQty = document.getElementById('incrementQty');
+    const newQuantityValue = document.getElementById('newQuantityValue');
     
-    // Tawsaya type
-    document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(btn => {
-        btn.onclick = function() {
-            document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById('tawsayaCustomQtyGroup').style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+    if (decrementQty) {
+        decrementQty.onclick = () => {
+            let val = parseFloat(newQuantityValue?.value) || 1;
+            val = Math.max(0.25, val - 0.25);
+            if (newQuantityValue) newQuantityValue.value = val;
         };
-    });
+    }
+    
+    if (incrementQty) {
+        incrementQty.onclick = () => {
+            let val = parseFloat(newQuantityValue?.value) || 1;
+            val = val + 0.25;
+            if (newQuantityValue) newQuantityValue.value = val;
+        };
+    }
     
     // إغلاق النوافذ عند النقر خارجها
     const modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
@@ -515,16 +812,20 @@ function bindEvents() {
         const modal = document.getElementById(id);
         if (modal) {
             modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
             });
         }
     });
+    
+    console.log('✅ All events bound successfully');
 }
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 تشغيل التطبيق...');
     bindEvents();
-    startListener();      // مزامنة فورية عند الفتح
-    startAutoSync();      // مزامنة تلقائية كل 30 ثانية
+    startListener();
+    startAutoSync();
 });
