@@ -574,6 +574,12 @@ function setupPWA() {
     }
 }
 
+// ==================== إغلاق النوافذ (دالة مساعدة) ====================
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+}
+
 // ==================== ربط الأحداث ====================
 function bindEvents() {
     // زر إضافة مادة رئيسي
@@ -610,7 +616,7 @@ function bindEvents() {
         showToast("🔄 محاولة إعادة الاتصال...");
     };
     
-    // أزرار الجداول الأربعة
+    // أزرار الجداول الأربعة - فتح النوافذ
     document.getElementById('importantProductsBtn').onclick = () => {
         renderImportantFiltered('');
         document.getElementById('importantModal').classList.add('active');
@@ -640,38 +646,15 @@ function bindEvents() {
         document.getElementById('tawsayaName').focus();
     };
     
-    // أزرار إغلاق النوافذ المنبثقة
-    document.getElementById('closeNewModalBtn').onclick = () => {
-        document.getElementById('newItemModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeImportantModalBtn').onclick = () => {
-        document.getElementById('importantModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeSpicesExtraModalBtn').onclick = () => {
-        document.getElementById('spicesExtraModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeQuickModalBtn').onclick = () => {
-        document.getElementById('quickModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeBagsModalBtn').onclick = () => {
-        document.getElementById('bagsModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeTawsayaModalBtn').onclick = () => {
-        document.getElementById('tawsayaModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeEditModalBtn').onclick = () => {
-        document.getElementById('editModal').classList.remove('active');
-    };
-    
-    document.getElementById('closeSystemMessageBtn').onclick = () => {
-        document.getElementById('systemMessageModal').classList.remove('active');
-    };
+    // ========== أزرار الإلغاء (إغلاق النوافذ) ==========
+    document.getElementById('closeNewModalBtn').onclick = () => closeModal('newItemModal');
+    document.getElementById('closeImportantModalBtn').onclick = () => closeModal('importantModal');
+    document.getElementById('closeSpicesExtraModalBtn').onclick = () => closeModal('spicesExtraModal');
+    document.getElementById('closeQuickModalBtn').onclick = () => closeModal('quickModal');
+    document.getElementById('closeBagsModalBtn').onclick = () => closeModal('bagsModal');
+    document.getElementById('closeTawsayaModalBtn').onclick = () => closeModal('tawsayaModal');
+    document.getElementById('closeEditModalBtn').onclick = () => closeModal('editModal');
+    document.getElementById('closeSystemMessageBtn').onclick = () => closeModal('systemMessageModal');
     
     // أزرار حفظ النوافذ المنبثقة
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
@@ -686,14 +669,6 @@ function bindEvents() {
     document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
     document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
     document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
-    document.getElementById('bagsSearchInput').oninput = (e) => {
-        const val = e.target.value;
-        const items = document.querySelectorAll('#bagsListContainer .modern-item-card');
-        items.forEach(item => {
-            const name = item.querySelector('.item-name')?.innerText || '';
-            item.style.display = name.includes(val) ? 'flex' : 'none';
-        });
-    };
     
     // أزرار الكمية
     document.getElementById('decrementQty').onclick = () => {
@@ -804,6 +779,7 @@ function restoreData() {
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 App starting...');
     if (localStorage.getItem('theme') === 'dark') setTheme('dark'); else setTheme('light');
     setupPWA();
     bindEvents();
@@ -818,4 +794,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered:', reg.scope))
             .catch(err => console.error('❌ SW failed:', err));
     });
-                    }
+}
