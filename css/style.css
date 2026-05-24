@@ -187,53 +187,50 @@ body {
     border: none;
 }
 
-/* 4 مستطيلات عريضة */
+/* 4 أزرار عريضة */
 .categories-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     margin-bottom: 40px;
 }
 
 .category-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
     background: var(--bg-surface);
-    border-radius: 24px;
     border: 1px solid var(--border-light);
-    overflow: hidden;
+    border-radius: 20px;
+    padding: 20px 24px;
+    cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: var(--shadow-sm);
+    text-align: right;
 }
 
 .category-card:hover {
-    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
 }
 
-.category-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px 24px;
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--bg-surface), var(--primary-bg));
-    transition: background 0.2s;
-}
-
-.category-header:hover {
-    background: linear-gradient(135deg, var(--primary-bg), var(--bg-surface));
+.category-card:active {
+    transform: scale(0.98);
 }
 
 .category-icon {
     width: 56px;
     height: 56px;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 1.6rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .category-info {
@@ -244,12 +241,7 @@ body {
     font-size: 1.2rem;
     font-weight: 800;
     color: var(--primary);
-    margin-bottom: 4px;
-}
-
-.category-desc {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    margin: 0;
 }
 
 .category-arrow {
@@ -258,34 +250,9 @@ body {
     transition: transform 0.2s;
 }
 
-.category-header:hover .category-arrow {
+.category-card:hover .category-arrow {
     transform: translateX(-5px);
     color: var(--primary);
-}
-
-.category-preview {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-light);
-    background: var(--bg-surface);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.preview-tag {
-    background: var(--primary-bg);
-    padding: 6px 16px;
-    border-radius: 40px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--primary);
-    transition: all 0.2s;
-}
-
-.preview-tag:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-1px);
 }
 
 /* المواد */
@@ -853,9 +820,9 @@ body[dir="rtl"] .search-icon {
         justify-content: center;
     }
     
-    .category-header {
-        padding: 16px;
-        gap: 12px;
+    .category-card {
+        padding: 16px 20px;
+        gap: 16px;
     }
     
     .category-icon {
@@ -867,17 +834,4 @@ body[dir="rtl"] .search-icon {
     .category-title {
         font-size: 1rem;
     }
-    
-    .category-desc {
-        font-size: 0.65rem;
     }
-    
-    .category-preview {
-        padding: 12px;
-    }
-    
-    .preview-tag {
-        font-size: 0.65rem;
-        padding: 4px 12px;
-    }
-}
