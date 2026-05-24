@@ -198,30 +198,6 @@ body.dark .tawsaya-btn {
     border: none;
 }
 
-.update-btn {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-}
-
-.refresh-btn {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    border: none;
-}
-
-.manage-data-btn {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: white;
-    border: none;
-}
-
-.manage-units-btn {
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
-    color: white;
-    border: none;
-}
-
 .priority-section {
     margin-bottom: 32px;
 }
@@ -805,4 +781,4 @@ body[dir="rtl"] .search-icon {
     .quantity-modern {
         justify-content: center;
     }
-  }
+    }
