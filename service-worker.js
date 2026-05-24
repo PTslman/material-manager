@@ -1,22 +1,31 @@
-// service-worker.js - Service Worker متقدم
+// service-worker.js - Service Worker متقدم للمشروع على /material-manager/
 
-const CACHE_NAME = 'materials-pwa-v3';
-const DYNAMIC_CACHE = 'materials-dynamic-v3';
-const API_CACHE = 'materials-api-v3';
+const CACHE_NAME = 'material-manager-v3';
+const DYNAMIC_CACHE = 'material-manager-dynamic-v3';
+const API_CACHE = 'material-manager-api-v3';
 
-// الملفات الأساسية للتخزين المؤقت
+// الملفات الأساسية للتخزين المؤقت (مع المسار /material-manager/)
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/js/ui.js',
-  '/js/pwa.js',
-  '/js/firebase-config.js',
-  '/js/constants.js',
-  '/js/utils.js',
-  '/manifest.json',
-  '/offline.html',
+  '/material-manager/',
+  '/material-manager/index.html',
+  '/material-manager/manifest.json',
+  '/material-manager/offline.html',
+  '/material-manager/css/style.css',
+  '/material-manager/js/app.js',
+  '/material-manager/js/ui.js',
+  '/material-manager/js/pwa.js',
+  '/material-manager/js/firebase-config.js',
+  '/material-manager/js/constants.js',
+  '/material-manager/js/utils.js',
+  '/material-manager/icons/icon-72x72.png',
+  '/material-manager/icons/icon-96x96.png',
+  '/material-manager/icons/icon-128x128.png',
+  '/material-manager/icons/icon-144x144.png',
+  '/material-manager/icons/icon-152x152.png',
+  '/material-manager/icons/icon-192x192.png',
+  '/material-manager/icons/icon-384x384.png',
+  '/material-manager/icons/icon-512x512.png',
+  '/material-manager/icons/maskable-icon.png',
   'https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js',
@@ -34,7 +43,7 @@ self.addEventListener('install', event => {
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Skip waiting');
+        console.log('[SW] Installation complete, skip waiting');
         return self.skipWaiting();
       })
       .catch(err => console.error('[SW] Installation failed:', err))
@@ -56,16 +65,13 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      console.log('[SW] Claiming clients');
+      console.log('[SW] Activation complete, claiming clients');
       return self.clients.claim();
     })
   );
 });
 
 // استراتيجية: Cache First ثم Network للملفات الثابتة
-// Network First ثم Cache للـ API
-// Stale While Revalidate للملفات الديناميكية
-
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
@@ -83,10 +89,11 @@ self.addEventListener('fetch', event => {
   }
   
   // استراتيجية Cache First للملفات الثابتة
-  if (STATIC_ASSETS.includes(event.request.url) || 
-      event.request.url.includes('/css/') || 
-      event.request.url.includes('/js/') ||
-      event.request.url.includes('/icons/')) {
+  if (event.request.url.includes('/material-manager/') && 
+      (event.request.url.includes('.css') || 
+       event.request.url.includes('.js') || 
+       event.request.url.includes('.png') ||
+       event.request.url.includes('.json'))) {
     event.respondWith(cacheFirstStrategy(event.request));
     return;
   }
@@ -115,8 +122,8 @@ async function cacheFirstStrategy(request) {
     console.error('[SW] Fetch failed:', error);
     
     // إرجاع صفحة offline إذا كان طلب HTML
-    if (request.headers.get('accept').includes('text/html')) {
-      return caches.match('/offline.html');
+    if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
+      return caches.match('/material-manager/offline.html');
     }
     throw error;
   }
@@ -205,11 +212,11 @@ self.addEventListener('push', event => {
   const title = data.title || 'مدير المواد';
   const options = {
     body: data.body || 'يوجد تحديث في المخزون',
-    icon: data.icon || '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: data.icon || '/material-manager/icons/icon-192x192.png',
+    badge: '/material-manager/icons/icon-72x72.png',
     vibrate: [200, 100, 200],
     data: {
-      url: data.url || '/'
+      url: data.url || '/material-manager/'
     },
     actions: [
       {
@@ -239,7 +246,7 @@ self.addEventListener('notificationclick', event => {
           if (clientList.length > 0) {
             return clientList[0].focus();
           }
-          return self.clients.openWindow('/');
+          return self.clients.openWindow('/material-manager/');
         })
     );
   }
