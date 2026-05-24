@@ -80,7 +80,7 @@ function formatDisplay(mat) {
     return '';
 }
 
-// ==================== إغلاق النوافذ ====================
+// ==================== إغلاق جميع النوافذ ====================
 function closeAllModals() {
     const modals = [
         'newItemModal', 'importantModal', 'spicesExtraModal', 
@@ -357,6 +357,12 @@ async function addSelectedImportant() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} مادة`);
+        
+        // إشعار PWA
+        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
+            window.pwaManager.notifyMaterialAdded(items.length + ' مواد');
+        }
+        
         closeAllModals();
         document.getElementById('importantSearchInput').value = '';
     } catch (e) { showToast("❌ فشل", true); }
@@ -385,6 +391,11 @@ async function addSelectedSpicesExtra() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} بهار`);
+        
+        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
+            window.pwaManager.notifyMaterialAdded(items.length + ' بهارات');
+        }
+        
         closeAllModals();
         document.getElementById('spicesExtraSearchInput').value = '';
     } catch (e) { showToast("❌ فشل", true); }
@@ -413,6 +424,11 @@ async function addSelectedQuick() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} منتج`);
+        
+        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
+            window.pwaManager.notifyMaterialAdded(items.length + ' منتجات');
+        }
+        
         closeAllModals();
         document.getElementById('quickSearchInput').value = '';
     } catch (e) { showToast("❌ فشل", true); }
@@ -439,6 +455,11 @@ async function addSelectedBags() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${selected.length} نوع`);
+        
+        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
+            window.pwaManager.notifyMaterialAdded(selected.length + ' أكياس');
+        }
+        
         for (let i = 0; i < bagTypesList.length; i++) {
             let chk = document.getElementById(`bag_chk_${i}`);
             if (chk) chk.checked = false;
@@ -470,6 +491,11 @@ async function addTawsaya() {
             priority: "tawsaya"
         });
         showToast(`✓ تمت إضافة "${name}"`);
+        
+        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
+            window.pwaManager.notifyMaterialAdded(name);
+        }
+        
         document.getElementById('tawsayaName').value = "";
         document.getElementById('tawsayaCustomQty').value = "1";
         closeAllModals();
@@ -501,6 +527,12 @@ async function addNewMaterialDirect() {
             priority: "main"
         });
         showToast(`✓ تمت إضافة "${name}"`);
+        
+        // إشعار PWA
+        if (window.pwaManager && window.pwaManager.notifyMaterialAdded) {
+            window.pwaManager.notifyMaterialAdded(name);
+        }
+        
         document.getElementById('newMaterialName').value = "";
         document.getElementById('newQuantityValue').value = "1";
         closeAllModals();
@@ -546,7 +578,7 @@ function startAutoSync() {
     if (autoSyncTimer) clearInterval(autoSyncTimer);
     autoSyncTimer = setInterval(() => {
         if (unsubscribe) { unsubscribe(); startListener(); }
-    }, 15 * 60 * 1000);
+    }, 30 * 1000); // كل 30 ثانية
 }
 
 function updateSyncUI(status, itemCount = null) {
@@ -747,7 +779,7 @@ function bindEvents() {
         document.getElementById('tawsayaName').focus();
     };
     
-    // ========== أزرار الإغلاق (الأهم) ==========
+    // أزرار الإغلاق
     document.getElementById('closeNewModalBtn').onclick = closeAllModals;
     document.getElementById('closeImportantModalBtn').onclick = closeAllModals;
     document.getElementById('closeSpicesExtraModalBtn').onclick = closeAllModals;
@@ -826,4 +858,17 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered:', reg.scope))
             .catch(err => console.error('❌ SW failed:', err));
     });
-                }
+}
+
+// ==================== مزامنة تلقائية إضافية ====================
+let extraAutoSync = null;
+setTimeout(() => {
+    if (extraAutoSync) clearInterval(extraAutoSync);
+    extraAutoSync = setInterval(() => {
+        if (typeof startListener === 'function' && isConnected) {
+            console.log('🔄 Extra auto-sync...');
+            if (unsubscribe) unsubscribe();
+            startListener();
+        }
+    }, 30000);
+}, 5000);
