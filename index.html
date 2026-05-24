@@ -18,10 +18,77 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="/material-manager/css/style.css">
+    
+    <style>
+        /* شريط المزامنة العريض المنفصل */
+        .sync-bar {
+            background: linear-gradient(135deg, var(--primary-bg), var(--bg-surface));
+            border-radius: 60px;
+            padding: 6px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .sync-main-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .sync-main-btn i {
+            font-size: 1.1rem;
+        }
+        
+        .sync-main-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .sync-main-btn:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* تعديل شريط الأدوات العلوي */
+        .toolbar {
+            margin-bottom: 16px;
+        }
+        
+        .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* زر المزامنة القديم تم إخفاؤه */
+        #syncBtn {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .sync-main-btn {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Splash Screen (تختفي بعد 2.5 ثانية) -->
+    <!-- Splash Screen -->
     <div id="splashScreen" class="splash">
         <div class="splash-logo">
             <i class="fas fa-boxes"></i>
@@ -41,9 +108,16 @@
         
         <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
         
+        <!-- شريط المزامنة العريض المنفصل -->
+        <div class="sync-bar">
+            <button id="syncBtn" class="sync-main-btn">
+                <i class="fas fa-sync-alt"></i> مزامنة البيانات
+            </button>
+        </div>
+        
+        <!-- شريط الأدوات -->
         <div class="toolbar">
             <div class="toolbar-row">
-                <button id="syncBtn" class="action-btn"><i class="fas fa-sync-alt"></i> مزامنة</button>
                 <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
             </div>
             <div class="toolbar-row">
@@ -255,10 +329,10 @@
     <script src="/material-manager/js/app.js"></script>
     <script src="/material-manager/js/pwa.js"></script>
 
-    <!-- كود إخفاء شاشة البداية بعد 2.5 ثانية (مستقل تماماً) -->
+    <!-- كود إخفاء شاشة البداية بعد 2.5 ثانية -->
     <script>
         (function() {
-            // إخفاء شاشة البداية بعد 2.5 ثانية بغض النظر عن أي شيء
+            // إخفاء شاشة البداية بعد 2.5 ثانية
             setTimeout(function() {
                 var splash = document.getElementById('splashScreen');
                 var app = document.getElementById('appContainer');
