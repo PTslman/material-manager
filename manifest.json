@@ -2,12 +2,20 @@
   "name": "مدير المواد الذكي",
   "short_name": "مدير المواد",
   "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية",
-  "start_url": "/index.html",
+  "start_url": "/index.html?utm_source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#10b981",
   "background_color": "#1a1d21",
   "orientation": "portrait",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "ar",
+  "dir": "rtl",
+  "id": "material-manager-v1",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
   "icons": [
     {
       "src": "icons/icon-72x72.png",
@@ -66,7 +74,7 @@
   ],
   "shortcuts": [
     {
-      "name": "إضافة مادة",
+      "name": "إضافة مادة جديدة",
       "short_name": "إضافة",
       "description": "إضافة مادة جديدة إلى المخزون",
       "url": "/index.html?action=add",
@@ -78,7 +86,7 @@
       ]
     },
     {
-      "name": "بهارات هامة",
+      "name": "البهارات الهامة",
       "short_name": "بهارات",
       "description": "إضافة بهارات هامة",
       "url": "/index.html?action=important",
@@ -88,9 +96,55 @@
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "البذوريات والأعشاب",
+      "short_name": "بذوريات",
+      "description": "إضافة بذوريات وأعشاب",
+      "url": "/index.html?action=extra",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "أكياس التعبئة",
+      "short_name": "أكياس",
+      "description": "إضافة أكياس التعبئة",
+      "url": "/index.html?action=bags",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ],
-  "categories": ["business", "productivity"],
-  "lang": "ar",
-  "dir": "rtl"
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "شاشة المواد الرئيسية"
+    },
+    {
+      "src": "screenshots/screenshot2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "إضافة مادة جديدة"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "note_taking": {
+    "new_note_url": "/index.html?action=add"
+  }
 }
