@@ -8,6 +8,7 @@ let lastSyncDate = null;
 let reconnectAttempts = 0;
 let splashHidden = false;
 let deferredPrompt = null;
+let syncStarted = false;
 
 // ==================== القوائم الثابتة ====================
 const importantItemsList = [
@@ -527,13 +528,25 @@ async function addNewMaterialDirect() {
 
 // ==================== Firebase والمزامنة ====================
 function startListener() {
+    if (syncStarted) {
+        console.log('⚠️ Sync already started, skipping...');
+        return;
+    }
+    
+    syncStarted = true;
     updateSyncUI('syncing');
-    if (unsubscribe) unsubscribe();
+    
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
+    
+    console.log('🔄 Starting Firestore listener...');
     
     const query = materialsCollection.orderBy('createdAt', 'desc');
-    let firstSnapshot = true;
     
     unsubscribe = query.onSnapshot((snapshot) => {
+        console.log('✅ Firestore connected, received', snapshot.size, 'documents');
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -547,19 +560,30 @@ function startListener() {
         lastSyncDate = new Date();
         updateSyncUI('connected', list.length);
         renderAllMaterials(allMaterials);
-        if (firstSnapshot) { 
-            firstSnapshot = false; 
-            forceHideSplash(); 
-            console.log('✅ تمت المزامنة الأولى بنجاح');
+        
+        if (!splashHidden) {
+            forceHideSplash();
         }
         reconnectAttempts = 0;
     }, (error) => {
-        console.error("Firestore error:", error);
+        console.error("❌ Firestore error:", error);
         updateSyncUI('offline');
-        forceHideSplash();
-        if (reconnectAttempts < 3) {
+        
+        if (!splashHidden) {
+            forceHideSplash();
+        }
+        
+        if (reconnectAttempts < 5) {
             reconnectAttempts++;
-            setTimeout(() => { if (unsubscribe) { unsubscribe(); startListener(); } }, 3000);
+            console.log(`🔄 Reconnection attempt ${reconnectAttempts}/5 in 3 seconds...`);
+            setTimeout(() => {
+                if (unsubscribe) {
+                    unsubscribe();
+                    unsubscribe = null;
+                }
+                syncStarted = false;
+                startListener();
+            }, 3000);
         }
     });
 }
@@ -567,10 +591,12 @@ function startListener() {
 function startAutoSync() {
     if (autoSyncTimer) clearInterval(autoSyncTimer);
     autoSyncTimer = setInterval(() => {
-        if (unsubscribe) { 
-            unsubscribe(); 
-            startListener(); 
-            console.log('🔄 مزامنة دورية تلقائية');
+        if (unsubscribe) {
+            console.log('🔄 Auto-sync refreshing...');
+            unsubscribe();
+            unsubscribe = null;
+            syncStarted = false;
+            startListener();
         }
     }, 30 * 1000);
 }
@@ -587,14 +613,17 @@ function updateSyncUI(status, itemCount = null) {
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
         if (syncRetry) syncRetry.style.display = 'none';
         isConnected = true;
+        console.log('✅ Sync status: Connected');
     } else if (status === 'offline') {
         if (syncDot) syncDot.className = 'sync-dot offline';
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
         if (syncRetry) syncRetry.style.display = 'inline-flex';
         isConnected = false;
+        console.log('⚠️ Sync status: Offline');
     } else if (status === 'syncing') {
         if (syncDot) syncDot.className = 'sync-dot syncing';
         if (syncStatusText) syncStatusText.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري المزامنة...';
+        console.log('🔄 Sync status: Syncing...');
     }
     
     if (itemCount !== null && syncItemsCount) {
@@ -614,8 +643,14 @@ function forceHideSplash() {
     const appContainer = document.getElementById('appContainer');
     if (splashEl) {
         splashEl.classList.add('hidden');
-        setTimeout(() => { splashEl.style.display = 'none'; if (appContainer) appContainer.style.display = 'block'; }, 350);
-    } else { if (appContainer) appContainer.style.display = 'block'; }
+        setTimeout(() => { 
+            splashEl.style.display = 'none'; 
+            if (appContainer) appContainer.style.display = 'block'; 
+            console.log('✅ App started, splash hidden');
+        }, 350);
+    } else { 
+        if (appContainer) appContainer.style.display = 'block'; 
+    }
 }
 
 // ==================== PWA والتثبيت ====================
@@ -725,7 +760,11 @@ function bindEvents() {
     };
     
     document.getElementById('syncBtn').onclick = () => {
-        if (unsubscribe) unsubscribe();
+        if (unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+        }
+        syncStarted = false;
         startListener();
         showToast("🔄 مزامنة يدوية");
     };
@@ -738,7 +777,11 @@ function bindEvents() {
     document.getElementById('restoreBtn').onclick = restoreData;
     document.getElementById('clearAllBtn').onclick = clearAll;
     document.getElementById('syncRetry').onclick = () => {
-        if (unsubscribe) unsubscribe();
+        if (unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+        }
+        syncStarted = false;
         startListener();
         showToast("🔄 محاولة إعادة الاتصال...");
     };
@@ -829,7 +872,7 @@ function bindEvents() {
 
 // ==================== التهيئة النهائية ====================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 تطبيق مدير المواد - بدء التشغيل');
+    console.log('🚀 Material Manager - Starting...');
     
     if (localStorage.getItem('theme') === 'dark') {
         setTheme('dark');
@@ -840,14 +883,19 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPWA();
     bindEvents();
     
-    // ✅ المزامنة التلقائية عند فتح التطبيق
-    console.log('🔄 بدء المزامنة الفورية...');
-    startListener();  // تبدأ المزامنة فوراً
+    // بدء المزامنة فوراً
+    console.log('🔄 Starting automatic sync...');
+    startListener();
     
-    // مزامنة دورية كل 30 ثانية
+    // بدء المزامنة الدورية
     startAutoSync();
     
-    setTimeout(() => forceHideSplash(), 3000);
+    // تأخير إخفاء شاشة البداية قليلاً
+    setTimeout(() => {
+        if (!splashHidden) {
+            forceHideSplash();
+        }
+    }, 2000);
 });
 
 if ('serviceWorker' in navigator) {
