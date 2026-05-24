@@ -34,6 +34,32 @@ function getImportantItems() { return importantItemsList.map(name => ({ name, mi
 function getSpicesExtraItems() { return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); }
 function getExtraItems() { return extraItemsList.map(name => ({ name, min: 1, max: 10 })); }
 
+// ==================== دوال مساعدة ====================
+function showToast(msg, isErr = false) {
+    let t = document.querySelector('.toast');
+    if (t) t.remove();
+    let div = document.createElement('div');
+    div.className = 'toast';
+    div.style.background = isErr ? '#dc2626' : '#2e7d32';
+    div.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 2500);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+}
+
+function formatDisplay(mat) {
+    if (mat.unitType === 'kg') return `${mat.quantity} كجم`;
+    if (mat.unitType === 'half') return `نصف كيلو`;
+    if (mat.unitType === 'quarter') return `ربع كيلو`;
+    if (mat.unitType === 'oke') return `لوقية (200g)`;
+    if (mat.unitType === 'bag') return `${mat.quantity} كيس`;
+    return '';
+}
+
 // ==================== عرض المواد ====================
 function renderAllMaterials(materials) {
     const container = document.getElementById('materialsContainer');
@@ -45,15 +71,24 @@ function renderAllMaterials(materials) {
     const taws = materials.filter(m => m.priority === 'tawsaya');
     
     let html = `
-        <div class="priority-section"><div class="section-title"><i class="fas fa-star-of-life"></i> المواد الهامة</div>
-        ${main.length === 0 ? '<div class="empty-state">✨ لا توجد مواد هامة</div>' : `<div class="materials-grid">${main.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-leaf"></i> بهارات اضافية</div>
-        ${spicesExtra.length === 0 ? '<div class="empty-state">🌿 لا توجد بهارات اضافية</div>' : `<div class="materials-grid">${spicesExtra.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-seedling"></i> بذوريات واعشاب</div>
-        ${extra.length === 0 ? '<div class="empty-state">🌱 لا توجد مواد في هذا القسم</div>' : `<div class="materials-grid">${extra.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-gift"></i> التوصاية</div>
-        ${taws.length === 0 ? '<div class="empty-state">🎁 لا توجد توصايات</div>' : `<div class="materials-grid">${taws.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-star-of-life"></i> المواد الهامة</div>
+            ${main.length === 0 ? '<div class="empty-state">✨ لا توجد مواد هامة</div>' : `<div class="materials-grid">${main.map(m => renderMaterialCard(m)).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-leaf"></i> بهارات اضافية</div>
+            ${spicesExtra.length === 0 ? '<div class="empty-state">🌿 لا توجد بهارات اضافية</div>' : `<div class="materials-grid">${spicesExtra.map(m => renderMaterialCard(m)).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-seedling"></i> بذوريات واعشاب</div>
+            ${extra.length === 0 ? '<div class="empty-state">🌱 لا توجد مواد في هذا القسم</div>' : `<div class="materials-grid">${extra.map(m => renderMaterialCard(m)).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-gift"></i> التوصاية</div>
+            ${taws.length === 0 ? '<div class="empty-state">🎁 لا توجد توصايات</div>' : `<div class="materials-grid">${taws.map(m => renderMaterialCard(m)).join('')}</div>`}
+        </div>
     `;
+    
     container.innerHTML = html;
     
     document.querySelectorAll('.delete-material').forEach(btn => {
@@ -83,7 +118,16 @@ function renderAllMaterials(materials) {
 }
 
 function renderMaterialCard(m) {
-    return `<div class="material-card"><div class="card-header"><div class="card-title"><i class="fas fa-box"></i> ${escapeHtml(m.name)}</div><div class="card-actions"><button class="edit-material" data-id="${m.id}"><i class="fas fa-edit"></i></button><button class="delete-material" data-id="${m.id}"><i class="fas fa-trash-alt"></i></button></div></div><div class="qty-badge">${formatDisplay(m)}</div></div>`;
+    return `<div class="material-card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-box"></i> ${escapeHtml(m.name)}</div>
+            <div class="card-actions">
+                <button class="edit-material" data-id="${m.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-material" data-id="${m.id}"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+        <div class="qty-badge">${formatDisplay(m)}</div>
+    </div>`;
 }
 
 // ==================== عرض القوائم في النوافذ ====================
@@ -429,3 +473,16 @@ document.addEventListener('DOMContentLoaded', () => {
     startListener();
     startAutoSync();
 });
+
+// ==================== تسجيل Service Worker لتثبيت PWA ====================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/material-manager/service-worker.js')
+            .then(registration => {
+                console.log('✅ Service Worker registered:', registration.scope);
+            })
+            .catch(error => {
+                console.error('❌ Service Worker registration failed:', error);
+            });
+    });
+}
