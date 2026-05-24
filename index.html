@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <meta name="theme-color" content="#1a1d21">
+    <meta name="theme-color" content="#10b981">
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <meta name="keywords" content="مخزون, بهارات, إدارة, مواد, PWA">
     <meta name="author" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/material-manager/manifest.json">
+    
+    <!-- أيقونات PWA -->
+    <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
     <!-- الخطوط والمكتبات الخارجية -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <!-- ملفات المشروع -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- أيقونات PWA -->
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="icons/icon-152x152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
@@ -46,7 +48,7 @@
             <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
-        <!-- بطاقة الترحيب (بدون زر التثبيت، ستختفي بعد 40 ثانية) -->
+        <!-- بطاقة الترحيب (تختفي بعد 40 ثانية) -->
         <div id="welcomeCard" class="welcome-card">
             <i class="fas fa-store"></i>
             <h2>مرحباً بك في مدير المواد</h2>
@@ -306,13 +308,13 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     
     <!-- ملفات المشروع -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/constants.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/app.js"></script>
-<!-- ملف PWA المتقدم -->
-<script src="js/pwa.js"></script>
+    <script src="/material-manager/js/firebase-config.js"></script>
+    <script src="/material-manager/js/constants.js"></script>
+    <script src="/material-manager/js/utils.js"></script>
+    <script src="/material-manager/js/ui.js"></script>
+    <script src="/material-manager/js/app.js"></script>
+    <script src="/material-manager/js/pwa.js"></script>
+
     <script>
         // إخفاء بطاقة الترحيب بعد 40 ثانية
         setTimeout(function() {
@@ -338,6 +340,19 @@
                 }, 350);
             }
         }, 3000);
+        
+        // تسجيل Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/material-manager/service-worker.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
