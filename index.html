@@ -47,7 +47,7 @@
             <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
         </button>
         
-        <!-- ==================== SYNC BAR (عريض منفصل) ==================== -->
+        <!-- ==================== SYNC BAR ==================== -->
         <div class="sync-bar">
             <button id="syncBtn" class="sync-main-btn">
                 <i class="fas fa-sync-alt"></i> مزامنة البيانات
@@ -301,6 +301,8 @@
         (function() {
             'use strict';
             
+            console.log('🔧 Index.html initializing...');
+            
             // ========== HIDE SPLASH SCREEN AFTER 2.5 SECONDS ==========
             setTimeout(function() {
                 var splash = document.getElementById('splashScreen');
@@ -310,6 +312,7 @@
                     setTimeout(function() {
                         splash.style.display = 'none';
                         if (app) app.style.display = 'block';
+                        console.log('✅ Splash screen hidden');
                     }, 500);
                 } else {
                     if (app) app.style.display = 'block';
@@ -327,6 +330,7 @@
                     var el = document.getElementById(id);
                     if (el) el.classList.remove('active');
                 });
+                console.log('✅ All modals closed');
             };
             
             // ========== BIND CANCEL BUTTONS ==========
@@ -341,6 +345,7 @@
                     btn.onclick = function(e) {
                         e.preventDefault();
                         window.closeAllModals();
+                        console.log('✅ Cancel button clicked:', btnId);
                     };
                 }
             });
@@ -373,6 +378,20 @@
                         this.classList.add('active');
                         var isCustom = this.getAttribute('data-type') === 'custom';
                         tawsayaCustomGroup.style.display = isCustom ? 'block' : 'none';
+                        console.log('✅ Tawsaya type changed to:', this.getAttribute('data-type'));
+                    });
+                });
+            }
+            
+            // ========== SEARCH IN BAGS MODAL ==========
+            var bagsSearch = document.getElementById('bagsSearchInput');
+            if (bagsSearch) {
+                bagsSearch.addEventListener('input', function(e) {
+                    var searchTerm = e.target.value.toLowerCase();
+                    var items = document.querySelectorAll('#bagsListContainer .modern-item-card');
+                    items.forEach(function(item) {
+                        var name = item.querySelector('.item-name')?.innerText.toLowerCase() || '';
+                        item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
                     });
                 });
             }
