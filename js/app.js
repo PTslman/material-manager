@@ -48,7 +48,52 @@ function getExtraItems() {
     return extraItemsList.map(name => ({ name, type: "range", min: 1, max: 10, step: 1 })); 
 }
 
-// ==================== دوال العرض ====================
+// ==================== دوال مساعدة ====================
+function showToast(msg, isErr = false) {
+    let t = document.querySelector('.toast');
+    if (t) t.remove();
+    let div = document.createElement('div');
+    div.className = 'toast';
+    div.style.background = isErr ? '#dc2626' : '#2e7d32';
+    div.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 2500);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+function formatDisplay(mat) {
+    const u = mat.unitType;
+    if (u === 'kg') return `${mat.quantity} كجم`;
+    if (u === 'half') return `نصف كيلو`;
+    if (u === 'quarter') return `ربع كيلو`;
+    if (u === 'oke') return `لوقية (200g)`;
+    if (u === 'bag') return `${mat.quantity} كيس`;
+    return '';
+}
+
+// ==================== إغلاق النوافذ ====================
+function closeAllModals() {
+    const modals = [
+        'newItemModal', 'importantModal', 'spicesExtraModal', 
+        'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 
+        'confirmDeleteModal', 'systemMessageModal'
+    ];
+    modals.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('active');
+    });
+}
+
+// ==================== عرض المواد ====================
 function renderAllMaterials(materials) {
     const container = document.getElementById('materialsContainer');
     if (!container) return;
@@ -154,7 +199,7 @@ function showConfirmDialog(message, onConfirm) {
     document.getElementById('cancelDeleteBtn').addEventListener('click', handleCancel, { once: true });
 }
 
-// ==================== عرض القوائم ====================
+// ==================== عرض القوائم في النوافذ ====================
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
@@ -288,7 +333,7 @@ function renderBags() {
     container.innerHTML = html;
 }
 
-// ==================== دوال الإضافة ====================
+// ==================== دوال الإضافة إلى Firebase ====================
 async function addSelectedImportant() {
     let items = [];
     for (let i = 0; i < importantItemsList.length; i++) {
@@ -312,7 +357,7 @@ async function addSelectedImportant() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} مادة`);
-        document.getElementById('importantModal').classList.remove('active');
+        closeAllModals();
         document.getElementById('importantSearchInput').value = '';
     } catch (e) { showToast("❌ فشل", true); }
 }
@@ -340,7 +385,7 @@ async function addSelectedSpicesExtra() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} بهار`);
-        document.getElementById('spicesExtraModal').classList.remove('active');
+        closeAllModals();
         document.getElementById('spicesExtraSearchInput').value = '';
     } catch (e) { showToast("❌ فشل", true); }
 }
@@ -368,7 +413,7 @@ async function addSelectedQuick() {
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} منتج`);
-        document.getElementById('quickModal').classList.remove('active');
+        closeAllModals();
         document.getElementById('quickSearchInput').value = '';
     } catch (e) { showToast("❌ فشل", true); }
 }
@@ -398,7 +443,7 @@ async function addSelectedBags() {
             let chk = document.getElementById(`bag_chk_${i}`);
             if (chk) chk.checked = false;
         }
-        document.getElementById('bagsModal').classList.remove('active');
+        closeAllModals();
     } catch (e) { showToast("❌ فشل إضافة الأكياس", true); }
 }
 
@@ -427,7 +472,7 @@ async function addTawsaya() {
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('tawsayaName').value = "";
         document.getElementById('tawsayaCustomQty').value = "1";
-        document.getElementById('tawsayaModal').classList.remove('active');
+        closeAllModals();
     } catch (e) { showToast("❌ خطأ", true); }
 }
 
@@ -438,7 +483,7 @@ async function saveEdit() {
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: newQty });
         showToast("✓ تم تحديث الكمية");
-        document.getElementById('editModal').classList.remove('active');
+        closeAllModals();
         currentEditId = null;
     } catch (e) { showToast("❌ فشل التحديث", true); }
 }
@@ -458,7 +503,7 @@ async function addNewMaterialDirect() {
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('newMaterialName').value = "";
         document.getElementById('newQuantityValue').value = "1";
-        document.getElementById('newItemModal').classList.remove('active');
+        closeAllModals();
     } catch (e) { showToast("❌ خطأ في الاتصال", true); }
 }
 
@@ -574,152 +619,7 @@ function setupPWA() {
     }
 }
 
-// ==================== إغلاق النوافذ (دالة مساعدة) ====================
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('active');
-}
-
-// ==================== ربط الأحداث ====================
-function bindEvents() {
-    // زر إضافة مادة رئيسي
-    document.getElementById('mainAddBtn').onclick = () => {
-        document.getElementById('newItemModal').classList.add('active');
-        document.getElementById('newMaterialName').focus();
-    };
-    
-    // زر المزامنة
-    document.getElementById('syncBtn').onclick = () => {
-        if (unsubscribe) unsubscribe();
-        startListener();
-        showToast("🔄 مزامنة يدوية");
-    };
-    
-    // زر تغيير الثيم
-    document.getElementById('themeToggle').onclick = () => {
-        document.body.classList.contains('dark') ? setTheme('light') : setTheme('dark');
-    };
-    
-    // زر النسخ الاحتياطي
-    document.getElementById('backupBtn').onclick = backupData;
-    
-    // زر الاستعادة
-    document.getElementById('restoreBtn').onclick = restoreData;
-    
-    // زر مسح الكل
-    document.getElementById('clearAllBtn').onclick = clearAll;
-    
-    // زر إعادة محاولة المزامنة
-    document.getElementById('syncRetry').onclick = () => {
-        if (unsubscribe) unsubscribe();
-        startListener();
-        showToast("🔄 محاولة إعادة الاتصال...");
-    };
-    
-    // أزرار الجداول الأربعة - فتح النوافذ
-    document.getElementById('importantProductsBtn').onclick = () => {
-        renderImportantFiltered('');
-        document.getElementById('importantModal').classList.add('active');
-        document.getElementById('importantSearchInput').focus();
-    };
-    
-    document.getElementById('spicesExtraBtn').onclick = () => {
-        renderSpicesExtraFiltered('');
-        document.getElementById('spicesExtraModal').classList.add('active');
-        document.getElementById('spicesExtraSearchInput').focus();
-    };
-    
-    document.getElementById('quickProductsBtn').onclick = () => {
-        renderQuickFiltered('');
-        document.getElementById('quickModal').classList.add('active');
-        document.getElementById('quickSearchInput').focus();
-    };
-    
-    document.getElementById('bagsManagerBtn').onclick = () => {
-        renderBags();
-        document.getElementById('bagsModal').classList.add('active');
-    };
-    
-    // زر التوصاية
-    document.getElementById('tawsayaQuickBtn').onclick = () => {
-        document.getElementById('tawsayaModal').classList.add('active');
-        document.getElementById('tawsayaName').focus();
-    };
-    
-    // ========== أزرار الإلغاء (إغلاق النوافذ) ==========
-    document.getElementById('closeNewModalBtn').onclick = () => closeModal('newItemModal');
-    document.getElementById('closeImportantModalBtn').onclick = () => closeModal('importantModal');
-    document.getElementById('closeSpicesExtraModalBtn').onclick = () => closeModal('spicesExtraModal');
-    document.getElementById('closeQuickModalBtn').onclick = () => closeModal('quickModal');
-    document.getElementById('closeBagsModalBtn').onclick = () => closeModal('bagsModal');
-    document.getElementById('closeTawsayaModalBtn').onclick = () => closeModal('tawsayaModal');
-    document.getElementById('closeEditModalBtn').onclick = () => closeModal('editModal');
-    document.getElementById('closeSystemMessageBtn').onclick = () => closeModal('systemMessageModal');
-    
-    // أزرار حفظ النوافذ المنبثقة
-    document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
-    document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
-    document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
-    document.getElementById('saveQuickBtn').onclick = addSelectedQuick;
-    document.getElementById('saveBagsBtn').onclick = addSelectedBags;
-    document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
-    document.getElementById('saveEditBtn').onclick = saveEdit;
-    
-    // أزرار البحث
-    document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
-    document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
-    document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
-    
-    // أزرار الكمية
-    document.getElementById('decrementQty').onclick = () => {
-        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
-        val = Math.max(0.25, val - 0.25);
-        document.getElementById('newQuantityValue').value = val;
-    };
-    
-    document.getElementById('incrementQty').onclick = () => {
-        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
-        val = val + 0.25;
-        document.getElementById('newQuantityValue').value = val;
-    };
-    
-    // إغلاق النوافذ عند النقر خارجها
-    const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
-    modalIds.forEach(id => {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
-            });
-        }
-    });
-    
-    // أزرار نوع الكمية في نافذة التوصاية
-    const tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-    const tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
-    if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
-        tawsayaTypeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                tawsayaTypeBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                tawsayaCustomGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
-            });
-        });
-    }
-}
-
-function setTheme(th) {
-    if (th === 'dark') {
-        document.body.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-        document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i> نهاري';
-    } else {
-        document.body.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-        document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i> ليلي';
-    }
-}
-
+// ==================== العمليات الأساسية ====================
 async function clearAll() {
     if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
     if (!confirm("⚠️ حذف جميع المواد نهائياً؟")) return;
@@ -777,6 +677,138 @@ function restoreData() {
     fileInput.click();
 }
 
+function setTheme(th) {
+    if (th === 'dark') {
+        document.body.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i> نهاري';
+    } else {
+        document.body.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-moon"></i> ليلي';
+    }
+}
+
+// ==================== ربط جميع الأحداث ====================
+function bindEvents() {
+    // أزرار الفتح
+    document.getElementById('mainAddBtn').onclick = () => {
+        document.getElementById('newItemModal').classList.add('active');
+        document.getElementById('newMaterialName').focus();
+    };
+    
+    document.getElementById('syncBtn').onclick = () => {
+        if (unsubscribe) unsubscribe();
+        startListener();
+        showToast("🔄 مزامنة يدوية");
+    };
+    
+    document.getElementById('themeToggle').onclick = () => {
+        document.body.classList.contains('dark') ? setTheme('light') : setTheme('dark');
+    };
+    
+    document.getElementById('backupBtn').onclick = backupData;
+    document.getElementById('restoreBtn').onclick = restoreData;
+    document.getElementById('clearAllBtn').onclick = clearAll;
+    document.getElementById('syncRetry').onclick = () => {
+        if (unsubscribe) unsubscribe();
+        startListener();
+        showToast("🔄 محاولة إعادة الاتصال...");
+    };
+    
+    // أزرار الجداول الأربعة
+    document.getElementById('importantProductsBtn').onclick = () => {
+        renderImportantFiltered('');
+        document.getElementById('importantModal').classList.add('active');
+        document.getElementById('importantSearchInput').focus();
+    };
+    
+    document.getElementById('spicesExtraBtn').onclick = () => {
+        renderSpicesExtraFiltered('');
+        document.getElementById('spicesExtraModal').classList.add('active');
+        document.getElementById('spicesExtraSearchInput').focus();
+    };
+    
+    document.getElementById('quickProductsBtn').onclick = () => {
+        renderQuickFiltered('');
+        document.getElementById('quickModal').classList.add('active');
+        document.getElementById('quickSearchInput').focus();
+    };
+    
+    document.getElementById('bagsManagerBtn').onclick = () => {
+        renderBags();
+        document.getElementById('bagsModal').classList.add('active');
+    };
+    
+    document.getElementById('tawsayaQuickBtn').onclick = () => {
+        document.getElementById('tawsayaModal').classList.add('active');
+        document.getElementById('tawsayaName').focus();
+    };
+    
+    // ========== أزرار الإغلاق (الأهم) ==========
+    document.getElementById('closeNewModalBtn').onclick = closeAllModals;
+    document.getElementById('closeImportantModalBtn').onclick = closeAllModals;
+    document.getElementById('closeSpicesExtraModalBtn').onclick = closeAllModals;
+    document.getElementById('closeQuickModalBtn').onclick = closeAllModals;
+    document.getElementById('closeBagsModalBtn').onclick = closeAllModals;
+    document.getElementById('closeTawsayaModalBtn').onclick = closeAllModals;
+    document.getElementById('closeEditModalBtn').onclick = closeAllModals;
+    document.getElementById('closeSystemMessageBtn').onclick = closeAllModals;
+    document.getElementById('cancelDeleteBtn').onclick = closeAllModals;
+    
+    // أزرار الحفظ
+    document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
+    document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
+    document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
+    document.getElementById('saveQuickBtn').onclick = addSelectedQuick;
+    document.getElementById('saveBagsBtn').onclick = addSelectedBags;
+    document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
+    document.getElementById('saveEditBtn').onclick = saveEdit;
+    
+    // أزرار البحث
+    document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
+    document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
+    document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
+    
+    // أزرار الكمية
+    document.getElementById('decrementQty').onclick = () => {
+        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
+        val = Math.max(0.25, val - 0.25);
+        document.getElementById('newQuantityValue').value = val;
+    };
+    document.getElementById('incrementQty').onclick = () => {
+        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
+        val = val + 0.25;
+        document.getElementById('newQuantityValue').value = val;
+    };
+    
+    // إغلاق النوافذ عند النقر خارجها
+    const modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+    modalIds.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeAllModals();
+            });
+        }
+    });
+    
+    // أزرار نوع الكمية في نافذة التوصاية
+    const tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+    const tawsayaCustomGroup = document.getElementById('tawsayaCustomQtyGroup');
+    if (tawsayaTypeBtns.length && tawsayaCustomGroup) {
+        tawsayaTypeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tawsayaTypeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tawsayaCustomGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+            });
+        });
+    }
+}
+
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 App starting...');
@@ -794,4 +826,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered:', reg.scope))
             .catch(err => console.error('❌ SW failed:', err));
     });
-}
+                }
