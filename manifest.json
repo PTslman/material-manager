@@ -1,13 +1,18 @@
 {
   "name": "مدير المواد الذكي",
   "short_name": "مدير المواد",
-  "description": "نظام متكامل لإدارة المخزون والبهارات",
-  "start_url": "/index.html",
-  "scope": "/",
+  "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية",
+  "start_url": "/material-manager/",
+  "scope": "/material-manager/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#10b981",
   "background_color": "#1a1d21",
   "orientation": "portrait",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "ar",
+  "dir": "rtl",
+  "id": "material-manager-v1",
   "icons": [
     {
       "src": "icons/icon-72x72.png",
@@ -66,9 +71,46 @@
   ],
   "shortcuts": [
     {
-      "name": "إضافة مادة",
+      "name": "إضافة مادة جديدة",
       "short_name": "إضافة",
-      "url": "/index.html?action=add",
+      "description": "إضافة مادة جديدة إلى المخزون",
+      "url": "/material-manager/?action=add",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "البهارات الهامة",
+      "short_name": "بهارات",
+      "description": "إضافة بهارات هامة",
+      "url": "/material-manager/?action=important",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "البذوريات والأعشاب",
+      "short_name": "بذوريات",
+      "description": "إضافة بذوريات وأعشاب",
+      "url": "/material-manager/?action=extra",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "أكياس التعبئة",
+      "short_name": "أكياس",
+      "description": "إضافة أكياس التعبئة",
+      "url": "/material-manager/?action=bags",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
@@ -76,5 +118,7 @@
         }
       ]
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
 }
