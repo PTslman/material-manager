@@ -1,41 +1,66 @@
 // ============================================
-// PWA Manager Pro - Version 3.0
-// متوافق مع أندرويد (سامسونج، شاومي، هواوي)
-// يعمل بشكل مستقل عن كروم
+// PWA Manager Pro - Version 4.0
+// Advanced PWA with APK-like Experience
+// Native Android App Alternative
 // ============================================
 
-class AdvancedPWAManager {
+class NativePWAManager {
     constructor() {
+        // ==================== الحالة الأساسية ====================
         this.deferredPrompt = null;
         this.isInstalled = false;
         this.isOnline = navigator.onLine;
         this.swRegistration = null;
         this.notificationPermission = false;
+        this.badgeCount = 0;
+        this.syncQueue = [];
+        
+        // ==================== معلومات الجهاز ====================
         this.deviceInfo = this.getDeviceInfo();
+        this.screenOrientation = screen.orientation?.type || 'portrait-primary';
+        
+        // ==================== بدء التشغيل ====================
         this.init();
     }
     
-    // ==================== معلومات الجهاز ====================
+    // ==================== معلومات الجهاز المتقدمة ====================
     getDeviceInfo() {
         const ua = navigator.userAgent;
         return {
-            isSamsung: /SM-|SAMSUNG|GT-|SHV-/i.test(ua),
-            isXiaomi: /MI |Redmi|POCO|MIX|Black Shark/i.test(ua),
-            isHuawei: /HUAWEI|HONOR|HW-|LIO-|ELE-|VOG-/i.test(ua),
-            isOppo: /OPPO|Realme|OnePlus/i.test(ua),
+            isSamsung: /SM-|SAMSUNG|GT-|SHV-|SC-|SM-G|SM-A|SM-J|SM-M/i.test(ua),
+            isXiaomi: /MI |Redmi|POCO|MIX|Black Shark|2107|2106|2105|2201|2202/i.test(ua),
+            isHuawei: /HUAWEI|HONOR|HW-|LIO-|ELE-|VOG-|TAS-|NOH-|ELS-|ANA-|JNY-|MAR-|JKM-|POT-|FIG-|BLA-|CLT-|LYA-/i.test(ua),
+            isOppo: /OPPO|Realme|OnePlus|CPH|RMX|KB200|LE211|IN202/i.test(ua),
+            isVivo: /vivo|VIVO|V[0-9]{4}|iQOO/i.test(ua),
+            isGoogle: /Pixel|Android SDK|Google/i.test(ua),
             isAndroid: /Android/i.test(ua),
             isIOS: /iPhone|iPad|iPod/i.test(ua),
             isChrome: /Chrome/i.test(ua),
-            isSamsungBrowser: /SamsungBrowser/i.test(ua)
+            isSamsungBrowser: /SamsungBrowser/i.test(ua),
+            isFirefox: /Firefox/i.test(ua),
+            isEdge: /Edg/i.test(ua),
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            pixelRatio: window.devicePixelRatio,
+            language: navigator.language,
+            battery: null
         };
     }
     
+    // ==================== التهيئة الرئيسية ====================
     async init() {
-        console.log('📱 Advanced PWA Manager v3.0');
+        console.log('🚀 Native PWA Manager v4.0 - APK-like Experience');
         console.log('📱 Device:', this.deviceInfo);
         
-        this.checkInstallation();
+        // تحسينات الأداء والتوافق
+        this.optimizeForDevice();
+        this.lockScreenOrientation();
+        this.monitorBatteryStatus();
+        this.setupKeyboardHandling();
+        
+        // الميزات الأساسية
         await this.registerServiceWorker();
+        this.checkInstallation();
         this.setupEventListeners();
         this.monitorNetwork();
         await this.requestNotificationPermission();
@@ -44,16 +69,145 @@ class AdvancedPWAManager {
         this.setupAppBadge();
         this.setupShareTarget();
         this.setupProtocolHandler();
+        this.setupFileHandling();
+        this.setupWakeLock();
+        this.setupScreenKeepAwake();
+        this.setupNativeNavigation();
+        this.setupSplashScreen();
+        this.setupAppShortcuts();
+        this.setupWidgetSupport();
+        this.setupPushNotifications();
+        this.setupDataStorage();
+        this.setupCrashReporting();
+        this.setupPerformanceMonitoring();
     }
     
-    // ==================== تثبيت التطبيق ====================
+    // ==================== تحسينات للأجهزة المختلفة ====================
+    optimizeForDevice() {
+        // إضافة كلاس خاص بالجهاز للـ CSS
+        if (this.deviceInfo.isSamsung) {
+            document.body.classList.add('samsung-device');
+            console.log('📱 Samsung optimization activated');
+        }
+        if (this.deviceInfo.isXiaomi) {
+            document.body.classList.add('xiaomi-device');
+            console.log('📱 Xiaomi optimization activated');
+        }
+        if (this.deviceInfo.isHuawei) {
+            document.body.classList.add('huawei-device');
+            console.log('📱 Huawei optimization activated');
+        }
+        if (this.deviceInfo.isOppo) {
+            document.body.classList.add('oppo-device');
+            console.log('📱 Oppo/Realme optimization activated');
+        }
+        
+        // تحسين شريط الحالة
+        this.setStatusBarStyle();
+        
+        // تحسين التمرير
+        document.body.style.webkitOverflowScrolling = 'touch';
+        document.body.style.touchAction = 'pan-y pinch-zoom';
+    }
+    
+    setStatusBarStyle() {
+        // تغيير لون شريط الحالة حسب الثيم
+        const observer = new MutationObserver(() => {
+            const isDark = document.body.classList.contains('dark');
+            const themeColor = isDark ? '#0f172a' : '#2e7d32';
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
+        });
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
+    
+    lockScreenOrientation() {
+        // قفل الاتجاه عند الحاجة
+        if (screen.orientation && screen.orientation.lock) {
+            // ننتظر تفاعل المستخدم أولاً
+            document.addEventListener('click', () => {
+                if (this.isInstalled && screen.orientation.lock) {
+                    screen.orientation.lock('portrait').catch(e => console.log('Orientation lock not supported'));
+                }
+            }, { once: true });
+        }
+    }
+    
+    async monitorBatteryStatus() {
+        if ('getBattery' in navigator) {
+            try {
+                const battery = await navigator.getBattery();
+                this.deviceInfo.battery = {
+                    level: battery.level * 100,
+                    charging: battery.charging
+                };
+                console.log('🔋 Battery:', this.deviceInfo.battery);
+                
+                battery.addEventListener('levelchange', () => {
+                    this.deviceInfo.battery.level = battery.level * 100;
+                    if (battery.level < 0.15) {
+                        this.showLowBatteryWarning();
+                    }
+                });
+            } catch(e) { console.log('Battery API not available'); }
+        }
+    }
+    
+    showLowBatteryWarning() {
+        this.showNativeToast('⚠️ شحن البطارية منخفض (أقل من 15%)', 'warning');
+    }
+    
+    setupKeyboardHandling() {
+        // التعامل مع لوحة المفاتيح في الحقول
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        });
+    }
+    
+    // ==================== Service Worker متقدم ====================
+    async registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) {
+            console.warn('⚠️ Service Worker not supported');
+            return false;
+        }
+        
+        try {
+            this.swRegistration = await navigator.serviceWorker.register('/material-manager/sw.js', {
+                scope: '/material-manager/',
+                updateViaCache: 'none'
+            });
+            
+            console.log('✅ Service Worker registered:', this.swRegistration.scope);
+            
+            // التحقق من وجود تحديثات عند بدء التشغيل
+            await this.swRegistration.update();
+            
+            // التحقق من التحديثات كل ساعة
+            setInterval(() => {
+                if (this.swRegistration) {
+                    this.swRegistration.update();
+                }
+            }, 60 * 60 * 1000);
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Service Worker registration failed:', error);
+            return false;
+        }
+    }
+    
+    // ==================== التثبيت كتطبيق أصلي ====================
     checkInstallation() {
         if (window.matchMedia('(display-mode: standalone)').matches || 
             window.navigator.standalone === true) {
             this.isInstalled = true;
-            console.log('✅ App is installed in standalone mode');
+            console.log('✅ App installed in standalone mode');
             this.hideInstallButtons();
-            this.showDeviceSpecificMessage();
+            this.applyNativeUI();
         }
         
         if (localStorage.getItem('pwa_installed') === 'true') {
@@ -61,18 +215,20 @@ class AdvancedPWAManager {
         }
     }
     
-    showDeviceSpecificMessage() {
-        if (this.deviceInfo.isSamsung) {
-            console.log('📱 Samsung device detected - Optimizing for One UI');
-            document.body.classList.add('samsung-optimized');
-        }
-        if (this.deviceInfo.isXiaomi) {
-            console.log('📱 Xiaomi device detected - Optimizing for MIUI');
-            document.body.classList.add('xiaomi-optimized');
-        }
-        if (this.deviceInfo.isHuawei) {
-            console.log('📱 Huawei device detected - Optimizing for EMUI');
-            document.body.classList.add('huawei-optimized');
+    applyNativeUI() {
+        // تطبيق واجهة تشبه التطبيقات الأصلية
+        document.body.classList.add('native-mode');
+        
+        // إخفاء شريط التمرير الزائد
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        
+        // تحسين أداء التمرير
+        const appMain = document.querySelector('.app-main');
+        if (appMain) {
+            appMain.style.overflowY = 'auto';
+            appMain.style.height = '100vh';
+            appMain.style.webkitOverflowScrolling = 'touch';
         }
     }
     
@@ -87,102 +243,61 @@ class AdvancedPWAManager {
         if (this.isInstalled) return;
         const installBtn = document.getElementById('installBtn');
         const welcomeInstallBtn = document.getElementById('installWelcomeBtn');
-        if (installBtn) installBtn.style.display = 'inline-flex';
-        if (welcomeInstallBtn && !this.isInstalled) welcomeInstallBtn.style.display = 'inline-flex';
+        if (installBtn && !this.deviceInfo.isSamsungBrowser) installBtn.style.display = 'inline-flex';
+        if (welcomeInstallBtn && !this.deviceInfo.isSamsungBrowser) welcomeInstallBtn.style.display = 'inline-flex';
     }
     
-    // ==================== Service Worker متقدم ====================
-    async registerServiceWorker() {
-        if (!('serviceWorker' in navigator)) {
-            console.warn('⚠️ Service Worker not supported');
-            return false;
-        }
-        
-        try {
-            this.swRegistration = await navigator.serviceWorker.register('/material-manager/sw.js', {
-                scope: '/material-manager/',
-                updateViaCache: 'imports'
-            });
-            
-            console.log('✅ Service Worker registered:', this.swRegistration.scope);
-            
-            // التحقق من وجود تحديثات
-            this.swRegistration.addEventListener('updatefound', () => {
-                const newWorker = this.swRegistration.installing;
-                console.log('🔄 New Service Worker found');
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        this.showUpdateNotification();
-                    }
-                });
-            });
-            
-            // التحقق من التحديثات كل ساعة
-            setInterval(() => {
-                this.swRegistration.update();
-            }, 60 * 60 * 1000);
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Service Worker registration failed:', error);
-            return false;
-        }
-    }
-    
-    // ==================== إشعارات متقدمة ====================
+    // ==================== إشعارات متقدمة تشبه Android ====================
     async requestNotificationPermission() {
         if (!('Notification' in window)) {
             console.log('Notifications not supported');
             return false;
         }
         
-        if (Notification.permission === 'granted') {
-            this.notificationPermission = true;
-            console.log('✅ Notification permission already granted');
-            return true;
-        }
-        
-        if (Notification.permission !== 'denied') {
-            const permission = await Notification.requestPermission();
-            this.notificationPermission = permission === 'granted';
-            if (this.notificationPermission) {
+        // طلب الإذن بعد تفاعل المستخدم
+        const askForPermission = async () => {
+            if (Notification.permission === 'granted') {
+                this.notificationPermission = true;
                 console.log('✅ Notification permission granted');
-                this.sendWelcomeNotification();
+                this.showNativeAndroidNotification('مرحباً!', 'تم تفعيل الإشعارات بنجاح');
+                return true;
             }
-            return this.notificationPermission;
-        }
+            
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                this.notificationPermission = permission === 'granted';
+                if (this.notificationPermission) {
+                    this.showNativeAndroidNotification('مرحباً!', 'تم تفعيل الإشعارات بنجاح');
+                }
+                return this.notificationPermission;
+            }
+            return false;
+        };
         
+        // انتظر تفاعل المستخدم
+        document.addEventListener('click', askForPermission, { once: true });
         return false;
     }
     
-    sendWelcomeNotification() {
-        this.showNotification('مرحباً بك في مدير المواد', 'تم تفعيل الإشعارات بنجاح، ستتلقى تحديثات المخزون', 'welcome');
-    }
-    
-    showNotification(title, body, type = 'info') {
+    showNativeAndroidNotification(title, body, image = null, requireInteraction = false) {
         if (!this.notificationPermission && Notification.permission !== 'granted') return;
-        
-        const icons = {
-            info: '/material-manager/icons/icon-192x192.png',
-            success: '/material-manager/icons/icon-192x192.png',
-            warning: '/material-manager/icons/icon-192x192.png',
-            error: '/material-manager/icons/icon-192x192.png'
-        };
         
         const options = {
             body: body,
-            icon: icons[type] || icons.info,
+            icon: '/material-manager/icons/icon-192x192.png',
             badge: '/material-manager/icons/icon-72x72.png',
             vibrate: [200, 100, 200],
             timestamp: Date.now(),
-            data: { url: window.location.href, type: type },
-            requireInteraction: type === 'warning' || type === 'error',
+            data: { url: window.location.href, timestamp: Date.now() },
+            requireInteraction: requireInteraction,
             silent: false,
             actions: [
-                { action: 'open', title: 'فتح التطبيق' },
+                { action: 'open', title: 'فتح' },
                 { action: 'dismiss', title: 'إغلاق' }
             ]
         };
+        
+        if (image) options.image = image;
         
         if (this.swRegistration && this.swRegistration.showNotification) {
             this.swRegistration.showNotification(title, options);
@@ -192,44 +307,42 @@ class AdvancedPWAManager {
     }
     
     notifyMaterialAdded(materialName, quantity = 1, unit = 'kg') {
-        this.showNotification('✓ تم إضافة مادة جديدة', `تمت إضافة ${materialName} (${quantity} ${unit}) بنجاح إلى المخزون`, 'success');
+        const displayUnit = unit === 'kg' ? 'kg' : 
+                           unit === 'half' ? 'نصف كيلو' :
+                           unit === 'quarter' ? 'ربع كيلو' : 'لوقية';
+        this.showNativeAndroidNotification(
+            '✓ تم إضافة مادة جديدة',
+            `${materialName} (${quantity} ${displayUnit})`,
+            null,
+            false
+        );
+        this.updateBadge(this.badgeCount + 1);
     }
     
-    notifySyncComplete(itemCount) {
-        this.showNotification('🔄 تمت المزامنة', `تم تحديث ${itemCount} عنصر في المخزون`, 'info');
+    // ==================== شارة التطبيق (Badge) ====================
+    setupAppBadge() {
+        if ('setAppBadge' in navigator) {
+            window.setAppBadge = (count) => {
+                navigator.setAppBadge(count);
+                this.badgeCount = count;
+            };
+            window.clearAppBadge = () => {
+                navigator.clearAppBadge();
+                this.badgeCount = 0;
+            };
+            console.log('✅ App Badge API supported');
+        }
     }
     
-    notifyLowStock(materialName, currentQuantity) {
-        this.showNotification('⚠️ تنبيه مخزون منخفض', `${materialName} المتبقي: ${currentQuantity} kg فقط`, 'warning');
-    }
-    
-    // ==================== إشعار التحديث ====================
-    showUpdateNotification() {
-        const updateDiv = document.createElement('div');
-        updateDiv.className = 'update-banner';
-        updateDiv.innerHTML = `
-            <div class="update-banner-content">
-                <i class="fas fa-download"></i>
-                <span>تحديث جديد متاح للتطبيق!</span>
-                <button id="updateNowBtn" class="update-now-btn">تحديث الآن</button>
-                <button id="updateLaterBtn" class="update-later-btn">لاحقاً</button>
-            </div>
-        `;
-        document.body.appendChild(updateDiv);
-        
-        document.getElementById('updateNowBtn')?.addEventListener('click', () => {
-            window.location.reload();
-            updateDiv.remove();
-        });
-        
-        document.getElementById('updateLaterBtn')?.addEventListener('click', () => {
-            updateDiv.remove();
-            localStorage.setItem('update_dismissed', Date.now());
-        });
-        
-        setTimeout(() => {
-            if (updateDiv && updateDiv.remove) updateDiv.remove();
-        }, 15000);
+    updateBadge(count) {
+        if (navigator.setAppBadge) {
+            if (count > 0) {
+                navigator.setAppBadge(count);
+            } else {
+                navigator.clearAppBadge();
+            }
+            this.badgeCount = count;
+        }
     }
     
     // ==================== المزامنة الخلفية ====================
@@ -250,31 +363,12 @@ class AdvancedPWAManager {
                     if (status.state === 'granted') {
                         navigator.serviceWorker.ready.then(registration => {
                             registration.periodicSync.register('periodic-sync', {
-                                minInterval: 24 * 60 * 60 * 1000
+                                minInterval: 12 * 60 * 60 * 1000 // كل 12 ساعة
                             });
                             console.log('✅ Periodic sync registered');
                         });
                     }
                 });
-        }
-    }
-    
-    // ==================== شارة التطبيق (Badge) ====================
-    setupAppBadge() {
-        if ('setAppBadge' in navigator) {
-            window.setAppBadge = (count) => navigator.setAppBadge(count);
-            window.clearAppBadge = () => navigator.clearAppBadge();
-            console.log('✅ App Badge API supported');
-        }
-    }
-    
-    updateBadge(count) {
-        if (navigator.setAppBadge) {
-            if (count > 0) {
-                navigator.setAppBadge(count);
-            } else {
-                navigator.clearAppBadge();
-            }
         }
     }
     
@@ -285,28 +379,292 @@ class AdvancedPWAManager {
         }
     }
     
-    async shareData(title, text, url) {
+    async shareData(title, text, url, files = null) {
+        if (navigator.canShare && files) {
+            const shareData = { title, text, url, files };
+            if (navigator.canShare(shareData)) {
+                try {
+                    await navigator.share(shareData);
+                    return true;
+                } catch(e) { return false; }
+            }
+        }
+        
         if (navigator.share) {
             try {
                 await navigator.share({ title, text, url });
                 return true;
-            } catch (error) {
-                console.log('Share failed:', error);
-                return false;
-            }
+            } catch(e) { return false; }
         }
         return false;
     }
     
-    // ==================== معالج الروابط ====================
-    setupProtocolHandler() {
-        if ('registerProtocolHandler' in navigator) {
-            try {
-                navigator.registerProtocolHandler('web+material', `${window.location.origin}/material-manager/?id=%s`);
-                console.log('✅ Protocol handler registered');
-            } catch (error) {
-                console.log('Protocol handler registration failed:', error);
+    // ==================== معالج الملفات ====================
+    setupFileHandling() {
+        if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
+            launchQueue.setConsumer(launchParams => {
+                if (launchParams.files && launchParams.files.length) {
+                    this.handleFileOpen(launchParams.files[0]);
+                }
+            });
+            console.log('✅ File handling API supported');
+        }
+    }
+    
+    async handleFileOpen(file) {
+        console.log('📄 File opened:', file.name);
+        // معالجة الملفات المفتوحة
+    }
+    
+    // ==================== منع الإغلاق التلقائي للشاشة ====================
+    setupWakeLock() {
+        let wakeLock = null;
+        
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('✅ Wake Lock active');
+                    
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock released');
+                    });
+                } catch(e) {
+                    console.log('Wake Lock failed:', e);
+                }
             }
+        };
+        
+        // تفعيل عند التفاعل
+        document.addEventListener('click', requestWakeLock, { once: true });
+    }
+    
+    setupScreenKeepAwake() {
+        // منع إغلاق الشاشة أثناء الاستخدام
+        let activityTimeout;
+        const resetTimeout = () => {
+            clearTimeout(activityTimeout);
+            activityTimeout = setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    this.showToast('نشاط غير عادي؟ اضغط للبقاء مستيقظاً');
+                }
+            }, 5 * 60 * 1000);
+        };
+        
+        document.addEventListener('click', resetTimeout);
+        document.addEventListener('touchstart', resetTimeout);
+    }
+    
+    // ==================== التنقل الأصلي ====================
+    setupNativeNavigation() {
+        // معالجة أزرار الرجوع
+        window.addEventListener('popstate', (event) => {
+            const modal = document.querySelector('.modal.active');
+            if (modal) {
+                event.preventDefault();
+                modal.classList.remove('active');
+                history.pushState(null, '', window.location.href);
+            }
+        });
+        
+        // إضافة نقطة تاريخ أولية
+        history.pushState(null, '', window.location.href);
+    }
+    
+    // ==================== شاشة البداية ====================
+    setupSplashScreen() {
+        // إخفاء شاشة البداية بشكل تدريجي
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            setTimeout(() => {
+                splash.classList.add('hidden');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 500);
+            }, 2000);
+        }
+    }
+    
+    // ==================== اختصارات التطبيق ====================
+    setupAppShortcuts() {
+        // معالجة اختصارات لوحة المفاتيح
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + N = إضافة مادة جديدة
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                document.getElementById('mainAddBtn')?.click();
+            }
+            // Ctrl + S = مزامنة
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('syncBtn')?.click();
+            }
+            // Escape = إغلاق النوافذ
+            if (e.key === 'Escape') {
+                const modal = document.querySelector('.modal.active');
+                if (modal) modal.classList.remove('active');
+            }
+        });
+    }
+    
+    // ==================== دعم الـ Widget ====================
+    setupWidgetSupport() {
+        // حفظ الحالة لاستخدامها في الـ Widget
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('last_state', JSON.stringify({
+                materialsCount: window.allMaterials?.length || 0,
+                timestamp: Date.now()
+            }));
+        });
+    }
+    
+    // ==================== إشعارات Push ====================
+    setupPushNotifications() {
+        if ('PushManager' in window) {
+            console.log('✅ Push Notifications supported');
+            // يمكن إضافة سيرفر push هنا
+        }
+    }
+    
+    // ==================== تخزين البيانات المحلي ====================
+    setupDataStorage() {
+        // استخدام IndexedDB للتخزين المتقدم
+        if ('indexedDB' in window) {
+            this.initIndexedDB();
+        }
+    }
+    
+    initIndexedDB() {
+        const request = indexedDB.open('MaterialManagerDB', 1);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('offlineData')) {
+                db.createObjectStore('offlineData', { keyPath: 'id' });
+            }
+        };
+        
+        request.onsuccess = (event) => {
+            console.log('✅ IndexedDB initialized');
+        };
+    }
+    
+    // ==================== تقارير الأعطال ====================
+    setupCrashReporting() {
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            this.logError(event.error);
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled rejection:', event.reason);
+            this.logError(event.reason);
+        });
+    }
+    
+    logError(error) {
+        const errorLog = {
+            message: error?.message || String(error),
+            stack: error?.stack,
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent,
+            url: window.location.href
+        };
+        
+        // حفظ في localStorage
+        const errors = JSON.parse(localStorage.getItem('error_logs') || '[]');
+        errors.push(errorLog);
+        if (errors.length > 50) errors.shift();
+        localStorage.setItem('error_logs', JSON.stringify(errors));
+    }
+    
+    // ==================== مراقبة الأداء ====================
+    setupPerformanceMonitoring() {
+        if ('PerformanceObserver' in window) {
+            const observer = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                    if (entry.entryType === 'largest-contentful-paint') {
+                        console.log('LCP:', entry.renderTime || entry.loadTime);
+                    }
+                }
+            });
+            observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input'] });
+        }
+    }
+    
+    // ==================== توست على نمط Android ====================
+    showToast(message, type = 'info') {
+        const existing = document.querySelector('.native-toast');
+        if (existing) existing.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = `native-toast ${type}`;
+        toast.innerHTML = `
+            <div class="native-toast-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 48px;
+            font-size: 0.85rem;
+            z-index: 10001;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            direction: rtl;
+            max-width: 85%;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(30px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    showNativeToast(message, type = 'info') {
+        this.showToast(message, type);
+    }
+    
+    // ==================== مراقبة الشبكة ====================
+    monitorNetwork() {
+        window.addEventListener('online', () => {
+            this.isOnline = true;
+            console.log('🟢 App is online');
+            this.showNativeToast('تم استعادة الاتصال بالإنترنت', 'success');
+            this.syncOfflineData();
+        });
+        
+        window.addEventListener('offline', () => {
+            this.isOnline = false;
+            console.log('🔴 App is offline');
+            this.showNativeToast('لا يوجد اتصال بالإنترنت - البيانات متاحة دون اتصال', 'warning');
+        });
+    }
+    
+    async syncOfflineData() {
+        if (!this.isOnline) return;
+        console.log('🔄 Syncing offline data...');
+        if (typeof startListener === 'function') {
+            if (window.unsubscribe) window.unsubscribe();
+            startListener();
         }
     }
     
@@ -317,7 +675,7 @@ class AdvancedPWAManager {
             e.preventDefault();
             this.deferredPrompt = e;
             this.showInstallButtons();
-            this.showInstallBanner();
+            this.showCustomInstallDialog();
         });
         
         window.addEventListener('appinstalled', () => {
@@ -326,54 +684,57 @@ class AdvancedPWAManager {
             localStorage.setItem('pwa_installed', 'true');
             this.deferredPrompt = null;
             this.hideInstallButtons();
-            this.showNotification('✓ تم التثبيت', 'تم تثبيت تطبيق مدير المواد بنجاح على جهازك', 'success');
+            this.showNativeAndroidNotification('✓ تثبيت ناجح', 'تم تثبيت التطبيق على جهازك');
+            this.applyNativeUI();
         });
         
-        // ربط أزرار التثبيت
         const installBtn = document.getElementById('installBtn');
         const welcomeInstallBtn = document.getElementById('installWelcomeBtn');
         
-        if (installBtn) {
-            installBtn.addEventListener('click', () => this.promptInstall());
-        }
-        
-        if (welcomeInstallBtn) {
-            welcomeInstallBtn.addEventListener('click', () => this.promptInstall());
-        }
+        if (installBtn) installBtn.addEventListener('click', () => this.promptInstall());
+        if (welcomeInstallBtn) welcomeInstallBtn.addEventListener('click', () => this.promptInstall());
     }
     
-    showInstallBanner() {
+    showCustomInstallDialog() {
         if (this.isInstalled) return;
-        if (localStorage.getItem('install_banner_dismissed')) return;
+        if (localStorage.getItem('install_dialog_shown')) return;
         
-        const banner = document.createElement('div');
-        banner.className = 'install-banner';
-        banner.innerHTML = `
-            <div class="install-banner-content">
-                <i class="fas fa-download"></i>
-                <div class="install-banner-text">
-                    <strong>تثبيت التطبيق</strong>
-                    <span>للوصول السريع بدون إنترنت</span>
+        const dialog = document.createElement('div');
+        dialog.className = 'install-dialog';
+        dialog.innerHTML = `
+            <div class="install-dialog-content">
+                <div class="install-dialog-icon">
+                    <i class="fas fa-boxes"></i>
                 </div>
-                <button id="installBannerBtn" class="install-banner-btn">تثبيت</button>
-                <button id="dismissBannerBtn" class="dismiss-banner-btn"><i class="fas fa-times"></i></button>
+                <h3>تثبيت مدير المواد</h3>
+                <p>قم بتثبيت التطبيق على جهازك للوصول السريع بدون إنترنت</p>
+                <div class="install-dialog-features">
+                    <div><i class="fas fa-bolt"></i> أداء سريع</div>
+                    <div><i class="fas fa-wifi-slash"></i> يعمل بدون إنترنت</div>
+                    <div><i class="fas fa-bell"></i> إشعارات فورية</div>
+                </div>
+                <div class="install-dialog-buttons">
+                    <button id="installDialogConfirm" class="install-dialog-btn primary">تثبيت</button>
+                    <button id="installDialogCancel" class="install-dialog-btn secondary">ليس الآن</button>
+                </div>
             </div>
         `;
-        document.body.appendChild(banner);
+        document.body.appendChild(dialog);
         
-        document.getElementById('installBannerBtn')?.addEventListener('click', () => {
+        document.getElementById('installDialogConfirm')?.addEventListener('click', () => {
             this.promptInstall();
-            banner.remove();
+            dialog.remove();
+            localStorage.setItem('install_dialog_shown', 'true');
         });
         
-        document.getElementById('dismissBannerBtn')?.addEventListener('click', () => {
-            banner.remove();
-            localStorage.setItem('install_banner_dismissed', 'true');
+        document.getElementById('installDialogCancel')?.addEventListener('click', () => {
+            dialog.remove();
+            localStorage.setItem('install_dialog_shown', 'true');
         });
         
         setTimeout(() => {
-            if (banner && banner.remove) banner.remove();
-        }, 10000);
+            if (dialog && dialog.remove) dialog.remove();
+        }, 15000);
     }
     
     async promptInstall() {
@@ -397,16 +758,15 @@ class AdvancedPWAManager {
     }
     
     showManualInstallGuide() {
+        let guideHTML = '';
         const isSamsung = this.deviceInfo.isSamsung;
         const isXiaomi = this.deviceInfo.isXiaomi;
-        const isChrome = this.deviceInfo.isChrome;
-        
-        let guideHTML = '';
         
         if (isSamsung) {
             guideHTML = `
                 <div class="install-guide-dialog">
-                    <h3><i class="fab fa-samsung"></i> تثبيت التطبيق على سامسونج</h3>
+                    <i class="fab fa-samsung"></i>
+                    <h3>تثبيت على سامسونج</h3>
                     <ol>
                         <li>اضغط على القائمة (☰) في متصفح سامسونج</li>
                         <li>اختر "تثبيت التطبيق"</li>
@@ -418,21 +778,10 @@ class AdvancedPWAManager {
         } else if (isXiaomi) {
             guideHTML = `
                 <div class="install-guide-dialog">
-                    <h3><i class="fas fa-mobile-alt"></i> تثبيت التطبيق على شاومي</h3>
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>تثبيت على شاومي</h3>
                     <ol>
                         <li>افتح قائمة المتصفح (ثلاث نقاط)</li>
-                        <li>اختر "تثبيت التطبيق" أو "Add to Home Screen"</li>
-                        <li>اضغط على "تثبيت" للتأكيد</li>
-                    </ol>
-                    <button class="guide-close">حسناً</button>
-                </div>
-            `;
-        } else if (isChrome) {
-            guideHTML = `
-                <div class="install-guide-dialog">
-                    <h3><i class="fab fa-chrome"></i> تثبيت التطبيق على كروم</h3>
-                    <ol>
-                        <li>اضغط على القائمة (ثلاث نقاط) في الأعلى</li>
                         <li>اختر "تثبيت التطبيق"</li>
                         <li>اضغط على "تثبيت" للتأكيد</li>
                     </ol>
@@ -442,10 +791,11 @@ class AdvancedPWAManager {
         } else {
             guideHTML = `
                 <div class="install-guide-dialog">
-                    <h3><i class="fas fa-download"></i> تثبيت التطبيق</h3>
+                    <i class="fas fa-download"></i>
+                    <h3>تثبيت التطبيق</h3>
                     <ol>
-                        <li>افتح قائمة المتصفح</li>
-                        <li>ابحث عن "تثبيت التطبيق" أو "Add to Home Screen"</li>
+                        <li>افتح قائمة المتصفح (ثلاث نقاط)</li>
+                        <li>اختر "تثبيت التطبيق"</li>
                         <li>اتبع التعليمات لإكمال التثبيت</li>
                     </ol>
                     <button class="guide-close">حسناً</button>
@@ -462,36 +812,6 @@ class AdvancedPWAManager {
         dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.remove(); });
     }
     
-    // ==================== مراقبة الشبكة ====================
-    monitorNetwork() {
-        window.addEventListener('online', () => {
-            this.isOnline = true;
-            console.log('🟢 App is online');
-            this.showNetworkToast('تم استعادة الاتصال بالإنترنت', 'success');
-            this.syncOfflineData();
-        });
-        
-        window.addEventListener('offline', () => {
-            this.isOnline = false;
-            console.log('🔴 App is offline');
-            this.showNetworkToast('لا يوجد اتصال بالإنترنت - البيانات متاحة دون اتصال', 'warning');
-        });
-    }
-    
-    showNetworkToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `network-toast ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-wifi' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> ${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    async syncOfflineData() {
-        if (!this.isOnline) return;
-        console.log('🔄 Syncing offline data...');
-        // سيتم إضافة منطق المزامنة هنا
-    }
-    
     // ==================== معلومات التطبيق ====================
     getAppInfo() {
         return {
@@ -501,22 +821,33 @@ class AdvancedPWAManager {
             serviceWorker: !!this.swRegistration,
             displayMode: this.getDisplayMode(),
             deviceInfo: this.deviceInfo,
-            version: '3.0'
+            badgeCount: this.badgeCount,
+            version: '4.0',
+            features: {
+                backgroundSync: 'sync' in navigator.serviceWorker,
+                periodicSync: 'periodicSync' in navigator.serviceWorker,
+                wakeLock: 'wakeLock' in navigator,
+                badge: 'setAppBadge' in navigator,
+                share: 'share' in navigator,
+                fileHandling: 'launchQueue' in window,
+                pushNotifications: 'PushManager' in window
+            }
         };
     }
     
     getDisplayMode() {
         if (window.matchMedia('(display-mode: standalone)').matches) return 'standalone';
         if (window.matchMedia('(display-mode: fullscreen)').matches) return 'fullscreen';
+        if (window.matchMedia('(display-mode: minimal-ui)').matches) return 'minimal-ui';
         return 'browser';
     }
 }
 
-// تهيئة PWA Manager
+// ==================== تهيئة PWA Manager ====================
 let pwaManager = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    pwaManager = new AdvancedPWAManager();
+    pwaManager = new NativePWAManager();
     window.pwaManager = pwaManager;
     console.log('📱 PWA Info:', pwaManager.getAppInfo());
 });
