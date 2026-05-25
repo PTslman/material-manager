@@ -30,6 +30,19 @@ const extraItemsList = [
 
 const bagTypesList = ["شفاف 10×12","شفاف 20×12","شفاف 10×20","شفاف 25×17","شفاف 20×30","شفاف 35×25","صيدلية","أسود 30","أسود 35","أسود 40","أسود 45"];
 
+// خيارات الوزن المتاحة
+const weightOptions = [
+    { value: 0.25, label: "ربع كيلو (0.25 kg)" },
+    { value: 0.5, label: "نصف كيلو (0.5 kg)" },
+    { value: 1, label: "كيلو (1 kg)" },
+    { value: 1.5, label: "كيلو ونصف (1.5 kg)" },
+    { value: 2, label: "كيلوين (2 kg)" },
+    { value: 2.5, label: "كيلوين ونصف (2.5 kg)" },
+    { value: 3, label: "ثلاثة كيلو (3 kg)" },
+    { value: 5, label: "خمسة كيلو (5 kg)" },
+    { value: 10, label: "عشرة كيلو (10 kg)" }
+];
+
 function getImportantItems() { return importantItemsList.map(name => ({ name, min: 1, max: 5 })); }
 function getSpicesExtraItems() { return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); }
 function getExtraItems() { return extraItemsList.map(name => ({ name, min: 1, max: 10 })); }
@@ -52,12 +65,15 @@ function escapeHtml(str) {
 }
 
 function formatDisplay(mat) {
-    if (mat.unitType === 'kg') return `${mat.quantity} كجم`;
-    if (mat.unitType === 'half') return `نصف كيلو`;
-    if (mat.unitType === 'quarter') return `ربع كيلو`;
-    if (mat.unitType === 'oke') return `لوقية (200g)`;
-    if (mat.unitType === 'bag') return `${mat.quantity} كيس`;
-    return '';
+    const u = mat.unitType;
+    if (u === 'kg') return `${mat.quantity} kg`;
+    if (u === 'half') return `نصف كيلو (0.5 kg)`;
+    if (u === 'quarter') return `ربع كيلو (0.25 kg)`;
+    if (u === 'oke') return `لوقية (0.2 kg)`;
+    if (u === 'box') return `${mat.quantity} علبة`;
+    if (u === 'piece') return `${mat.quantity} عدد`;
+    if (u === 'bag') return `${mat.quantity} كيس`;
+    return `${mat.quantity} kg`;
 }
 
 // ==================== عرض المواد ====================
@@ -107,10 +123,11 @@ function renderAllMaterials(materials) {
             e.stopPropagation();
             const id = btn.getAttribute('data-id');
             const material = allMaterials.find(m => m.id === id);
-            if (material && material.unitType === 'kg') {
+            if (material) {
                 currentEditId = id;
                 document.getElementById('editMaterialName').value = material.name;
                 document.getElementById('editQuantityValue').value = material.quantity;
+                document.getElementById('editUnitSelect').value = material.unitType || 'kg';
                 document.getElementById('editModal').classList.add('active');
             }
         };
@@ -130,19 +147,43 @@ function renderMaterialCard(m) {
     </div>`;
 }
 
-// ==================== عرض القوائم في النوافذ ====================
+// ==================== عرض القوائم في النوافذ مع خيارات الوزن ====================
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
     const filtered = importantItemsList.filter(item => item.includes(filter));
-    container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="imp_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="imp_qty_${idx}" value="1" min="1" max="5" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
+    container.innerHTML = filtered.map((item, idx) => `
+        <div class="modern-item-card">
+            <div class="item-info">
+                <input type="checkbox" id="imp_chk_${idx}">
+                <span class="item-name">${escapeHtml(item)}</span>
+            </div>
+            <div class="quantity-modern">
+                <select class="qty-select" id="imp_unit_${idx}">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
+                </select>
+                <input type="number" class="qty-value" id="imp_qty_${idx}" value="1" min="0.25" step="0.25" style="width:80px">
+                <span>${getUnitSymbol('kg')}</span>
+            </div>
+        </div>
+    `).join('');
     
-    document.querySelectorAll('#importantListContainer .qty-btn').forEach(btn => {
-        btn.onclick = () => {
-            let idx = btn.dataset.idx, inp = document.getElementById(`imp_qty_${idx}`), val = parseInt(inp.value);
-            if (btn.dataset.dir === 'up') val = Math.min(val+1,5);
-            else val = Math.max(val-1,1);
-            inp.value = val;
+    // تحديث عرض الوحدة عند تغيير select
+    document.querySelectorAll('#importantListContainer .qty-select').forEach(select => {
+        select.onchange = function() {
+            const unit = this.value;
+            const qtyInput = this.closest('.quantity-modern').querySelector('.qty-value');
+            const unitSpan = this.closest('.quantity-modern').querySelector('span:last-child');
+            if (unitSpan) unitSpan.textContent = getUnitSymbol(unit);
+            if (unit === 'half') qtyInput.value = 0.5;
+            else if (unit === 'quarter') qtyInput.value = 0.25;
+            else if (unit === 'oke') qtyInput.value = 0.2;
+            else qtyInput.value = 1;
         };
     });
 }
@@ -151,14 +192,37 @@ function renderSpicesExtraFiltered(filter = '') {
     const container = document.getElementById('spicesExtraListContainer');
     if (!container) return;
     const filtered = spicesExtraItemsList.filter(item => item.includes(filter));
-    container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="sp_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="sp_qty_${idx}" value="1" min="1" max="10" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
+    container.innerHTML = filtered.map((item, idx) => `
+        <div class="modern-item-card">
+            <div class="item-info">
+                <input type="checkbox" id="sp_chk_${idx}">
+                <span class="item-name">${escapeHtml(item)}</span>
+            </div>
+            <div class="quantity-modern">
+                <select class="qty-select" id="sp_unit_${idx}">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
+                </select>
+                <input type="number" class="qty-value" id="sp_qty_${idx}" value="1" min="0.25" step="0.25" style="width:80px">
+                <span>${getUnitSymbol('kg')}</span>
+            </div>
+        </div>
+    `).join('');
     
-    document.querySelectorAll('#spicesExtraListContainer .qty-btn').forEach(btn => {
-        btn.onclick = () => {
-            let idx = btn.dataset.idx, inp = document.getElementById(`sp_qty_${idx}`), val = parseInt(inp.value);
-            if (btn.dataset.dir === 'up') val = Math.min(val+1,10);
-            else val = Math.max(val-1,1);
-            inp.value = val;
+    document.querySelectorAll('#spicesExtraListContainer .qty-select').forEach(select => {
+        select.onchange = function() {
+            const unit = this.value;
+            const qtyInput = this.closest('.quantity-modern').querySelector('.qty-value');
+            const unitSpan = this.closest('.quantity-modern').querySelector('span:last-child');
+            if (unitSpan) unitSpan.textContent = getUnitSymbol(unit);
+            if (unit === 'half') qtyInput.value = 0.5;
+            else if (unit === 'quarter') qtyInput.value = 0.25;
+            else if (unit === 'oke') qtyInput.value = 0.2;
+            else qtyInput.value = 1;
         };
     });
 }
@@ -167,16 +231,51 @@ function renderQuickFiltered(filter = '') {
     const container = document.getElementById('quickListContainer');
     if (!container) return;
     const filtered = extraItemsList.filter(item => item.includes(filter));
-    container.innerHTML = filtered.map((item, idx) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="quick_chk_${idx}"><span>${escapeHtml(item)}</span></div><div class="quantity-modern"><button class="qty-btn" data-idx="${idx}" data-dir="down">-</button><input type="number" id="quick_qty_${idx}" value="1" min="1" max="10" class="qty-value"><button class="qty-btn" data-idx="${idx}" data-dir="up">+</button><span>كجم</span></div></div>`).join('');
+    container.innerHTML = filtered.map((item, idx) => `
+        <div class="modern-item-card">
+            <div class="item-info">
+                <input type="checkbox" id="quick_chk_${idx}">
+                <span class="item-name">${escapeHtml(item)}</span>
+            </div>
+            <div class="quantity-modern">
+                <select class="qty-select" id="quick_unit_${idx}">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
+                </select>
+                <input type="number" class="qty-value" id="quick_qty_${idx}" value="1" min="0.25" step="0.25" style="width:80px">
+                <span>${getUnitSymbol('kg')}</span>
+            </div>
+        </div>
+    `).join('');
     
-    document.querySelectorAll('#quickListContainer .qty-btn').forEach(btn => {
-        btn.onclick = () => {
-            let idx = btn.dataset.idx, inp = document.getElementById(`quick_qty_${idx}`), val = parseInt(inp.value);
-            if (btn.dataset.dir === 'up') val = Math.min(val+1,10);
-            else val = Math.max(val-1,1);
-            inp.value = val;
+    document.querySelectorAll('#quickListContainer .qty-select').forEach(select => {
+        select.onchange = function() {
+            const unit = this.value;
+            const qtyInput = this.closest('.quantity-modern').querySelector('.qty-value');
+            const unitSpan = this.closest('.quantity-modern').querySelector('span:last-child');
+            if (unitSpan) unitSpan.textContent = getUnitSymbol(unit);
+            if (unit === 'half') qtyInput.value = 0.5;
+            else if (unit === 'quarter') qtyInput.value = 0.25;
+            else if (unit === 'oke') qtyInput.value = 0.2;
+            else qtyInput.value = 1;
         };
     });
+}
+
+function getUnitSymbol(unit) {
+    switch(unit) {
+        case 'kg': return 'kg';
+        case 'half': return 'نصف كيلو';
+        case 'quarter': return 'ربع كيلو';
+        case 'oke': return 'لوقية';
+        case 'box': return 'علبة';
+        case 'piece': return 'عدد';
+        default: return 'kg';
+    }
 }
 
 function renderBags() {
@@ -185,13 +284,14 @@ function renderBags() {
     container.innerHTML = bagTypesList.map((b, i) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="bag_chk_${i}"><span>${escapeHtml(b)}</span></div></div>`).join('');
 }
 
-// ==================== دوال الإضافة ====================
+// ==================== دوال الإضافة مع دعم الوحدات ====================
 async function addSelectedImportant() {
     let items = [];
     for (let i = 0; i < importantItemsList.length; i++) {
         if (document.getElementById(`imp_chk_${i}`)?.checked) {
-            let qty = parseInt(document.getElementById(`imp_qty_${i}`).value);
-            items.push({ name: importantItemsList[i], quantity: qty });
+            let qty = parseFloat(document.getElementById(`imp_qty_${i}`).value);
+            let unit = document.getElementById(`imp_unit_${i}`)?.value || 'kg';
+            items.push({ name: importantItemsList[i], quantity: qty, unitType: unit });
         }
     }
     if (items.length === 0) { showToast("⭐ اختر مادة هامة", true); return; }
@@ -200,7 +300,14 @@ async function addSelectedImportant() {
         let batch = db.batch();
         items.forEach(p => {
             let ref = materialsCollection.doc();
-            batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "مواد هامة", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+            batch.set(ref, { 
+                name: p.name, 
+                unitType: p.unitType, 
+                quantity: p.quantity, 
+                notes: "مواد هامة", 
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                priority: "main" 
+            });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} مادة بنجاح`);
@@ -216,8 +323,9 @@ async function addSelectedSpicesExtra() {
     let items = [];
     for (let i = 0; i < spicesExtraItemsList.length; i++) {
         if (document.getElementById(`sp_chk_${i}`)?.checked) {
-            let qty = parseInt(document.getElementById(`sp_qty_${i}`).value);
-            items.push({ name: spicesExtraItemsList[i], quantity: qty });
+            let qty = parseFloat(document.getElementById(`sp_qty_${i}`).value);
+            let unit = document.getElementById(`sp_unit_${i}`)?.value || 'kg';
+            items.push({ name: spicesExtraItemsList[i], quantity: qty, unitType: unit });
         }
     }
     if (items.length === 0) { showToast("🌿 اختر بهاراً", true); return; }
@@ -226,7 +334,14 @@ async function addSelectedSpicesExtra() {
         let batch = db.batch();
         items.forEach(p => {
             let ref = materialsCollection.doc();
-            batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بهارات اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "spices_extra" });
+            batch.set(ref, { 
+                name: p.name, 
+                unitType: p.unitType, 
+                quantity: p.quantity, 
+                notes: "بهارات اضافية", 
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                priority: "spices_extra" 
+            });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} بهار بنجاح`);
@@ -242,8 +357,9 @@ async function addSelectedQuick() {
     let items = [];
     for (let i = 0; i < extraItemsList.length; i++) {
         if (document.getElementById(`quick_chk_${i}`)?.checked) {
-            let qty = parseInt(document.getElementById(`quick_qty_${i}`).value);
-            items.push({ name: extraItemsList[i], quantity: qty });
+            let qty = parseFloat(document.getElementById(`quick_qty_${i}`).value);
+            let unit = document.getElementById(`quick_unit_${i}`)?.value || 'kg';
+            items.push({ name: extraItemsList[i], quantity: qty, unitType: unit });
         }
     }
     if (items.length === 0) { showToast("🌱 اختر منتجاً", true); return; }
@@ -252,7 +368,14 @@ async function addSelectedQuick() {
         let batch = db.batch();
         items.forEach(p => {
             let ref = materialsCollection.doc();
-            batch.set(ref, { name: p.name, unitType: 'kg', quantity: p.quantity, notes: "بذوريات", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
+            batch.set(ref, { 
+                name: p.name, 
+                unitType: p.unitType, 
+                quantity: p.quantity, 
+                notes: "بذوريات", 
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                priority: "extra" 
+            });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} منتج بنجاح`);
@@ -275,7 +398,14 @@ async function addSelectedBags() {
         let batch = db.batch();
         selected.forEach(b => {
             let ref = materialsCollection.doc();
-            batch.set(ref, { name: `كيس تعبئة - ${b}`, unitType: 'bag', quantity: 1, notes: "أكياس", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
+            batch.set(ref, { 
+                name: `كيس تعبئة - ${b}`, 
+                unitType: 'bag', 
+                quantity: 1, 
+                notes: "أكياس", 
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                priority: "extra" 
+            });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${selected.length} نوع كيس بنجاح`);
@@ -298,7 +428,14 @@ async function addTawsaya() {
     if (isNaN(qty) || qty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
     
     try {
-        await materialsCollection.add({ name, unitType: 'kg', quantity: qty, notes: "توصاية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "tawsaya" });
+        await materialsCollection.add({ 
+            name, 
+            unitType: 'kg', 
+            quantity: qty, 
+            notes: "توصاية", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+            priority: "tawsaya" 
+        });
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('tawsayaName').value = "";
         document.getElementById('tawsayaCustomQty').value = "1";
@@ -309,9 +446,10 @@ async function addTawsaya() {
 async function saveEdit() {
     if (!currentEditId) return;
     let newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
+    let newUnit = document.getElementById('editUnitSelect')?.value || 'kg';
     if (isNaN(newQty) || newQty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
     try {
-        await materialsCollection.doc(currentEditId).update({ quantity: newQty });
+        await materialsCollection.doc(currentEditId).update({ quantity: newQty, unitType: newUnit });
         showToast("✓ تم تحديث الكمية");
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
@@ -322,9 +460,16 @@ async function addNewMaterialDirect() {
     let name = document.getElementById('newMaterialName')?.value.trim();
     if (!name) { showToast("✏️ اكتب اسم المادة", true); return; }
     let quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
+    let unit = document.getElementById('newUnitSelect')?.value || 'kg';
     if (isNaN(quantity) || quantity <= 0) { showToast("🔢 كمية صحيحة", true); return; }
     try {
-        await materialsCollection.add({ name, unitType: 'kg', quantity, createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+        await materialsCollection.add({ 
+            name, 
+            unitType: unit, 
+            quantity: quantity, 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+            priority: "main" 
+        });
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = "";
@@ -341,7 +486,15 @@ function startListener() {
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            list.push({ id: doc.id, name: data.name, unitType: data.unitType, quantity: data.quantity, notes: data.notes || "", createdAt: data.createdAt, priority: data.priority || "main" });
+            list.push({ 
+                id: doc.id, 
+                name: data.name, 
+                unitType: data.unitType || 'kg', 
+                quantity: data.quantity || 0, 
+                notes: data.notes || "", 
+                createdAt: data.createdAt, 
+                priority: data.priority || "main" 
+            });
         });
         allMaterials = list;
         
@@ -474,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startAutoSync();
 });
 
-// ==================== تسجيل Service Worker لتثبيت PWA ====================
+// ==================== تسجيل Service Worker ====================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/material-manager/service-worker.js')
@@ -485,4 +638,4 @@ if ('serviceWorker' in navigator) {
                 console.error('❌ Service Worker registration failed:', error);
             });
     });
-}
+            }
