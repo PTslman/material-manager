@@ -23,7 +23,7 @@ const spicesExtraItemsList = [
 const extraItemsList = [
     "بذر دوار شمس ملكي", "بذر دوار شمس الشبح", "بذر اصفر ملكي", "بذر اسود ملكي", "بذر كوسا",
     "بذر ابيض عريض", "فستق مدخن", "فستق مملح", "ذرة الفوشار", "شوفان", "نعنع يابس", "نسكافية خشنة",
-    "اشلميش", "لوز ني", "كاجو ني", "لوز بقشرو", "فستق ني", "لبان الدكر", "لومي", "لومي اسود", "كركدية",
+    "اشلميش", "ลوز ني", "كاجو ني", "لوز بقشرو", "فستق ني", "لبان الدكر", "لومي", "لومي اسود", "كركدية",
     "زهرة الالماسة", "شمرا ناعمة", "شمرا حب", "زهورات مشكلة", "جوز امريكي", "تمر سري", "جوز هند خشن",
     "جوز هند ناعم", "بذور الشيا", "بذور الكتان", "بذور الرشاد", "رمان زركش"
 ];
@@ -135,13 +135,12 @@ function renderMaterialCard(m) {
     </div>`;
 }
 
-// ==================== دوال تحديث واجهة الكمية حسب الوحدة ====================
+// ==================== دوال تحديث الكمية ====================
 function updateQuantityControls(container, unit, inputId, isEditMode = false) {
     const controlsDiv = container.querySelector('.qty-controls');
     if (!controlsDiv) return;
     
     if (unit === 'half' || unit === 'quarter' || unit === 'oke') {
-        // وحدات ثابتة: إخفاء أزرار + و - وإظهار نص ثابت
         let displayText = '';
         if (unit === 'half') displayText = 'نصف كيلو';
         else if (unit === 'quarter') displayText = 'ربع كيلو';
@@ -149,20 +148,17 @@ function updateQuantityControls(container, unit, inputId, isEditMode = false) {
         
         controlsDiv.innerHTML = `<span class="fixed-quantity">${displayText}</span>`;
         
-        // تحديث قيمة الحقل المخفي
         const hiddenInput = document.getElementById(inputId);
         if (hiddenInput) {
             hiddenInput.value = unit === 'half' ? 0.5 : unit === 'quarter' ? 0.25 : 0.2;
         }
     } else {
-        // وحدات قابلة للتعديل: إظهار أزرار + و -
         controlsDiv.innerHTML = `
             <button class="qty-dec-btn" data-target="${inputId}">-</button>
             <input type="number" id="${inputId}" class="qty-value-modern" value="1" step="1" min="1">
             <button class="qty-inc-btn" data-target="${inputId}">+</button>
         `;
         
-        // ربط أزرار الزيادة والنقصان
         const decBtn = controlsDiv.querySelector('.qty-dec-btn');
         const incBtn = controlsDiv.querySelector('.qty-inc-btn');
         const qtyInput = document.getElementById(inputId);
@@ -178,6 +174,10 @@ function updateQuantityControls(container, unit, inputId, isEditMode = false) {
                 val = val + 1;
                 qtyInput.value = val;
             };
+            qtyInput.onchange = () => {
+                let val = parseInt(qtyInput.value);
+                if (isNaN(val) || val < 1) qtyInput.value = 1;
+            };
         }
     }
 }
@@ -185,19 +185,54 @@ function updateQuantityControls(container, unit, inputId, isEditMode = false) {
 // ==================== نافذة إضافة مادة جديدة ====================
 function initNewItemModal() {
     const unitSelect = document.getElementById('newUnitSelect');
-    const container = document.querySelector('#newItemModal .quantity-field-container');
+    const qtyPicker = document.querySelector('#newItemModal .qty-picker');
+    const qtyInput = document.getElementById('newQuantityValue');
+    const decBtn = document.querySelector('#newItemModal .qty-dec-btn');
+    const incBtn = document.querySelector('#newItemModal .qty-inc-btn');
     
-    if (unitSelect && container) {
+    if (unitSelect && qtyPicker) {
         unitSelect.onchange = function() {
             const selectedUnit = this.value;
-            updateQuantityControls(container, selectedUnit, 'newQuantityValue', false);
+            
+            if (selectedUnit === 'half' || selectedUnit === 'quarter' || selectedUnit === 'oke') {
+                qtyPicker.style.display = 'none';
+                let textSpan = qtyPicker.parentElement.querySelector('.fixed-quantity-new');
+                if (!textSpan) {
+                    textSpan = document.createElement('span');
+                    textSpan.className = 'fixed-quantity-new fixed-quantity';
+                    textSpan.style.cssText = 'padding: 10px 20px; background: var(--primary-50); border-radius: 60px; text-align: center; flex: 1; color: var(--primary-700);';
+                    qtyPicker.parentElement.appendChild(textSpan);
+                }
+                textSpan.textContent = selectedUnit === 'half' ? 'نصف كيلو' : selectedUnit === 'quarter' ? 'ربع كيلو' : 'لوقية';
+                textSpan.style.display = 'block';
+            } else {
+                qtyPicker.style.display = 'flex';
+                const textSpan = qtyPicker.parentElement.querySelector('.fixed-quantity-new');
+                if (textSpan) textSpan.style.display = 'none';
+                if (qtyInput) qtyInput.value = 1;
+            }
         };
-        // تهيئة أولية
         unitSelect.dispatchEvent(new Event('change'));
+    }
+    
+    if (decBtn && incBtn && qtyInput) {
+        decBtn.onclick = () => {
+            let val = parseInt(qtyInput.value) || 1;
+            val = Math.max(1, val - 1);
+            qtyInput.value = val;
+        };
+        incBtn.onclick = () => {
+            let val = parseInt(qtyInput.value) || 1;
+            val = val + 1;
+            qtyInput.value = val;
+        };
+        qtyInput.onchange = () => {
+            let val = parseInt(qtyInput.value);
+            if (isNaN(val) || val < 1) qtyInput.value = 1;
+        };
     }
 }
 
-// ==================== نافذة تعديل الكمية ====================
 function updateEditFieldByUnit(unit) {
     const container = document.querySelector('#editModal .edit-quantity-field');
     const qtyInput = document.getElementById('editQuantityValue');
@@ -205,13 +240,12 @@ function updateEditFieldByUnit(unit) {
     if (!container) return;
     
     if (unit === 'half' || unit === 'quarter' || unit === 'oke') {
-        // إخفاء حقل الإدخال وإظهار نص ثابت
         qtyInput.style.display = 'none';
         let textSpan = container.querySelector('.fixed-quantity-edit');
         if (!textSpan) {
             textSpan = document.createElement('span');
             textSpan.className = 'fixed-quantity-edit';
-            textSpan.style.cssText = 'padding: 12px 20px; background: var(--bg-input); border-radius: 60px; flex: 1; text-align: center; color: var(--text-primary);';
+            textSpan.style.cssText = 'padding: 12px 20px; background: var(--primary-50); border-radius: 60px; flex: 1; text-align: center; color: var(--primary-700);';
             container.appendChild(textSpan);
         }
         let displayText = '';
@@ -221,7 +255,6 @@ function updateEditFieldByUnit(unit) {
         textSpan.textContent = displayText;
         textSpan.style.display = 'block';
     } else {
-        // إظهار حقل الإدخال
         qtyInput.style.display = 'block';
         const textSpan = container.querySelector('.fixed-quantity-edit');
         if (textSpan) textSpan.style.display = 'none';
@@ -262,11 +295,9 @@ function renderImportantFiltered(filter = '') {
         `;
         container.appendChild(div);
         
-        // تهيئة أزرار الكمية لهذا العنصر
         initItemQuantityControls(div, 'important', index);
     });
     
-    // ربط أحداث تغيير الوحدة
     document.querySelectorAll('#importantListContainer .important-unit').forEach(select => {
         select.onchange = function() {
             const idx = this.dataset.index;
@@ -390,7 +421,6 @@ function updateItemQuantityControls(controlsDiv, unit, idx, type) {
         
         controlsDiv.innerHTML = `<span class="fixed-quantity">${displayText}</span>`;
         
-        // تحديث قيمة الحقل المخفي
         const qtyInput = document.querySelector(`.${type}-qty[data-idx="${idx}"]`);
         if (qtyInput) {
             qtyInput.value = unit === 'half' ? 0.5 : unit === 'quarter' ? 0.25 : 0.2;
@@ -416,6 +446,10 @@ function updateItemQuantityControls(controlsDiv, unit, idx, type) {
                 let val = parseInt(qtyInput.value) || 1;
                 val = val + 1;
                 qtyInput.value = val;
+            };
+            qtyInput.onchange = () => {
+                let val = parseInt(qtyInput.value);
+                if (isNaN(val) || val < 1) qtyInput.value = 1;
             };
         }
     }
@@ -915,7 +949,6 @@ function bindEvents() {
         });
     };
     
-    // ربط تغيير الوحدة في نافذة التعديل
     document.getElementById('editUnitSelect').addEventListener('change', function() {
         updateEditFieldByUnit(this.value);
     });
@@ -941,4 +974,4 @@ if ('serviceWorker' in navigator) {
                 console.error('❌ Service Worker registration failed:', error);
             });
     });
-}
+        }
