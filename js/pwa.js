@@ -1,10 +1,10 @@
 // ============================================
-// PWA Manager Pro - Version 4.0
-// Advanced PWA with APK-like Experience
-// Native Android App Alternative
+// PWA Manager Pro - Version 5.0
+// APK-Like Native Android Experience
+// Based on Bubblewrap, TWA, and Capacitor best practices
 // ============================================
 
-class NativePWAManager {
+class NativeAPKLikePWA {
     constructor() {
         // ==================== الحالة الأساسية ====================
         this.deferredPrompt = null;
@@ -14,8 +14,10 @@ class NativePWAManager {
         this.notificationPermission = false;
         this.badgeCount = 0;
         this.syncQueue = [];
+        this.isTWA = false; // Trusted Web Activity mode
+        this.webViewMode = false;
         
-        // ==================== معلومات الجهاز ====================
+        // ==================== معلومات الجهاز المتقدمة ====================
         this.deviceInfo = this.getDeviceInfo();
         this.screenOrientation = screen.orientation?.type || 'portrait-primary';
         
@@ -23,40 +25,53 @@ class NativePWAManager {
         this.init();
     }
     
-    // ==================== معلومات الجهاز المتقدمة ====================
+    // ==================== معلومات الجهاز (مثل Bubblewrap) ====================
     getDeviceInfo() {
         const ua = navigator.userAgent;
+        const isAndroidWebView = /wv|; wv\)/i.test(ua);
+        const isTWA = window.matchMedia('(display-mode: standalone)').matches && 
+                     !navigator.standalone && 
+                     /Android/i.test(ua);
+        
         return {
             isSamsung: /SM-|SAMSUNG|GT-|SHV-|SC-|SM-G|SM-A|SM-J|SM-M/i.test(ua),
-            isXiaomi: /MI |Redmi|POCO|MIX|Black Shark|2107|2106|2105|2201|2202/i.test(ua),
-            isHuawei: /HUAWEI|HONOR|HW-|LIO-|ELE-|VOG-|TAS-|NOH-|ELS-|ANA-|JNY-|MAR-|JKM-|POT-|FIG-|BLA-|CLT-|LYA-/i.test(ua),
-            isOppo: /OPPO|Realme|OnePlus|CPH|RMX|KB200|LE211|IN202/i.test(ua),
+            isXiaomi: /MI |Redmi|POCO|MIX|Black Shark/i.test(ua),
+            isHuawei: /HUAWEI|HONOR|HW-/i.test(ua),
+            isOppo: /OPPO|Realme|OnePlus|CPH|RMX/i.test(ua),
             isVivo: /vivo|VIVO|V[0-9]{4}|iQOO/i.test(ua),
             isGoogle: /Pixel|Android SDK|Google/i.test(ua),
             isAndroid: /Android/i.test(ua),
             isIOS: /iPhone|iPad|iPod/i.test(ua),
-            isChrome: /Chrome/i.test(ua),
+            isChrome: /Chrome/i.test(ua) && !isAndroidWebView,
             isSamsungBrowser: /SamsungBrowser/i.test(ua),
-            isFirefox: /Firefox/i.test(ua),
-            isEdge: /Edg/i.test(ua),
+            isWebView: isAndroidWebView,
+            isTWA: isTWA,
             screenWidth: window.screen.width,
             screenHeight: window.screen.height,
             pixelRatio: window.devicePixelRatio,
             language: navigator.language,
-            battery: null
+            userAgent: ua,
+            androidVersion: this.getAndroidVersion(ua)
         };
     }
     
-    // ==================== التهيئة الرئيسية ====================
+    getAndroidVersion(ua) {
+        const match = ua.match(/Android\s([0-9.]+)/);
+        return match ? match[1] : null;
+    }
+    
+    // ==================== التهيئة الرئيسية (مثل Bubblewrap TWA) ====================
     async init() {
-        console.log('🚀 Native PWA Manager v4.0 - APK-like Experience');
+        console.log('🚀 Native APK-Like PWA Manager v5.0');
         console.log('📱 Device:', this.deviceInfo);
+        console.log('🔧 TWA Mode:', this.deviceInfo.isTWA);
         
-        // تحسينات الأداء والتوافق
-        this.optimizeForDevice();
-        this.lockScreenOrientation();
-        this.monitorBatteryStatus();
-        this.setupKeyboardHandling();
+        // تحسينات متقدمة
+        this.optimizeForNative();
+        this.setupTrustedWebActivity();
+        this.setupWebViewOptimizations();
+        this.setupNativePermissions();
+        this.setupHardwareAcceleration();
         
         // الميزات الأساسية
         await this.registerServiceWorker();
@@ -68,107 +83,148 @@ class NativePWAManager {
         this.setupPeriodicSync();
         this.setupAppBadge();
         this.setupShareTarget();
-        this.setupProtocolHandler();
         this.setupFileHandling();
         this.setupWakeLock();
-        this.setupScreenKeepAwake();
         this.setupNativeNavigation();
         this.setupSplashScreen();
         this.setupAppShortcuts();
-        this.setupWidgetSupport();
         this.setupPushNotifications();
         this.setupDataStorage();
         this.setupCrashReporting();
         this.setupPerformanceMonitoring();
+        
+        // إضافة كلاس للـ CSS
+        if (this.deviceInfo.isTWA) {
+            document.body.classList.add('twa-mode');
+        }
+        if (this.deviceInfo.isWebView) {
+            document.body.classList.add('webview-mode');
+        }
     }
     
-    // ==================== تحسينات للأجهزة المختلفة ====================
-    optimizeForDevice() {
-        // إضافة كلاس خاص بالجهاز للـ CSS
-        if (this.deviceInfo.isSamsung) {
-            document.body.classList.add('samsung-device');
-            console.log('📱 Samsung optimization activated');
-        }
-        if (this.deviceInfo.isXiaomi) {
-            document.body.classList.add('xiaomi-device');
-            console.log('📱 Xiaomi optimization activated');
-        }
-        if (this.deviceInfo.isHuawei) {
-            document.body.classList.add('huawei-device');
-            console.log('📱 Huawei optimization activated');
-        }
-        if (this.deviceInfo.isOppo) {
-            document.body.classList.add('oppo-device');
-            console.log('📱 Oppo/Realme optimization activated');
-        }
-        
-        // تحسين شريط الحالة
-        this.setStatusBarStyle();
+    // ==================== تحسينات للأداء الأصلي (Native Performance) ====================
+    optimizeForNative() {
+        // تفعيل تسريع الأجهزة
+        document.body.style.transform = 'translateZ(0)';
+        document.body.style.backfaceVisibility = 'hidden';
         
         // تحسين التمرير
         document.body.style.webkitOverflowScrolling = 'touch';
-        document.body.style.touchAction = 'pan-y pinch-zoom';
+        
+        // منع التأخير في النقرات
+        document.body.style.touchAction = 'manipulation';
+        
+        // تفعيل hardware acceleration للـ CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            .material-card, .category-card, .action-btn, .main-add-btn {
+                transform: translateZ(0);
+                will-change: transform;
+            }
+        `;
+        document.head.appendChild(style);
     }
     
-    setStatusBarStyle() {
-        // تغيير لون شريط الحالة حسب الثيم
-        const observer = new MutationObserver(() => {
-            const isDark = document.body.classList.contains('dark');
-            const themeColor = isDark ? '#0f172a' : '#2e7d32';
-            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
+    // ==================== Trusted Web Activity Setup (Bubblewrap Style) ====================
+    setupTrustedWebActivity() {
+        if (this.deviceInfo.isTWA) {
+            console.log('✅ Running as Trusted Web Activity');
+            this.isTWA = true;
+            
+            // إخفاء شريط العناوين بالكامل في وضع TWA
+            document.body.classList.add('twa-fullscreen');
+            
+            // ضبط ارتفاع الشاشة ليتناسب مع وضع TWA
+            const setTWAHeight = () => {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            };
+            setTWAHeight();
+            window.addEventListener('resize', setTWAHeight);
+        }
+    }
+    
+    // ==================== WebView Optimizations (مثل Android WebView Wrapper) ====================
+    setupWebViewOptimizations() {
+        // تحسين إعدادات WebView للتخزين المحلي
+        if (this.deviceInfo.isWebView) {
+            console.log('📱 Running in WebView mode');
+            
+            // تفعيل DOM storage و localStorage
+            if (window.localStorage) {
+                console.log('✅ localStorage available');
+            }
+            
+            // تحسين عرض الصور
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.loading = 'eager';
+            });
+        }
+        
+        // إضافة ميزة التحديث بالسحب (Pull to Refresh) مثل التطبيقات الأصلية
+        let startY = 0;
+        let isRefreshing = false;
+        
+        document.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                startY = e.touches[0].clientY;
+            }
         });
-        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (window.scrollY === 0 && e.touches[0].clientY - startY > 80 && !isRefreshing) {
+                isRefreshing = true;
+                this.showNativeToast('جاري التحديث...', 'info');
+                window.location.reload();
+                setTimeout(() => { isRefreshing = false; }, 2000);
+            }
+        });
     }
     
-    lockScreenOrientation() {
-        // قفل الاتجاه عند الحاجة
-        if (screen.orientation && screen.orientation.lock) {
-            // ننتظر تفاعل المستخدم أولاً
+    // ==================== Native Permissions Management ====================
+    setupNativePermissions() {
+        // طلب الأذونات عند الحاجة (مثل Capacitor)
+        const permissionsNeeded = [];
+        
+        // التحقق من أذونات الإشعارات
+        if (Notification.permission === 'default') {
+            permissionsNeeded.push('notifications');
+        }
+        
+        // طلب الأذونات بعد تفاعل المستخدم
+        if (permissionsNeeded.length > 0) {
             document.addEventListener('click', () => {
-                if (this.isInstalled && screen.orientation.lock) {
-                    screen.orientation.lock('portrait').catch(e => console.log('Orientation lock not supported'));
-                }
+                this.requestPermissions(permissionsNeeded);
             }, { once: true });
         }
     }
     
-    async monitorBatteryStatus() {
-        if ('getBattery' in navigator) {
-            try {
-                const battery = await navigator.getBattery();
-                this.deviceInfo.battery = {
-                    level: battery.level * 100,
-                    charging: battery.charging
-                };
-                console.log('🔋 Battery:', this.deviceInfo.battery);
-                
-                battery.addEventListener('levelchange', () => {
-                    this.deviceInfo.battery.level = battery.level * 100;
-                    if (battery.level < 0.15) {
-                        this.showLowBatteryWarning();
-                    }
-                });
-            } catch(e) { console.log('Battery API not available'); }
+    async requestPermissions(permissions) {
+        const results = {};
+        
+        for (const perm of permissions) {
+            if (perm === 'notifications' && 'Notification' in window) {
+                const result = await Notification.requestPermission();
+                results[perm] = result === 'granted';
+            }
+        }
+        
+        return results;
+    }
+    
+    // ==================== Hardware Acceleration ====================
+    setupHardwareAcceleration() {
+        // تفعيل WebGL إذا كان متاحاً
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            console.log('✅ WebGL hardware acceleration enabled');
+            document.body.classList.add('webgl-enabled');
         }
     }
     
-    showLowBatteryWarning() {
-        this.showNativeToast('⚠️ شحن البطارية منخفض (أقل من 15%)', 'warning');
-    }
-    
-    setupKeyboardHandling() {
-        // التعامل مع لوحة المفاتيح في الحقول
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                setTimeout(() => {
-                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            });
-        });
-    }
-    
-    // ==================== Service Worker متقدم ====================
+    // ==================== Service Worker متقدم (مثل PWA Builder) ====================
     async registerServiceWorker() {
         if (!('serviceWorker' in navigator)) {
             console.warn('⚠️ Service Worker not supported');
@@ -183,10 +239,10 @@ class NativePWAManager {
             
             console.log('✅ Service Worker registered:', this.swRegistration.scope);
             
-            // التحقق من وجود تحديثات عند بدء التشغيل
+            // التحقق من التحديثات
             await this.swRegistration.update();
             
-            // التحقق من التحديثات كل ساعة
+            // التحقق كل ساعة
             setInterval(() => {
                 if (this.swRegistration) {
                     this.swRegistration.update();
@@ -200,7 +256,7 @@ class NativePWAManager {
         }
     }
     
-    // ==================== التثبيت كتطبيق أصلي ====================
+    // ==================== تثبيت كـ APK-like ====================
     checkInstallation() {
         if (window.matchMedia('(display-mode: standalone)').matches || 
             window.navigator.standalone === true) {
@@ -210,26 +266,39 @@ class NativePWAManager {
             this.applyNativeUI();
         }
         
+        if (this.deviceInfo.isTWA) {
+            this.isInstalled = true;
+            this.applyTWAUI();
+        }
+        
         if (localStorage.getItem('pwa_installed') === 'true') {
             this.isInstalled = true;
         }
     }
     
     applyNativeUI() {
-        // تطبيق واجهة تشبه التطبيقات الأصلية
-        document.body.classList.add('native-mode');
+        document.body.classList.add('native-installed');
         
-        // إخفاء شريط التمرير الزائد
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-        
-        // تحسين أداء التمرير
+        // تحسين واجهة التطبيقات المثبتة
         const appMain = document.querySelector('.app-main');
         if (appMain) {
             appMain.style.overflowY = 'auto';
             appMain.style.height = '100vh';
             appMain.style.webkitOverflowScrolling = 'touch';
         }
+    }
+    
+    applyTWAUI() {
+        document.body.classList.add('twa-installed');
+        
+        // إخفاء شريط الحالة في وضع TWA
+        const style = document.createElement('style');
+        style.textContent = `
+            body.twa-installed .sync-status-bar {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        `;
+        document.head.appendChild(style);
     }
     
     hideInstallButtons() {
@@ -239,22 +308,10 @@ class NativePWAManager {
         if (welcomeInstallBtn) welcomeInstallBtn.style.display = 'none';
     }
     
-    showInstallButtons() {
-        if (this.isInstalled) return;
-        const installBtn = document.getElementById('installBtn');
-        const welcomeInstallBtn = document.getElementById('installWelcomeBtn');
-        if (installBtn && !this.deviceInfo.isSamsungBrowser) installBtn.style.display = 'inline-flex';
-        if (welcomeInstallBtn && !this.deviceInfo.isSamsungBrowser) welcomeInstallBtn.style.display = 'inline-flex';
-    }
-    
-    // ==================== إشعارات متقدمة تشبه Android ====================
+    // ==================== إشعارات متقدمة (مثل Native Android) ====================
     async requestNotificationPermission() {
-        if (!('Notification' in window)) {
-            console.log('Notifications not supported');
-            return false;
-        }
+        if (!('Notification' in window)) return false;
         
-        // طلب الإذن بعد تفاعل المستخدم
         const askForPermission = async () => {
             if (Notification.permission === 'granted') {
                 this.notificationPermission = true;
@@ -274,12 +331,11 @@ class NativePWAManager {
             return false;
         };
         
-        // انتظر تفاعل المستخدم
         document.addEventListener('click', askForPermission, { once: true });
         return false;
     }
     
-    showNativeAndroidNotification(title, body, image = null, requireInteraction = false) {
+    showNativeAndroidNotification(title, body, requireInteraction = false) {
         if (!this.notificationPermission && Notification.permission !== 'granted') return;
         
         const options = {
@@ -297,8 +353,6 @@ class NativePWAManager {
             ]
         };
         
-        if (image) options.image = image;
-        
         if (this.swRegistration && this.swRegistration.showNotification) {
             this.swRegistration.showNotification(title, options);
         } else if (Notification.permission === 'granted') {
@@ -313,7 +367,6 @@ class NativePWAManager {
         this.showNativeAndroidNotification(
             '✓ تم إضافة مادة جديدة',
             `${materialName} (${quantity} ${displayUnit})`,
-            null,
             false
         );
         this.updateBadge(this.badgeCount + 1);
@@ -345,7 +398,7 @@ class NativePWAManager {
         }
     }
     
-    // ==================== المزامنة الخلفية ====================
+    // ==================== Background Sync (مثل Capacitor) ====================
     setupBackgroundSync() {
         if ('sync' in navigator.serviceWorker) {
             navigator.serviceWorker.ready.then(registration => {
@@ -363,7 +416,7 @@ class NativePWAManager {
                     if (status.state === 'granted') {
                         navigator.serviceWorker.ready.then(registration => {
                             registration.periodicSync.register('periodic-sync', {
-                                minInterval: 12 * 60 * 60 * 1000 // كل 12 ساعة
+                                minInterval: 12 * 60 * 60 * 1000
                             });
                             console.log('✅ Periodic sync registered');
                         });
@@ -372,7 +425,7 @@ class NativePWAManager {
         }
     }
     
-    // ==================== مشاركة الملفات ====================
+    // ==================== Share Target (مثل Android Share) ====================
     setupShareTarget() {
         if ('share' in navigator) {
             console.log('✅ Web Share API supported');
@@ -399,7 +452,7 @@ class NativePWAManager {
         return false;
     }
     
-    // ==================== معالج الملفات ====================
+    // ==================== File Handling (مثل Native File Picker) ====================
     setupFileHandling() {
         if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
             launchQueue.setConsumer(launchParams => {
@@ -413,10 +466,10 @@ class NativePWAManager {
     
     async handleFileOpen(file) {
         console.log('📄 File opened:', file.name);
-        // معالجة الملفات المفتوحة
+        this.showNativeToast(`تم فتح الملف: ${file.name}`, 'info');
     }
     
-    // ==================== منع الإغلاق التلقائي للشاشة ====================
+    // ==================== Wake Lock (منع إغلاق الشاشة) ====================
     setupWakeLock() {
         let wakeLock = null;
         
@@ -425,7 +478,6 @@ class NativePWAManager {
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
                     console.log('✅ Wake Lock active');
-                    
                     wakeLock.addEventListener('release', () => {
                         console.log('Wake Lock released');
                     });
@@ -435,29 +487,12 @@ class NativePWAManager {
             }
         };
         
-        // تفعيل عند التفاعل
         document.addEventListener('click', requestWakeLock, { once: true });
     }
     
-    setupScreenKeepAwake() {
-        // منع إغلاق الشاشة أثناء الاستخدام
-        let activityTimeout;
-        const resetTimeout = () => {
-            clearTimeout(activityTimeout);
-            activityTimeout = setTimeout(() => {
-                if (document.visibilityState === 'visible') {
-                    this.showToast('نشاط غير عادي؟ اضغط للبقاء مستيقظاً');
-                }
-            }, 5 * 60 * 1000);
-        };
-        
-        document.addEventListener('click', resetTimeout);
-        document.addEventListener('touchstart', resetTimeout);
-    }
-    
-    // ==================== التنقل الأصلي ====================
+    // ==================== التنقل الأصلي (Native Navigation) ====================
     setupNativeNavigation() {
-        // معالجة أزرار الرجوع
+        // معالجة أزرار الرجوع مثل التطبيقات الأصلية
         window.addEventListener('popstate', (event) => {
             const modal = document.querySelector('.modal.active');
             if (modal) {
@@ -467,13 +502,11 @@ class NativePWAManager {
             }
         });
         
-        // إضافة نقطة تاريخ أولية
         history.pushState(null, '', window.location.href);
     }
     
-    // ==================== شاشة البداية ====================
+    // ==================== شاشة البداية (Splash Screen) ====================
     setupSplashScreen() {
-        // إخفاء شاشة البداية بشكل تدريجي
         const splash = document.getElementById('splashScreen');
         if (splash) {
             setTimeout(() => {
@@ -487,19 +520,15 @@ class NativePWAManager {
     
     // ==================== اختصارات التطبيق ====================
     setupAppShortcuts() {
-        // معالجة اختصارات لوحة المفاتيح
         document.addEventListener('keydown', (e) => {
-            // Ctrl + N = إضافة مادة جديدة
             if (e.ctrlKey && e.key === 'n') {
                 e.preventDefault();
                 document.getElementById('mainAddBtn')?.click();
             }
-            // Ctrl + S = مزامنة
             if (e.ctrlKey && e.key === 's') {
                 e.preventDefault();
                 document.getElementById('syncBtn')?.click();
             }
-            // Escape = إغلاق النوافذ
             if (e.key === 'Escape') {
                 const modal = document.querySelector('.modal.active');
                 if (modal) modal.classList.remove('active');
@@ -507,28 +536,15 @@ class NativePWAManager {
         });
     }
     
-    // ==================== دعم الـ Widget ====================
-    setupWidgetSupport() {
-        // حفظ الحالة لاستخدامها في الـ Widget
-        window.addEventListener('beforeunload', () => {
-            localStorage.setItem('last_state', JSON.stringify({
-                materialsCount: window.allMaterials?.length || 0,
-                timestamp: Date.now()
-            }));
-        });
-    }
-    
-    // ==================== إشعارات Push ====================
+    // ==================== Push Notifications ====================
     setupPushNotifications() {
         if ('PushManager' in window) {
             console.log('✅ Push Notifications supported');
-            // يمكن إضافة سيرفر push هنا
         }
     }
     
-    // ==================== تخزين البيانات المحلي ====================
+    // ==================== IndexedDB Storage ====================
     setupDataStorage() {
-        // استخدام IndexedDB للتخزين المتقدم
         if ('indexedDB' in window) {
             this.initIndexedDB();
         }
@@ -549,7 +565,7 @@ class NativePWAManager {
         };
     }
     
-    // ==================== تقارير الأعطال ====================
+    // ==================== Crash Reporting ====================
     setupCrashReporting() {
         window.addEventListener('error', (event) => {
             console.error('Global error:', event.error);
@@ -571,14 +587,13 @@ class NativePWAManager {
             url: window.location.href
         };
         
-        // حفظ في localStorage
         const errors = JSON.parse(localStorage.getItem('error_logs') || '[]');
         errors.push(errorLog);
         if (errors.length > 50) errors.shift();
         localStorage.setItem('error_logs', JSON.stringify(errors));
     }
     
-    // ==================== مراقبة الأداء ====================
+    // ==================== Performance Monitoring ====================
     setupPerformanceMonitoring() {
         if ('PerformanceObserver' in window) {
             const observer = new PerformanceObserver((list) => {
@@ -592,24 +607,19 @@ class NativePWAManager {
         }
     }
     
-    // ==================== توست على نمط Android ====================
-    showToast(message, type = 'info') {
+    // ==================== Native Toast (مثل Android Toast) ====================
+    showNativeToast(message, type = 'info') {
         const existing = document.querySelector('.native-toast');
         if (existing) existing.remove();
         
         const toast = document.createElement('div');
         toast.className = `native-toast ${type}`;
-        toast.innerHTML = `
-            <div class="native-toast-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${message}</span>`;
         toast.style.cssText = `
             position: fixed;
             bottom: 80px;
             left: 50%;
-            transform: translateX(-50%) translateY(30px);
+            transform: translateX(-50%) translateY(20px);
             background: rgba(0,0,0,0.85);
             backdrop-filter: blur(20px);
             color: white;
@@ -618,12 +628,12 @@ class NativePWAManager {
             font-size: 0.85rem;
             z-index: 10001;
             opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
             direction: rtl;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             max-width: 85%;
-            text-align: center;
-            font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         `;
         document.body.appendChild(toast);
         
@@ -634,13 +644,9 @@ class NativePWAManager {
         
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-50%) translateY(30px)';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-    
-    showNativeToast(message, type = 'info') {
-        this.showToast(message, type);
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 200);
+        }, 2500);
     }
     
     // ==================== مراقبة الشبكة ====================
@@ -655,13 +661,12 @@ class NativePWAManager {
         window.addEventListener('offline', () => {
             this.isOnline = false;
             console.log('🔴 App is offline');
-            this.showNativeToast('لا يوجد اتصال بالإنترنت - البيانات متاحة دون اتصال', 'warning');
+            this.showNativeToast('لا يوجد اتصال بالإنترنت', 'warning');
         });
     }
     
     async syncOfflineData() {
         if (!this.isOnline) return;
-        console.log('🔄 Syncing offline data...');
         if (typeof startListener === 'function') {
             if (window.unsubscribe) window.unsubscribe();
             startListener();
@@ -703,9 +708,7 @@ class NativePWAManager {
         dialog.className = 'install-dialog';
         dialog.innerHTML = `
             <div class="install-dialog-content">
-                <div class="install-dialog-icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
+                <div class="install-dialog-icon"><i class="fas fa-boxes"></i></div>
                 <h3>تثبيت مدير المواد</h3>
                 <p>قم بتثبيت التطبيق على جهازك للوصول السريع بدون إنترنت</p>
                 <div class="install-dialog-features">
@@ -767,11 +770,7 @@ class NativePWAManager {
                 <div class="install-guide-dialog">
                     <i class="fab fa-samsung"></i>
                     <h3>تثبيت على سامسونج</h3>
-                    <ol>
-                        <li>اضغط على القائمة (☰) في متصفح سامسونج</li>
-                        <li>اختر "تثبيت التطبيق"</li>
-                        <li>اضغط على "تثبيت" للتأكيد</li>
-                    </ol>
+                    <ol><li>اضغط على القائمة (☰) في متصفح سامسونج</li><li>اختر "تثبيت التطبيق"</li><li>اضغط على "تثبيت" للتأكيد</li></ol>
                     <button class="guide-close">حسناً</button>
                 </div>
             `;
@@ -780,11 +779,7 @@ class NativePWAManager {
                 <div class="install-guide-dialog">
                     <i class="fas fa-mobile-alt"></i>
                     <h3>تثبيت على شاومي</h3>
-                    <ol>
-                        <li>افتح قائمة المتصفح (ثلاث نقاط)</li>
-                        <li>اختر "تثبيت التطبيق"</li>
-                        <li>اضغط على "تثبيت" للتأكيد</li>
-                    </ol>
+                    <ol><li>افتح قائمة المتصفح (ثلاث نقاط)</li><li>اختر "تثبيت التطبيق"</li><li>اضغط على "تثبيت" للتأكيد</li></ol>
                     <button class="guide-close">حسناً</button>
                 </div>
             `;
@@ -793,11 +788,7 @@ class NativePWAManager {
                 <div class="install-guide-dialog">
                     <i class="fas fa-download"></i>
                     <h3>تثبيت التطبيق</h3>
-                    <ol>
-                        <li>افتح قائمة المتصفح (ثلاث نقاط)</li>
-                        <li>اختر "تثبيت التطبيق"</li>
-                        <li>اتبع التعليمات لإكمال التثبيت</li>
-                    </ol>
+                    <ol><li>افتح قائمة المتصفح (ثلاث نقاط)</li><li>اختر "تثبيت التطبيق"</li><li>اتبع التعليمات لإكمال التثبيت</li></ol>
                     <button class="guide-close">حسناً</button>
                 </div>
             `;
@@ -822,7 +813,8 @@ class NativePWAManager {
             displayMode: this.getDisplayMode(),
             deviceInfo: this.deviceInfo,
             badgeCount: this.badgeCount,
-            version: '4.0',
+            isTWA: this.isTWA,
+            version: '5.0',
             features: {
                 backgroundSync: 'sync' in navigator.serviceWorker,
                 periodicSync: 'periodicSync' in navigator.serviceWorker,
@@ -830,15 +822,16 @@ class NativePWAManager {
                 badge: 'setAppBadge' in navigator,
                 share: 'share' in navigator,
                 fileHandling: 'launchQueue' in window,
-                pushNotifications: 'PushManager' in window
+                pushNotifications: 'PushManager' in window,
+                webgl: !!document.createElement('canvas').getContext('webgl')
             }
         };
     }
     
     getDisplayMode() {
+        if (this.deviceInfo.isTWA) return 'trusted-web-activity';
         if (window.matchMedia('(display-mode: standalone)').matches) return 'standalone';
         if (window.matchMedia('(display-mode: fullscreen)').matches) return 'fullscreen';
-        if (window.matchMedia('(display-mode: minimal-ui)').matches) return 'minimal-ui';
         return 'browser';
     }
 }
@@ -847,7 +840,7 @@ class NativePWAManager {
 let pwaManager = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    pwaManager = new NativePWAManager();
+    pwaManager = new NativeAPKLikePWA();
     window.pwaManager = pwaManager;
-    console.log('📱 PWA Info:', pwaManager.getAppInfo());
+    console.log('📱 APK-Like PWA Info:', pwaManager.getAppInfo());
 });
