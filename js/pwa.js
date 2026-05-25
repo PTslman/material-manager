@@ -1,7 +1,6 @@
 // ============================================
-// PWA Manager Pro - Version 5.0
-// APK-Like Native Android Experience
-// Based on Bubblewrap, TWA, and Capacitor best practices
+// PWA Manager Pro - Version 5.1
+// APK-Like Native Android Experience (No Pull-to-Refresh)
 // ============================================
 
 class NativeAPKLikePWA {
@@ -14,18 +13,16 @@ class NativeAPKLikePWA {
         this.notificationPermission = false;
         this.badgeCount = 0;
         this.syncQueue = [];
-        this.isTWA = false; // Trusted Web Activity mode
-        this.webViewMode = false;
+        this.isTWA = false;
         
         // ==================== معلومات الجهاز المتقدمة ====================
         this.deviceInfo = this.getDeviceInfo();
-        this.screenOrientation = screen.orientation?.type || 'portrait-primary';
         
         // ==================== بدء التشغيل ====================
         this.init();
     }
     
-    // ==================== معلومات الجهاز (مثل Bubblewrap) ====================
+    // ==================== معلومات الجهاز ====================
     getDeviceInfo() {
         const ua = navigator.userAgent;
         const isAndroidWebView = /wv|; wv\)/i.test(ua);
@@ -60,20 +57,18 @@ class NativeAPKLikePWA {
         return match ? match[1] : null;
     }
     
-    // ==================== التهيئة الرئيسية (مثل Bubblewrap TWA) ====================
+    // ==================== التهيئة الرئيسية ====================
     async init() {
-        console.log('🚀 Native APK-Like PWA Manager v5.0');
+        console.log('🚀 Native APK-Like PWA Manager v5.1');
         console.log('📱 Device:', this.deviceInfo);
-        console.log('🔧 TWA Mode:', this.deviceInfo.isTWA);
         
         // تحسينات متقدمة
         this.optimizeForNative();
         this.setupTrustedWebActivity();
-        this.setupWebViewOptimizations();
         this.setupNativePermissions();
         this.setupHardwareAcceleration();
         
-        // الميزات الأساسية
+        // الميزات الأساسية (بدون Pull-to-Refresh)
         await this.registerServiceWorker();
         this.checkInstallation();
         this.setupEventListeners();
@@ -102,7 +97,7 @@ class NativeAPKLikePWA {
         }
     }
     
-    // ==================== تحسينات للأداء الأصلي (Native Performance) ====================
+    // ==================== تحسينات للأداء الأصلي ====================
     optimizeForNative() {
         // تفعيل تسريع الأجهزة
         document.body.style.transform = 'translateZ(0)';
@@ -114,9 +109,29 @@ class NativeAPKLikePWA {
         // منع التأخير في النقرات
         document.body.style.touchAction = 'manipulation';
         
+        // منع التمرير الزائد الذي يسبب تحديث الصفحة
+        document.body.style.overscrollBehavior = 'none';
+        
         // تفعيل hardware acceleration للـ CSS
         const style = document.createElement('style');
         style.textContent = `
+            * {
+                overscroll-behavior: none;
+                -webkit-overflow-scrolling: touch;
+            }
+            body {
+                overscroll-behavior: none;
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            .app-main {
+                overflow-y: auto;
+                height: 100%;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
             .material-card, .category-card, .action-btn, .main-add-btn {
                 transform: translateZ(0);
                 will-change: transform;
@@ -125,16 +140,13 @@ class NativeAPKLikePWA {
         document.head.appendChild(style);
     }
     
-    // ==================== Trusted Web Activity Setup (Bubblewrap Style) ====================
+    // ==================== Trusted Web Activity Setup ====================
     setupTrustedWebActivity() {
         if (this.deviceInfo.isTWA) {
             console.log('✅ Running as Trusted Web Activity');
             this.isTWA = true;
-            
-            // إخفاء شريط العناوين بالكامل في وضع TWA
             document.body.classList.add('twa-fullscreen');
             
-            // ضبط ارتفاع الشاشة ليتناسب مع وضع TWA
             const setTWAHeight = () => {
                 const vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -144,55 +156,25 @@ class NativeAPKLikePWA {
         }
     }
     
-    // ==================== WebView Optimizations (مثل Android WebView Wrapper) ====================
+    // ==================== WebView Optimizations ====================
     setupWebViewOptimizations() {
-        // تحسين إعدادات WebView للتخزين المحلي
         if (this.deviceInfo.isWebView) {
             console.log('📱 Running in WebView mode');
-            
-            // تفعيل DOM storage و localStorage
-            if (window.localStorage) {
-                console.log('✅ localStorage available');
-            }
-            
-            // تحسين عرض الصور
             const images = document.querySelectorAll('img');
             images.forEach(img => {
                 img.loading = 'eager';
             });
         }
-        
-        // إضافة ميزة التحديث بالسحب (Pull to Refresh) مثل التطبيقات الأصلية
-        let startY = 0;
-        let isRefreshing = false;
-        
-        document.addEventListener('touchstart', (e) => {
-            if (window.scrollY === 0) {
-                startY = e.touches[0].clientY;
-            }
-        });
-        
-        document.addEventListener('touchmove', (e) => {
-            if (window.scrollY === 0 && e.touches[0].clientY - startY > 80 && !isRefreshing) {
-                isRefreshing = true;
-                this.showNativeToast('جاري التحديث...', 'info');
-                window.location.reload();
-                setTimeout(() => { isRefreshing = false; }, 2000);
-            }
-        });
     }
     
     // ==================== Native Permissions Management ====================
     setupNativePermissions() {
-        // طلب الأذونات عند الحاجة (مثل Capacitor)
         const permissionsNeeded = [];
         
-        // التحقق من أذونات الإشعارات
         if (Notification.permission === 'default') {
             permissionsNeeded.push('notifications');
         }
         
-        // طلب الأذونات بعد تفاعل المستخدم
         if (permissionsNeeded.length > 0) {
             document.addEventListener('click', () => {
                 this.requestPermissions(permissionsNeeded);
@@ -215,7 +197,6 @@ class NativeAPKLikePWA {
     
     // ==================== Hardware Acceleration ====================
     setupHardwareAcceleration() {
-        // تفعيل WebGL إذا كان متاحاً
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         if (gl) {
@@ -224,7 +205,7 @@ class NativeAPKLikePWA {
         }
     }
     
-    // ==================== Service Worker متقدم (مثل PWA Builder) ====================
+    // ==================== Service Worker متقدم ====================
     async registerServiceWorker() {
         if (!('serviceWorker' in navigator)) {
             console.warn('⚠️ Service Worker not supported');
@@ -239,10 +220,8 @@ class NativeAPKLikePWA {
             
             console.log('✅ Service Worker registered:', this.swRegistration.scope);
             
-            // التحقق من التحديثات
             await this.swRegistration.update();
             
-            // التحقق كل ساعة
             setInterval(() => {
                 if (this.swRegistration) {
                     this.swRegistration.update();
@@ -279,19 +258,18 @@ class NativeAPKLikePWA {
     applyNativeUI() {
         document.body.classList.add('native-installed');
         
-        // تحسين واجهة التطبيقات المثبتة
         const appMain = document.querySelector('.app-main');
         if (appMain) {
             appMain.style.overflowY = 'auto';
             appMain.style.height = '100vh';
             appMain.style.webkitOverflowScrolling = 'touch';
+            appMain.style.overscrollBehavior = 'contain';
         }
     }
     
     applyTWAUI() {
         document.body.classList.add('twa-installed');
         
-        // إخفاء شريط الحالة في وضع TWA
         const style = document.createElement('style');
         style.textContent = `
             body.twa-installed .sync-status-bar {
@@ -308,7 +286,7 @@ class NativeAPKLikePWA {
         if (welcomeInstallBtn) welcomeInstallBtn.style.display = 'none';
     }
     
-    // ==================== إشعارات متقدمة (مثل Native Android) ====================
+    // ==================== إشعارات متقدمة ====================
     async requestNotificationPermission() {
         if (!('Notification' in window)) return false;
         
@@ -372,7 +350,7 @@ class NativeAPKLikePWA {
         this.updateBadge(this.badgeCount + 1);
     }
     
-    // ==================== شارة التطبيق (Badge) ====================
+    // ==================== شارة التطبيق ====================
     setupAppBadge() {
         if ('setAppBadge' in navigator) {
             window.setAppBadge = (count) => {
@@ -398,7 +376,7 @@ class NativeAPKLikePWA {
         }
     }
     
-    // ==================== Background Sync (مثل Capacitor) ====================
+    // ==================== Background Sync ====================
     setupBackgroundSync() {
         if ('sync' in navigator.serviceWorker) {
             navigator.serviceWorker.ready.then(registration => {
@@ -425,7 +403,7 @@ class NativeAPKLikePWA {
         }
     }
     
-    // ==================== Share Target (مثل Android Share) ====================
+    // ==================== Share Target ====================
     setupShareTarget() {
         if ('share' in navigator) {
             console.log('✅ Web Share API supported');
@@ -452,7 +430,7 @@ class NativeAPKLikePWA {
         return false;
     }
     
-    // ==================== File Handling (مثل Native File Picker) ====================
+    // ==================== File Handling ====================
     setupFileHandling() {
         if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
             launchQueue.setConsumer(launchParams => {
@@ -466,7 +444,6 @@ class NativeAPKLikePWA {
     
     async handleFileOpen(file) {
         console.log('📄 File opened:', file.name);
-        this.showNativeToast(`تم فتح الملف: ${file.name}`, 'info');
     }
     
     // ==================== Wake Lock (منع إغلاق الشاشة) ====================
@@ -490,9 +467,8 @@ class NativeAPKLikePWA {
         document.addEventListener('click', requestWakeLock, { once: true });
     }
     
-    // ==================== التنقل الأصلي (Native Navigation) ====================
+    // ==================== التنقل الأصلي ====================
     setupNativeNavigation() {
-        // معالجة أزرار الرجوع مثل التطبيقات الأصلية
         window.addEventListener('popstate', (event) => {
             const modal = document.querySelector('.modal.active');
             if (modal) {
@@ -505,7 +481,7 @@ class NativeAPKLikePWA {
         history.pushState(null, '', window.location.href);
     }
     
-    // ==================== شاشة البداية (Splash Screen) ====================
+    // ==================== شاشة البداية ====================
     setupSplashScreen() {
         const splash = document.getElementById('splashScreen');
         if (splash) {
@@ -607,7 +583,7 @@ class NativeAPKLikePWA {
         }
     }
     
-    // ==================== Native Toast (مثل Android Toast) ====================
+    // ==================== Native Toast ====================
     showNativeToast(message, type = 'info') {
         const existing = document.querySelector('.native-toast');
         if (existing) existing.remove();
@@ -814,7 +790,7 @@ class NativeAPKLikePWA {
             deviceInfo: this.deviceInfo,
             badgeCount: this.badgeCount,
             isTWA: this.isTWA,
-            version: '5.0',
+            version: '5.1',
             features: {
                 backgroundSync: 'sync' in navigator.serviceWorker,
                 periodicSync: 'periodicSync' in navigator.serviceWorker,
