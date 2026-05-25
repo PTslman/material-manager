@@ -145,6 +145,17 @@ body {
     min-height: 100vh;
     transition: background var(--transition-normal), color var(--transition-normal);
     direction: rtl;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.app-main {
+    overflow-y: auto;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 /* -------------------- TYPOGRAPHY -------------------- */
@@ -631,44 +642,170 @@ p {
     outline: none;
 }
 
-/* -------------------- QUANTITY PICKER -------------------- */
-.qty-picker {
+/* -------------------- أزرار + و - منسقة -------------------- */
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-input);
+    border-radius: 60px;
+    padding: 3px;
+    border: 1px solid var(--border-light);
+}
+
+.qty-dec-btn,
+.qty-inc-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--btn-secondary-bg);
+    color: var(--primary-700);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
-    background: var(--bg-input);
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--radius-full);
-    padding: var(--space-1) var(--space-3);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-xs);
 }
 
-.qty-picker button {
-    background: var(--btn-secondary-bg);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-full);
-    font-size: 1.2rem;
-    font-weight: var(--font-weight-bold);
-    cursor: pointer;
-    color: var(--primary-700);
-    transition: all var(--transition-fast);
+.qty-dec-btn:hover,
+.qty-inc-btn:hover {
+    background: var(--primary-100);
+    transform: scale(1.02);
 }
 
-.qty-picker button:active {
-    transform: scale(0.92);
+.qty-dec-btn:active,
+.qty-inc-btn:active {
+    transform: scale(0.95);
+    background: var(--primary-200);
 }
 
-.qty-picker input {
-    width: 80px;
+.qty-value-modern {
+    width: 55px;
     text-align: center;
-    font-size: 1.1rem;
-    font-weight: var(--font-weight-semibold);
+    font-size: 0.95rem;
+    font-weight: 600;
     background: transparent;
     border: none;
     outline: none;
     color: var(--text-primary);
+    font-family: 'Inter', monospace;
+    padding: 6px 0;
+}
+
+.fixed-quantity,
+.fixed-quantity-edit {
+    padding: 8px 16px;
+    background: var(--primary-50);
+    border-radius: 60px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--primary-700);
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* -------------------- نافذة الإضافة -------------------- */
+.quantity-field-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.unit-select-input {
+    width: 130px;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-full);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.qty-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-input);
+    border-radius: 60px;
+    padding: 4px;
+    border: 1.5px solid var(--border-light);
+    flex: 1;
+}
+
+.qty-picker .qty-dec-btn,
+.qty-picker .qty-inc-btn {
+    width: 40px;
+    height: 40px;
+}
+
+.qty-picker input {
+    width: 70px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    padding: 8px 0;
+}
+
+/* -------------------- الجداول المنبثقة -------------------- */
+.quantity-modern {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-input);
+    border-radius: 60px;
+    padding: 4px 8px;
+    border: 1px solid var(--border-light);
+}
+
+.quantity-modern .qty-select {
+    padding: 8px 12px;
+    border-radius: 60px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-surface);
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+}
+
+.quantity-modern .qty-controls {
+    background: transparent;
+    padding: 0;
+    gap: 4px;
+}
+
+.quantity-modern .qty-dec-btn,
+.quantity-modern .qty-inc-btn {
+    width: 32px;
+    height: 32px;
+}
+
+.quantity-modern .qty-value-modern {
+    width: 50px;
+    font-size: 0.9rem;
+}
+
+/* -------------------- نافذة التعديل -------------------- */
+.edit-quantity-field {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.edit-quantity-field .field-container {
+    flex: 1;
 }
 
 /* -------------------- UNITS BUTTONS -------------------- */
@@ -795,65 +932,6 @@ p {
 .item-name {
     font-weight: var(--font-weight-medium);
     color: var(--text-primary);
-}
-
-.quantity-modern {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    background: var(--bg-input);
-    border-radius: var(--radius-full);
-    padding: var(--space-1) var(--space-2);
-}
-
-.qty-select {
-    padding: 4px 8px;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--border-light);
-    background: var(--bg-surface);
-    font-family: inherit;
-    font-size: var(--font-size-xs);
-    color: var(--text-primary);
-    cursor: pointer;
-}
-
-.qty-btn-modern {
-    background: var(--btn-secondary-bg);
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-full);
-    font-size: 1rem;
-    font-weight: var(--font-weight-bold);
-    cursor: pointer;
-    color: var(--primary-700);
-    transition: all var(--transition-fast);
-}
-
-.qty-btn-modern:active {
-    transform: scale(0.92);
-}
-
-.qty-value-modern {
-    width: 50px;
-    text-align: center;
-    font-weight: var(--font-weight-semibold);
-    background: transparent;
-    border: none;
-    font-size: var(--font-size-sm);
-    color: var(--text-primary);
-}
-
-.unit-select-input {
-    width: 120px;
-    padding: var(--space-3) var(--space-4);
-    background: var(--bg-input);
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--radius-full);
-    font-family: inherit;
-    font-size: var(--font-size-sm);
-    color: var(--text-primary);
-    cursor: pointer;
 }
 
 /* -------------------- SYNC STATUS BAR -------------------- */
@@ -1016,11 +1094,6 @@ p {
         width: 95%;
     }
     
-    .qty-picker button {
-        width: 36px;
-        height: 36px;
-    }
-    
     .toast {
         white-space: normal;
         max-width: 85%;
@@ -1045,6 +1118,41 @@ p {
     .unit-select-input {
         width: 100%;
     }
+    
+    .quantity-field-container {
+        flex-direction: column;
+    }
+    
+    .quantity-modern {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 8px;
+    }
+    
+    .quantity-modern .qty-select {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .edit-quantity-field {
+        flex-direction: column;
+    }
+    
+    .fixed-quantity,
+    .fixed-quantity-edit {
+        white-space: normal;
+        text-align: center;
+    }
+    
+    .qty-picker .qty-dec-btn,
+    .qty-picker .qty-inc-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .qty-picker input {
+        width: 60px;
+    }
 }
 
 /* -------------------- SCROLLBAR -------------------- */
@@ -1065,4 +1173,4 @@ p {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-600);
-       }
+   }
