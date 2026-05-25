@@ -30,19 +30,6 @@ const extraItemsList = [
 
 const bagTypesList = ["شفاف 10×12","شفاف 20×12","شفاف 10×20","شفاف 25×17","شفاف 20×30","شفاف 35×25","صيدلية","أسود 30","أسود 35","أسود 40","أسود 45"];
 
-// خيارات الوزن المتاحة
-const weightOptions = [
-    { value: 0.25, label: "ربع كيلو (0.25 kg)" },
-    { value: 0.5, label: "نصف كيلو (0.5 kg)" },
-    { value: 1, label: "كيلو (1 kg)" },
-    { value: 1.5, label: "كيلو ونصف (1.5 kg)" },
-    { value: 2, label: "كيلوين (2 kg)" },
-    { value: 2.5, label: "كيلوين ونصف (2.5 kg)" },
-    { value: 3, label: "ثلاثة كيلو (3 kg)" },
-    { value: 5, label: "خمسة كيلو (5 kg)" },
-    { value: 10, label: "عشرة كيلو (10 kg)" }
-];
-
 function getImportantItems() { return importantItemsList.map(name => ({ name, min: 1, max: 5 })); }
 function getSpicesExtraItems() { return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); }
 function getExtraItems() { return extraItemsList.map(name => ({ name, min: 1, max: 10 })); }
@@ -74,6 +61,18 @@ function formatDisplay(mat) {
     if (u === 'piece') return `${mat.quantity} عدد`;
     if (u === 'bag') return `${mat.quantity} كيس`;
     return `${mat.quantity} kg`;
+}
+
+function getUnitSymbol(unit) {
+    switch(unit) {
+        case 'kg': return 'kg';
+        case 'half': return 'نصف كيلو';
+        case 'quarter': return 'ربع كيلو';
+        case 'oke': return 'لوقية';
+        case 'box': return 'علبة';
+        case 'piece': return 'عدد';
+        default: return 'kg';
+    }
 }
 
 // ==================== عرض المواد ====================
@@ -127,7 +126,8 @@ function renderAllMaterials(materials) {
                 currentEditId = id;
                 document.getElementById('editMaterialName').value = material.name;
                 document.getElementById('editQuantityValue').value = material.quantity;
-                document.getElementById('editUnitSelect').value = material.unitType || 'kg';
+                const editUnitSelect = document.getElementById('editUnitSelect');
+                if (editUnitSelect) editUnitSelect.value = material.unitType || 'kg';
                 document.getElementById('editModal').classList.add('active');
             }
         };
@@ -147,7 +147,7 @@ function renderMaterialCard(m) {
     </div>`;
 }
 
-// ==================== عرض القوائم في النوافذ مع خيارات الوزن ====================
+// ==================== عرض القوائم في النوافذ ====================
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
@@ -167,25 +167,14 @@ function renderImportantFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <input type="number" class="qty-value" id="imp_qty_${idx}" value="1" min="0.25" step="0.25" style="width:80px">
-                <span>${getUnitSymbol('kg')}</span>
+                <button class="qty-btn-modern" data-idx="${idx}" data-dir="down" data-target="imp">-</button>
+                <input type="number" class="qty-value-modern" id="imp_qty_${idx}" value="1" step="0.25" min="0.25">
+                <button class="qty-btn-modern" data-idx="${idx}" data-dir="up" data-target="imp">+</button>
             </div>
         </div>
     `).join('');
     
-    // تحديث عرض الوحدة عند تغيير select
-    document.querySelectorAll('#importantListContainer .qty-select').forEach(select => {
-        select.onchange = function() {
-            const unit = this.value;
-            const qtyInput = this.closest('.quantity-modern').querySelector('.qty-value');
-            const unitSpan = this.closest('.quantity-modern').querySelector('span:last-child');
-            if (unitSpan) unitSpan.textContent = getUnitSymbol(unit);
-            if (unit === 'half') qtyInput.value = 0.5;
-            else if (unit === 'quarter') qtyInput.value = 0.25;
-            else if (unit === 'oke') qtyInput.value = 0.2;
-            else qtyInput.value = 1;
-        };
-    });
+    attachQuantityEvents('imp');
 }
 
 function renderSpicesExtraFiltered(filter = '') {
@@ -207,24 +196,14 @@ function renderSpicesExtraFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <input type="number" class="qty-value" id="sp_qty_${idx}" value="1" min="0.25" step="0.25" style="width:80px">
-                <span>${getUnitSymbol('kg')}</span>
+                <button class="qty-btn-modern" data-idx="${idx}" data-dir="down" data-target="sp">-</button>
+                <input type="number" class="qty-value-modern" id="sp_qty_${idx}" value="1" step="0.25" min="0.25">
+                <button class="qty-btn-modern" data-idx="${idx}" data-dir="up" data-target="sp">+</button>
             </div>
         </div>
     `).join('');
     
-    document.querySelectorAll('#spicesExtraListContainer .qty-select').forEach(select => {
-        select.onchange = function() {
-            const unit = this.value;
-            const qtyInput = this.closest('.quantity-modern').querySelector('.qty-value');
-            const unitSpan = this.closest('.quantity-modern').querySelector('span:last-child');
-            if (unitSpan) unitSpan.textContent = getUnitSymbol(unit);
-            if (unit === 'half') qtyInput.value = 0.5;
-            else if (unit === 'quarter') qtyInput.value = 0.25;
-            else if (unit === 'oke') qtyInput.value = 0.2;
-            else qtyInput.value = 1;
-        };
-    });
+    attachQuantityEvents('sp');
 }
 
 function renderQuickFiltered(filter = '') {
@@ -246,36 +225,34 @@ function renderQuickFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <input type="number" class="qty-value" id="quick_qty_${idx}" value="1" min="0.25" step="0.25" style="width:80px">
-                <span>${getUnitSymbol('kg')}</span>
+                <button class="qty-btn-modern" data-idx="${idx}" data-dir="down" data-target="quick">-</button>
+                <input type="number" class="qty-value-modern" id="quick_qty_${idx}" value="1" step="0.25" min="0.25">
+                <button class="qty-btn-modern" data-idx="${idx}" data-dir="up" data-target="quick">+</button>
             </div>
         </div>
     `).join('');
     
-    document.querySelectorAll('#quickListContainer .qty-select').forEach(select => {
-        select.onchange = function() {
-            const unit = this.value;
-            const qtyInput = this.closest('.quantity-modern').querySelector('.qty-value');
-            const unitSpan = this.closest('.quantity-modern').querySelector('span:last-child');
-            if (unitSpan) unitSpan.textContent = getUnitSymbol(unit);
-            if (unit === 'half') qtyInput.value = 0.5;
-            else if (unit === 'quarter') qtyInput.value = 0.25;
-            else if (unit === 'oke') qtyInput.value = 0.2;
-            else qtyInput.value = 1;
-        };
-    });
+    attachQuantityEvents('quick');
 }
 
-function getUnitSymbol(unit) {
-    switch(unit) {
-        case 'kg': return 'kg';
-        case 'half': return 'نصف كيلو';
-        case 'quarter': return 'ربع كيلو';
-        case 'oke': return 'لوقية';
-        case 'box': return 'علبة';
-        case 'piece': return 'عدد';
-        default: return 'kg';
-    }
+function attachQuantityEvents(prefix) {
+    document.querySelectorAll(`.qty-btn-modern[data-target="${prefix}"]`).forEach(btn => {
+        btn.onclick = () => {
+            const idx = btn.dataset.idx;
+            const input = document.getElementById(`${prefix}_qty_${idx}`);
+            if (input) {
+                let val = parseFloat(input.value) || 1;
+                const step = parseFloat(input.step) || 0.25;
+                const min = parseFloat(input.min) || 0.25;
+                if (btn.dataset.dir === 'up') {
+                    val = Math.min(val + step, 100);
+                } else {
+                    val = Math.max(min, val - step);
+                }
+                input.value = val;
+            }
+        };
+    });
 }
 
 function renderBags() {
@@ -284,7 +261,7 @@ function renderBags() {
     container.innerHTML = bagTypesList.map((b, i) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="bag_chk_${i}"><span>${escapeHtml(b)}</span></div></div>`).join('');
 }
 
-// ==================== دوال الإضافة مع دعم الوحدات ====================
+// ==================== دوال الإضافة ====================
 async function addSelectedImportant() {
     let items = [];
     for (let i = 0; i < importantItemsList.length; i++) {
@@ -498,10 +475,15 @@ function startListener() {
         });
         allMaterials = list;
         
-        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-check-circle"></i> متصل';
-        document.getElementById('syncDot').className = 'sync-dot';
-        document.getElementById('syncItemsCount').innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
-        document.getElementById('syncLastTime').innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        const itemsCount = document.getElementById('syncItemsCount');
+        const syncTime = document.getElementById('syncLastTime');
+        
+        if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+        if (syncDot) syncDot.className = 'sync-dot';
+        if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
+        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
         
         renderAllMaterials(allMaterials);
         
@@ -513,8 +495,10 @@ function startListener() {
         }
     }, (error) => {
         console.error(error);
-        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-        document.getElementById('syncDot').className = 'sync-dot offline';
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
+        if (syncDot) syncDot.className = 'sync-dot offline';
     });
 }
 
@@ -606,18 +590,28 @@ function bindEvents() {
             item.style.display = name.includes(term) ? 'flex' : 'none';
         });
     };
+}
+
+// ==================== تهيئة أزرار الوزن في النافذة الرئيسية ====================
+function initMainQuantityButtons() {
+    const decBtn = document.querySelector('#newItemModal .qty-picker .qty-dec-btn');
+    const incBtn = document.querySelector('#newItemModal .qty-picker .qty-inc-btn');
+    const qtyInput = document.getElementById('newQuantityValue');
     
-    // أزرار الكمية
-    document.getElementById('decrementQty').onclick = () => {
-        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
-        val = Math.max(0.25, val - 0.25);
-        document.getElementById('newQuantityValue').value = val;
-    };
-    document.getElementById('incrementQty').onclick = () => {
-        let val = parseFloat(document.getElementById('newQuantityValue').value) || 1;
-        val = val + 0.25;
-        document.getElementById('newQuantityValue').value = val;
-    };
+    if (decBtn && incBtn && qtyInput) {
+        decBtn.onclick = () => {
+            let val = parseFloat(qtyInput.value) || 1;
+            let step = parseFloat(qtyInput.step) || 0.25;
+            val = Math.max(0.25, val - step);
+            qtyInput.value = val;
+        };
+        incBtn.onclick = () => {
+            let val = parseFloat(qtyInput.value) || 1;
+            let step = parseFloat(qtyInput.step) || 0.25;
+            val = val + step;
+            qtyInput.value = val;
+        };
+    }
 }
 
 // ==================== التهيئة ====================
@@ -625,6 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
     startListener();
     startAutoSync();
+    initMainQuantityButtons();
 });
 
 // ==================== تسجيل Service Worker ====================
@@ -638,4 +633,4 @@ if ('serviceWorker' in navigator) {
                 console.error('❌ Service Worker registration failed:', error);
             });
     });
-            }
+                    }
