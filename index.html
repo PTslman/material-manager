@@ -7,21 +7,21 @@
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- Fonts -->
+    <!-- ==================== FONTS ==================== -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- PWA -->
+    <!-- ==================== PWA ==================== -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
     
-    <!-- Styles -->
+    <!-- ==================== STYLES ==================== -->
     <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
-    <!-- Splash Screen -->
+    <!-- ==================== SPLASH SCREEN ==================== -->
     <div id="splashScreen" class="splash">
         <div class="splash-logo"><i class="fas fa-boxes"></i></div>
         <h2>مدير المواد</h2>
@@ -29,24 +29,28 @@
         <div class="splash-version">نسخة احترافية v4.0</div>
     </div>
 
-    <!-- Main App -->
+    <!-- ==================== MAIN APP CONTAINER ==================== -->
     <div id="appContainer" class="app-main" style="display: none;">
         
-        <!-- Header -->
+        <!-- ==================== HEADER ==================== -->
         <div class="hero">
             <h1>مدير المواد والمخزون</h1>
             <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
         </div>
         
-        <!-- Main Add Button -->
-        <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
+        <!-- ==================== MAIN ADD BUTTON ==================== -->
+        <button id="mainAddBtn" class="main-add-btn">
+            <i class="fas fa-plus-circle"></i> إضافة مادة جديدة
+        </button>
         
-        <!-- Sync Bar -->
+        <!-- ==================== SYNC BAR ==================== -->
         <div class="sync-bar">
-            <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
+            <button id="syncBtn" class="sync-main-btn">
+                <i class="fas fa-sync-alt"></i> مزامنة البيانات
+            </button>
         </div>
         
-        <!-- Toolbar (بدون زر التثبيت) -->
+        <!-- ==================== TOOLBAR ==================== -->
         <div class="toolbar">
             <div class="toolbar-row">
                 <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
@@ -57,7 +61,7 @@
             </div>
         </div>
         
-        <!-- 5 Category Cards -->
+        <!-- ==================== 5 CATEGORY CARDS ==================== -->
         <div class="categories-container">
             <button class="category-card" id="importantProductsBtn">
                 <div class="category-icon"><i class="fas fa-star"></i></div>
@@ -90,15 +94,15 @@
             </button>
         </div>
         
-        <!-- Materials Container -->
+        <!-- ==================== MATERIALS CONTAINER ==================== -->
         <div id="materialsContainer"></div>
         
-        <!-- Clear All Button -->
+        <!-- ==================== CLEAR ALL BUTTON ==================== -->
         <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
         
     </div>
 
-    <!-- Sync Status Bar -->
+    <!-- ==================== SYNC STATUS BAR ==================== -->
     <div id="syncStatusBar" class="sync-status-bar">
         <div class="sync-indicator">
             <div id="syncDot" class="sync-dot"></div>
@@ -122,12 +126,21 @@
                 </div>
             </div>
             <div class="modern-field">
-                <label>الكمية (كجم)</label>
-                <div class="qty-picker">
-                    <button id="decrementQty">-</button>
-                    <input type="number" id="newQuantityValue" step="0.25" value="1">
-                    <button id="incrementQty">+</button>
-                    <span>كجم</span>
+                <label>الكمية</label>
+                <div class="quantity-field-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select id="newUnitSelect" class="unit-select-input">
+                        <option value="kg">كيلو (kg)</option>
+                        <option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option>
+                        <option value="oke">لوقية</option>
+                        <option value="box">علبة</option>
+                        <option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-picker" style="flex: 1;">
+                        <button id="decrementQty">-</button>
+                        <input type="number" id="newQuantityValue" step="0.25" value="1">
+                        <button id="incrementQty">+</button>
+                    </div>
                 </div>
             </div>
             <div class="modal-buttons">
@@ -209,7 +222,7 @@
                 <div class="field-container">
                     <div class="field-icon"><i class="fas fa-hashtag"></i></div>
                     <input type="number" id="tawsayaCustomQty" step="any" value="1">
-                    <span>كجم</span>
+                    <span>kg</span>
                 </div>
             </div>
             <div class="modal-buttons">
@@ -232,10 +245,19 @@
             </div>
             <div class="modern-field">
                 <label>الكمية الجديدة</label>
-                <div class="field-container">
-                    <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
-                    <input type="number" id="editQuantityValue" step="0.25">
-                    <span>كجم</span>
+                <div class="edit-quantity-field" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select id="editUnitSelect" class="unit-select-input">
+                        <option value="kg">كيلو (kg)</option>
+                        <option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option>
+                        <option value="oke">لوقية</option>
+                        <option value="box">علبة</option>
+                        <option value="piece">عدد</option>
+                    </select>
+                    <div class="field-container" style="flex: 1;">
+                        <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
+                        <input type="number" id="editQuantityValue" step="0.25">
+                    </div>
                 </div>
             </div>
             <div class="modal-buttons">
@@ -331,4 +353,4 @@
         });
     </script>
 </body>
-</html>
+                    </html>
