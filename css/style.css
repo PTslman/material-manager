@@ -1661,3 +1661,277 @@ a:hover {
         page-break-inside: avoid;
     }
    }
+/* ==================== INSTALL BANNER ==================== */
+.install-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: var(--bg-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 10001;
+    border: 1px solid var(--border-light);
+    animation: slideUp 0.3s ease;
+}
+
+.install-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    direction: rtl;
+}
+
+.install-banner-content i {
+    font-size: 2rem;
+    color: var(--primary-600);
+}
+
+.install-banner-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.install-banner-text strong {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.install-banner-text span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.install-banner-btn {
+    background: var(--primary-600);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.install-banner-btn:hover {
+    background: var(--primary-700);
+    transform: scale(1.02);
+}
+
+.dismiss-banner-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 5px;
+    font-size: 1rem;
+}
+
+/* ==================== UPDATE BANNER ==================== */
+.update-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: var(--bg-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 10001;
+    border: 1px solid var(--warning-500);
+    animation: slideUp 0.3s ease;
+}
+
+.update-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    direction: rtl;
+}
+
+.update-banner-content i {
+    font-size: 1.5rem;
+    color: var(--warning-500);
+}
+
+.update-banner-content span {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.update-now-btn {
+    background: var(--warning-500);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.update-later-btn {
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--border-light);
+    padding: 8px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ==================== INSTALL GUIDE DIALOG ==================== */
+.install-guide-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.install-guide-dialog {
+    background: var(--bg-surface);
+    border-radius: 28px;
+    padding: 24px;
+    max-width: 350px;
+    width: 90%;
+    text-align: center;
+    animation: scaleUp 0.2s ease;
+}
+
+.install-guide-dialog h3 {
+    color: var(--primary-600);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.install-guide-dialog ol {
+    text-align: right;
+    margin: 20px 20px 25px;
+    color: var(--text-secondary);
+}
+
+.install-guide-dialog li {
+    margin-bottom: 12px;
+}
+
+.guide-close {
+    background: var(--primary-600);
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* ==================== NETWORK TOAST ==================== */
+.network-toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-600);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 60px;
+    font-size: 0.85rem;
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeUp 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    direction: rtl;
+}
+
+.network-toast.warning {
+    background: var(--warning-500);
+}
+
+.network-toast.success {
+    background: var(--success-500);
+}
+
+/* ==================== DEVICE OPTIMIZATIONS ==================== */
+body.samsung-optimized .category-card {
+    border-radius: 24px;
+}
+
+body.samsung-optimized .material-card {
+    border-radius: 20px;
+}
+
+body.xiaomi-optimized .category-card {
+    border-radius: 20px;
+}
+
+body.xiaomi-optimized .material-card {
+    border-radius: 16px;
+}
+
+body.huawei-optimized .category-card {
+    border-radius: 28px;
+}
+
+body.huawei-optimized .material-card {
+    border-radius: 24px;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (min-width: 768px) {
+    .install-banner, .update-banner {
+        left: auto;
+        right: 20px;
+        max-width: 400px;
+    }
+    
+    .network-toast {
+        bottom: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .install-banner-content, .update-banner-content {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .install-banner-text {
+        text-align: center;
+    }
+}
