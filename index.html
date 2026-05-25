@@ -127,7 +127,7 @@
             </div>
             <div class="modern-field">
                 <label>الكمية</label>
-                <div class="quantity-field-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div class="quantity-field-container">
                     <select id="newUnitSelect" class="unit-select-input">
                         <option value="kg">كيلو (kg)</option>
                         <option value="half">نصف كيلو</option>
@@ -136,10 +136,10 @@
                         <option value="box">علبة</option>
                         <option value="piece">عدد</option>
                     </select>
-                    <div class="qty-picker" style="flex: 1;">
-                        <button id="decrementQty">-</button>
-                        <input type="number" id="newQuantityValue" step="0.25" value="1">
-                        <button id="incrementQty">+</button>
+                    <div class="qty-picker">
+                        <button type="button" class="qty-dec-btn" data-target="newQuantityValue">-</button>
+                        <input type="number" id="newQuantityValue" class="qty-input" step="0.25" value="1">
+                        <button type="button" class="qty-inc-btn" data-target="newQuantityValue">+</button>
                     </div>
                 </div>
             </div>
@@ -245,7 +245,7 @@
             </div>
             <div class="modern-field">
                 <label>الكمية الجديدة</label>
-                <div class="edit-quantity-field" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div class="edit-quantity-field">
                     <select id="editUnitSelect" class="unit-select-input">
                         <option value="kg">كيلو (kg)</option>
                         <option value="half">نصف كيلو</option>
@@ -351,6 +351,32 @@
                 customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
             });
         });
+        
+        // ==================== أزرار زيادة ونقصان الوزن ====================
+        function initQuantityButtons() {
+            // أزرار الزيادة والنقصان في نافذة إضافة مادة جديدة
+            var decBtn = document.querySelector('#newItemModal .qty-dec-btn');
+            var incBtn = document.querySelector('#newItemModal .qty-inc-btn');
+            var qtyInput = document.getElementById('newQuantityValue');
+            
+            if (decBtn && incBtn && qtyInput) {
+                decBtn.onclick = function() {
+                    var val = parseFloat(qtyInput.value) || 1;
+                    var step = parseFloat(qtyInput.step) || 0.25;
+                    val = Math.max(0.25, val - step);
+                    qtyInput.value = val;
+                };
+                incBtn.onclick = function() {
+                    var val = parseFloat(qtyInput.value) || 1;
+                    var step = parseFloat(qtyInput.step) || 0.25;
+                    val = val + step;
+                    qtyInput.value = val;
+                };
+            }
+        }
+        
+        // تهيئة الأزرار عند تحميل الصفحة
+        initQuantityButtons();
     </script>
 </body>
-                    </html>
+    </html>
