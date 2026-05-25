@@ -1,6 +1,6 @@
 /* ============================================
-   مدير المواد - التصميم المتكامل الدقيق
-   Material Manager - Ultimate Design System
+   مدير المواد - التصميم المتكامل الكامل
+   Material Manager - Complete Design System
    Version: 5.0 | Pixel Perfect
    ============================================ */
 
@@ -748,7 +748,7 @@ a:hover {
     display: inline-block;
     color: var(--primary-800);
     direction: ltr;
-    font-family: monospace;
+    font-family: 'Inter', monospace;
     letter-spacing: 0.5px;
 }
 
@@ -918,7 +918,7 @@ a:hover {
     border: none;
     outline: none;
     color: var(--text-primary);
-    font-family: monospace;
+    font-family: 'Inter', monospace;
 }
 
 /* -------------------- UNITS BUTTONS -------------------- */
@@ -1089,9 +1089,24 @@ a:hover {
     align-items: center;
     gap: var(--space-2);
     background: var(--bg-input);
-    border: 1px solid var(--border-light);
     border-radius: var(--radius-full);
     padding: var(--space-1) var(--space-3);
+}
+
+.qty-select {
+    padding: 6px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-light);
+    background: var(--bg-surface);
+    font-family: inherit;
+    font-size: var(--font-size-xs);
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+}
+
+.qty-select:focus {
+    border-color: var(--primary-600);
 }
 
 .qty-btn {
@@ -1123,7 +1138,53 @@ a:hover {
     border: none;
     font-size: var(--font-size-sm);
     color: var(--text-primary);
-    font-family: monospace;
+    font-family: 'Inter', monospace;
+}
+
+/* -------------------- UNIT SELECT INPUT (Enhanced) -------------------- */
+.unit-select-input {
+    width: 130px;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-full);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.unit-select-input:hover {
+    border-color: var(--primary-300);
+}
+
+.unit-select-input:focus {
+    border-color: var(--primary-600);
+    box-shadow: var(--shadow-focus);
+}
+
+/* -------------------- EDIT QUANTITY FIELD -------------------- */
+.edit-quantity-field {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.edit-quantity-field .field-container {
+    flex: 1;
+}
+
+/* -------------------- QUANTITY FIELD CONTAINER -------------------- */
+.quantity-field-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.quantity-field-container .qty-picker {
+    flex: 1;
 }
 
 /* -------------------- SYNC STATUS BAR -------------------- */
@@ -1384,6 +1445,27 @@ a:hover {
         padding: var(--space-3) var(--space-4);
         font-size: var(--font-size-sm);
     }
+    
+    .unit-select-input {
+        width: 100%;
+    }
+    
+    .quantity-field-container {
+        flex-direction: column;
+    }
+    
+    .edit-quantity-field {
+        flex-direction: column;
+    }
+    
+    .modern-item-card .quantity-modern {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .modern-item-card .qty-select {
+        width: 100%;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1489,6 +1571,12 @@ a:hover {
     }
 }
 
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
 .fade-in {
     animation: fadeIn var(--transition-normal) ease;
 }
@@ -1564,4 +1652,4 @@ a:hover {
         break-inside: avoid;
         page-break-inside: avoid;
     }
-}
+       }
