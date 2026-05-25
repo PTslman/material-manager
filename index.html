@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#2e7d32">
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
     <!-- ==================== FONTS ==================== -->
@@ -14,7 +18,14 @@
     <!-- ==================== PWA ==================== -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
     <!-- ==================== STYLES ==================== -->
     <link rel="stylesheet" href="/material-manager/css/style.css">
@@ -26,7 +37,7 @@
         <div class="splash-logo"><i class="fas fa-boxes"></i></div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
-        <div class="splash-version">نسخة احترافية v4.0</div>
+        <div class="splash-version">نسخة احترافية v5.0</div>
     </div>
 
     <!-- ==================== MAIN APP CONTAINER ==================== -->
@@ -58,6 +69,7 @@
             <div class="toolbar-row">
                 <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
                 <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
+                <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
             </div>
         </div>
         
@@ -137,9 +149,9 @@
                         <option value="piece">عدد</option>
                     </select>
                     <div class="qty-picker">
-                        <button type="button" class="qty-dec-btn" data-target="newQuantityValue">-</button>
+                        <button type="button" class="qty-dec-btn">-</button>
                         <input type="number" id="newQuantityValue" class="qty-input" step="0.25" value="1">
-                        <button type="button" class="qty-inc-btn" data-target="newQuantityValue">+</button>
+                        <button type="button" class="qty-inc-btn">+</button>
                     </div>
                 </div>
             </div>
@@ -301,6 +313,7 @@
     <script src="/material-manager/js/firebase-config.js"></script>
     <script src="/material-manager/js/utils.js"></script>
     <script src="/material-manager/js/app.js"></script>
+    <script src="/material-manager/js/pwa.js"></script>
 
     <script>
         // إخفاء شاشة البداية بعد 2.5 ثانية
@@ -352,9 +365,8 @@
             });
         });
         
-        // ==================== أزرار زيادة ونقصان الوزن ====================
+        // تهيئة أزرار الكمية
         function initQuantityButtons() {
-            // أزرار الزيادة والنقصان في نافذة إضافة مادة جديدة
             var decBtn = document.querySelector('#newItemModal .qty-dec-btn');
             var incBtn = document.querySelector('#newItemModal .qty-inc-btn');
             var qtyInput = document.getElementById('newQuantityValue');
@@ -375,8 +387,7 @@
             }
         }
         
-        // تهيئة الأزرار عند تحميل الصفحة
         initQuantityButtons();
     </script>
 </body>
-    </html>
+</html>
