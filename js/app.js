@@ -30,9 +30,17 @@ const extraItemsList = [
 
 const bagTypesList = ["شفاف 10×12","شفاف 20×12","شفاف 10×20","شفاف 25×17","شفاف 20×30","شفاف 35×25","صيدلية","أسود 30","أسود 35","أسود 40","أسود 45"];
 
-function getImportantItems() { return importantItemsList.map(name => ({ name, min: 1, max: 5 })); }
-function getSpicesExtraItems() { return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); }
-function getExtraItems() { return extraItemsList.map(name => ({ name, min: 1, max: 10 })); }
+function getImportantItems() { 
+    return importantItemsList.map(name => ({ name, min: 1, max: 5 })); 
+}
+
+function getSpicesExtraItems() { 
+    return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); 
+}
+
+function getExtraItems() { 
+    return extraItemsList.map(name => ({ name, min: 1, max: 10 })); 
+}
 
 // ==================== دوال مساعدة ====================
 function showToast(msg, isErr = false) {
@@ -151,15 +159,20 @@ function renderMaterialCard(m) {
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
+    
     const filtered = importantItemsList.filter(item => item.includes(filter));
-    container.innerHTML = filtered.map((item, idx) => `
-        <div class="modern-item-card">
+    container.innerHTML = '';
+    
+    filtered.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
             <div class="item-info">
-                <input type="checkbox" id="imp_chk_${idx}">
+                <input type="checkbox" class="important-checkbox" data-name="${escapeHtml(item)}" data-index="${index}">
                 <span class="item-name">${escapeHtml(item)}</span>
             </div>
             <div class="quantity-modern">
-                <select class="qty-select" id="imp_unit_${idx}">
+                <select class="qty-select important-unit" data-index="${index}">
                     <option value="kg">كيلو (kg)</option>
                     <option value="half">نصف كيلو</option>
                     <option value="quarter">ربع كيلو</option>
@@ -167,28 +180,35 @@ function renderImportantFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <button class="qty-btn-modern" data-idx="${idx}" data-dir="down" data-target="imp">-</button>
-                <input type="number" class="qty-value-modern" id="imp_qty_${idx}" value="1" step="0.25" min="0.25">
-                <button class="qty-btn-modern" data-idx="${idx}" data-dir="up" data-target="imp">+</button>
+                <button class="qty-btn-modern" data-type="important" data-index="${index}" data-dir="down">-</button>
+                <input type="number" class="qty-value-modern important-qty" data-index="${index}" value="1" step="0.25" min="0.25">
+                <button class="qty-btn-modern" data-type="important" data-index="${index}" data-dir="up">+</button>
             </div>
-        </div>
-    `).join('');
+        `;
+        container.appendChild(div);
+    });
     
-    attachQuantityEvents('imp');
+    attachQuantityEvents('important');
 }
 
 function renderSpicesExtraFiltered(filter = '') {
     const container = document.getElementById('spicesExtraListContainer');
     if (!container) return;
+    
     const filtered = spicesExtraItemsList.filter(item => item.includes(filter));
-    container.innerHTML = filtered.map((item, idx) => `
-        <div class="modern-item-card">
+    container.innerHTML = '';
+    
+    filtered.forEach((item, index) => {
+        const originalIndex = spicesExtraItemsList.indexOf(item);
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
             <div class="item-info">
-                <input type="checkbox" id="sp_chk_${idx}">
+                <input type="checkbox" class="spices-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
                 <span class="item-name">${escapeHtml(item)}</span>
             </div>
             <div class="quantity-modern">
-                <select class="qty-select" id="sp_unit_${idx}">
+                <select class="qty-select spices-unit" data-index="${originalIndex}">
                     <option value="kg">كيلو (kg)</option>
                     <option value="half">نصف كيلو</option>
                     <option value="quarter">ربع كيلو</option>
@@ -196,28 +216,35 @@ function renderSpicesExtraFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <button class="qty-btn-modern" data-idx="${idx}" data-dir="down" data-target="sp">-</button>
-                <input type="number" class="qty-value-modern" id="sp_qty_${idx}" value="1" step="0.25" min="0.25">
-                <button class="qty-btn-modern" data-idx="${idx}" data-dir="up" data-target="sp">+</button>
+                <button class="qty-btn-modern" data-type="spices" data-index="${originalIndex}" data-dir="down">-</button>
+                <input type="number" class="qty-value-modern spices-qty" data-index="${originalIndex}" value="1" step="0.25" min="0.25">
+                <button class="qty-btn-modern" data-type="spices" data-index="${originalIndex}" data-dir="up">+</button>
             </div>
-        </div>
-    `).join('');
+        `;
+        container.appendChild(div);
+    });
     
-    attachQuantityEvents('sp');
+    attachQuantityEvents('spices');
 }
 
 function renderQuickFiltered(filter = '') {
     const container = document.getElementById('quickListContainer');
     if (!container) return;
+    
     const filtered = extraItemsList.filter(item => item.includes(filter));
-    container.innerHTML = filtered.map((item, idx) => `
-        <div class="modern-item-card">
+    container.innerHTML = '';
+    
+    filtered.forEach((item, index) => {
+        const originalIndex = extraItemsList.indexOf(item);
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
             <div class="item-info">
-                <input type="checkbox" id="quick_chk_${idx}">
+                <input type="checkbox" class="quick-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
                 <span class="item-name">${escapeHtml(item)}</span>
             </div>
             <div class="quantity-modern">
-                <select class="qty-select" id="quick_unit_${idx}">
+                <select class="qty-select quick-unit" data-index="${originalIndex}">
                     <option value="kg">كيلو (kg)</option>
                     <option value="half">نصف كيلو</option>
                     <option value="quarter">ربع كيلو</option>
@@ -225,27 +252,28 @@ function renderQuickFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <button class="qty-btn-modern" data-idx="${idx}" data-dir="down" data-target="quick">-</button>
-                <input type="number" class="qty-value-modern" id="quick_qty_${idx}" value="1" step="0.25" min="0.25">
-                <button class="qty-btn-modern" data-idx="${idx}" data-dir="up" data-target="quick">+</button>
+                <button class="qty-btn-modern" data-type="quick" data-index="${originalIndex}" data-dir="down">-</button>
+                <input type="number" class="qty-value-modern quick-qty" data-index="${originalIndex}" value="1" step="0.25" min="0.25">
+                <button class="qty-btn-modern" data-type="quick" data-index="${originalIndex}" data-dir="up">+</button>
             </div>
-        </div>
-    `).join('');
+        `;
+        container.appendChild(div);
+    });
     
     attachQuantityEvents('quick');
 }
 
-function attachQuantityEvents(prefix) {
-    document.querySelectorAll(`.qty-btn-modern[data-target="${prefix}"]`).forEach(btn => {
+function attachQuantityEvents(type) {
+    document.querySelectorAll(`.qty-btn-modern[data-type="${type}"]`).forEach(btn => {
         btn.onclick = () => {
-            const idx = btn.dataset.idx;
-            const input = document.getElementById(`${prefix}_qty_${idx}`);
+            const idx = btn.dataset.index;
+            const input = document.querySelector(`.${type}-qty[data-index="${idx}"]`);
             if (input) {
                 let val = parseFloat(input.value) || 1;
-                const step = parseFloat(input.step) || 0.25;
-                const min = parseFloat(input.min) || 0.25;
+                const step = 0.25;
+                const min = 0.25;
                 if (btn.dataset.dir === 'up') {
-                    val = Math.min(val + step, 100);
+                    val = val + step;
                 } else {
                     val = Math.max(min, val - step);
                 }
@@ -258,200 +286,287 @@ function attachQuantityEvents(prefix) {
 function renderBags() {
     const container = document.getElementById('bagsListContainer');
     if (!container) return;
-    container.innerHTML = bagTypesList.map((b, i) => `<div class="modern-item-card"><div class="item-info"><input type="checkbox" id="bag_chk_${i}"><span>${escapeHtml(b)}</span></div></div>`).join('');
+    container.innerHTML = '';
+    
+    bagTypesList.forEach((bag, index) => {
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
+            <div class="item-info">
+                <input type="checkbox" class="bag-checkbox" data-name="${escapeHtml(bag)}" data-index="${index}">
+                <span class="item-name">${escapeHtml(bag)}</span>
+            </div>
+        `;
+        container.appendChild(div);
+    });
 }
 
 // ==================== دوال الإضافة ====================
 async function addSelectedImportant() {
-    let items = [];
-    for (let i = 0; i < importantItemsList.length; i++) {
-        if (document.getElementById(`imp_chk_${i}`)?.checked) {
-            let qty = parseFloat(document.getElementById(`imp_qty_${i}`).value);
-            let unit = document.getElementById(`imp_unit_${i}`)?.value || 'kg';
-            items.push({ name: importantItemsList[i], quantity: qty, unitType: unit });
+    const items = [];
+    const checkboxes = document.querySelectorAll('#importantListContainer .important-checkbox');
+    
+    for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+            const name = checkbox.dataset.name;
+            const index = checkbox.dataset.index;
+            const qtyInput = document.querySelector(`.important-qty[data-index="${index}"]`);
+            const unitSelect = document.querySelector(`.important-unit[data-index="${index}"]`);
+            const quantity = parseFloat(qtyInput?.value) || 1;
+            const unit = unitSelect?.value || 'kg';
+            items.push({ name, quantity, unitType: unit });
         }
     }
-    if (items.length === 0) { showToast("⭐ اختر مادة هامة", true); return; }
+    
+    if (items.length === 0) {
+        showToast("⭐ اختر مادة هامة", true);
+        return;
+    }
     
     try {
-        let batch = db.batch();
-        items.forEach(p => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, { 
-                name: p.name, 
-                unitType: p.unitType, 
-                quantity: p.quantity, 
-                notes: "مواد هامة", 
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                priority: "main" 
+        const batch = db.batch();
+        items.forEach(item => {
+            const ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: item.name,
+                unitType: item.unitType,
+                quantity: item.quantity,
+                notes: "مواد هامة",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "main"
             });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} مادة بنجاح`);
         document.getElementById('importantModal').classList.remove('active');
-        for (let i = 0; i < importantItemsList.length; i++) {
-            if (document.getElementById(`imp_chk_${i}`)) document.getElementById(`imp_chk_${i}`).checked = false;
-            if (document.getElementById(`imp_qty_${i}`)) document.getElementById(`imp_qty_${i}`).value = "1";
-        }
-    } catch(e) { showToast("❌ فشل الإضافة", true); }
+        
+        // إلغاء تحديد جميع checkbox
+        checkboxes.forEach(cb => cb.checked = false);
+        document.querySelectorAll('.important-qty').forEach(input => input.value = "1");
+        
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل الإضافة", true);
+    }
 }
 
 async function addSelectedSpicesExtra() {
-    let items = [];
-    for (let i = 0; i < spicesExtraItemsList.length; i++) {
-        if (document.getElementById(`sp_chk_${i}`)?.checked) {
-            let qty = parseFloat(document.getElementById(`sp_qty_${i}`).value);
-            let unit = document.getElementById(`sp_unit_${i}`)?.value || 'kg';
-            items.push({ name: spicesExtraItemsList[i], quantity: qty, unitType: unit });
+    const items = [];
+    const checkboxes = document.querySelectorAll('#spicesExtraListContainer .spices-checkbox');
+    
+    for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+            const name = checkbox.dataset.name;
+            const index = checkbox.dataset.index;
+            const qtyInput = document.querySelector(`.spices-qty[data-index="${index}"]`);
+            const unitSelect = document.querySelector(`.spices-unit[data-index="${index}"]`);
+            const quantity = parseFloat(qtyInput?.value) || 1;
+            const unit = unitSelect?.value || 'kg';
+            items.push({ name, quantity, unitType: unit });
         }
     }
-    if (items.length === 0) { showToast("🌿 اختر بهاراً", true); return; }
+    
+    if (items.length === 0) {
+        showToast("🌿 اختر بهاراً", true);
+        return;
+    }
     
     try {
-        let batch = db.batch();
-        items.forEach(p => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, { 
-                name: p.name, 
-                unitType: p.unitType, 
-                quantity: p.quantity, 
-                notes: "بهارات اضافية", 
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                priority: "spices_extra" 
+        const batch = db.batch();
+        items.forEach(item => {
+            const ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: item.name,
+                unitType: item.unitType,
+                quantity: item.quantity,
+                notes: "بهارات اضافية",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "spices_extra"
             });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} بهار بنجاح`);
         document.getElementById('spicesExtraModal').classList.remove('active');
-        for (let i = 0; i < spicesExtraItemsList.length; i++) {
-            if (document.getElementById(`sp_chk_${i}`)) document.getElementById(`sp_chk_${i}`).checked = false;
-            if (document.getElementById(`sp_qty_${i}`)) document.getElementById(`sp_qty_${i}`).value = "1";
-        }
-    } catch(e) { showToast("❌ فشل الإضافة", true); }
+        
+        checkboxes.forEach(cb => cb.checked = false);
+        document.querySelectorAll('.spices-qty').forEach(input => input.value = "1");
+        
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل الإضافة", true);
+    }
 }
 
 async function addSelectedQuick() {
-    let items = [];
-    for (let i = 0; i < extraItemsList.length; i++) {
-        if (document.getElementById(`quick_chk_${i}`)?.checked) {
-            let qty = parseFloat(document.getElementById(`quick_qty_${i}`).value);
-            let unit = document.getElementById(`quick_unit_${i}`)?.value || 'kg';
-            items.push({ name: extraItemsList[i], quantity: qty, unitType: unit });
+    const items = [];
+    const checkboxes = document.querySelectorAll('#quickListContainer .quick-checkbox');
+    
+    for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+            const name = checkbox.dataset.name;
+            const index = checkbox.dataset.index;
+            const qtyInput = document.querySelector(`.quick-qty[data-index="${index}"]`);
+            const unitSelect = document.querySelector(`.quick-unit[data-index="${index}"]`);
+            const quantity = parseFloat(qtyInput?.value) || 1;
+            const unit = unitSelect?.value || 'kg';
+            items.push({ name, quantity, unitType: unit });
         }
     }
-    if (items.length === 0) { showToast("🌱 اختر منتجاً", true); return; }
+    
+    if (items.length === 0) {
+        showToast("🌱 اختر منتجاً", true);
+        return;
+    }
     
     try {
-        let batch = db.batch();
-        items.forEach(p => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, { 
-                name: p.name, 
-                unitType: p.unitType, 
-                quantity: p.quantity, 
-                notes: "بذوريات", 
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                priority: "extra" 
+        const batch = db.batch();
+        items.forEach(item => {
+            const ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: item.name,
+                unitType: item.unitType,
+                quantity: item.quantity,
+                notes: "بذوريات",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "extra"
             });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} منتج بنجاح`);
         document.getElementById('quickModal').classList.remove('active');
-        for (let i = 0; i < extraItemsList.length; i++) {
-            if (document.getElementById(`quick_chk_${i}`)) document.getElementById(`quick_chk_${i}`).checked = false;
-            if (document.getElementById(`quick_qty_${i}`)) document.getElementById(`quick_qty_${i}`).value = "1";
-        }
-    } catch(e) { showToast("❌ فشل الإضافة", true); }
+        
+        checkboxes.forEach(cb => cb.checked = false);
+        document.querySelectorAll('.quick-qty').forEach(input => input.value = "1");
+        
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل الإضافة", true);
+    }
 }
 
 async function addSelectedBags() {
-    let selected = [];
-    for (let i = 0; i < bagTypesList.length; i++) {
-        if (document.getElementById(`bag_chk_${i}`)?.checked) selected.push(bagTypesList[i]);
+    const selected = [];
+    const checkboxes = document.querySelectorAll('#bagsListContainer .bag-checkbox');
+    
+    for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+            selected.push(checkbox.dataset.name);
+        }
     }
-    if (selected.length === 0) { showToast("📦 اختر نوع كيس", true); return; }
+    
+    if (selected.length === 0) {
+        showToast("📦 اختر نوع كيس", true);
+        return;
+    }
     
     try {
-        let batch = db.batch();
-        selected.forEach(b => {
-            let ref = materialsCollection.doc();
-            batch.set(ref, { 
-                name: `كيس تعبئة - ${b}`, 
-                unitType: 'bag', 
-                quantity: 1, 
-                notes: "أكياس", 
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                priority: "extra" 
+        const batch = db.batch();
+        selected.forEach(bag => {
+            const ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: `كيس تعبئة - ${bag}`,
+                unitType: 'bag',
+                quantity: 1,
+                notes: "أكياس",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "extra"
             });
         });
         await batch.commit();
         showToast(`✓ تم إضافة ${selected.length} نوع كيس بنجاح`);
         document.getElementById('bagsModal').classList.remove('active');
-        for (let i = 0; i < bagTypesList.length; i++) {
-            if (document.getElementById(`bag_chk_${i}`)) document.getElementById(`bag_chk_${i}`).checked = false;
-        }
-    } catch(e) { showToast("❌ فشل الإضافة", true); }
+        
+        checkboxes.forEach(cb => cb.checked = false);
+        
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل إضافة الأكياس", true);
+    }
 }
 
 async function addTawsaya() {
     let name = document.getElementById('tawsayaName')?.value.trim();
-    if (!name) { showToast("✏️ اسم المنتج", true); return; }
+    if (!name) {
+        showToast("✏️ اسم المنتج", true);
+        return;
+    }
     
     let type = document.querySelector('#tawsayaTypeGroup .unit-btn.active')?.getAttribute('data-type');
     let qty = 1;
     if (type === 'kg') qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
     else if (type === 'half') qty = 0.5;
     else qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
-    if (isNaN(qty) || qty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+    if (isNaN(qty) || qty <= 0) {
+        showToast("🔢 كمية صحيحة", true);
+        return;
+    }
     
     try {
-        await materialsCollection.add({ 
-            name, 
-            unitType: 'kg', 
-            quantity: qty, 
-            notes: "توصاية", 
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-            priority: "tawsaya" 
+        await materialsCollection.add({
+            name,
+            unitType: 'kg',
+            quantity: qty,
+            notes: "توصاية",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            priority: "tawsaya"
         });
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('tawsayaName').value = "";
         document.getElementById('tawsayaCustomQty').value = "1";
         document.getElementById('tawsayaModal').classList.remove('active');
-    } catch(e) { showToast("❌ فشل الإضافة", true); }
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل الإضافة", true);
+    }
 }
 
 async function saveEdit() {
     if (!currentEditId) return;
     let newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
     let newUnit = document.getElementById('editUnitSelect')?.value || 'kg';
-    if (isNaN(newQty) || newQty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+    if (isNaN(newQty) || newQty <= 0) {
+        showToast("🔢 كمية صحيحة", true);
+        return;
+    }
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: newQty, unitType: newUnit });
         showToast("✓ تم تحديث الكمية");
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
-    } catch(e) { showToast("❌ فشل التحديث", true); }
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل التحديث", true);
+    }
 }
 
 async function addNewMaterialDirect() {
     let name = document.getElementById('newMaterialName')?.value.trim();
-    if (!name) { showToast("✏️ اكتب اسم المادة", true); return; }
+    if (!name) {
+        showToast("✏️ اكتب اسم المادة", true);
+        return;
+    }
     let quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
     let unit = document.getElementById('newUnitSelect')?.value || 'kg';
-    if (isNaN(quantity) || quantity <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+    if (isNaN(quantity) || quantity <= 0) {
+        showToast("🔢 كمية صحيحة", true);
+        return;
+    }
     try {
-        await materialsCollection.add({ 
-            name, 
-            unitType: unit, 
-            quantity: quantity, 
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-            priority: "main" 
+        await materialsCollection.add({
+            name,
+            unitType: unit,
+            quantity: quantity,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            priority: "main"
         });
         showToast(`✓ تمت إضافة "${name}"`);
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = "";
         document.getElementById('newQuantityValue').value = "1";
-    } catch(e) { showToast("❌ خطأ في الاتصال", true); }
+    } catch(e) {
+        console.error(e);
+        showToast("❌ خطأ في الاتصال", true);
+    }
 }
 
 // ==================== المزامنة ====================
@@ -463,14 +578,14 @@ function startListener() {
         const list = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            list.push({ 
-                id: doc.id, 
-                name: data.name, 
-                unitType: data.unitType || 'kg', 
-                quantity: data.quantity || 0, 
-                notes: data.notes || "", 
-                createdAt: data.createdAt, 
-                priority: data.priority || "main" 
+            list.push({
+                id: doc.id,
+                name: data.name,
+                unitType: data.unitType || 'kg',
+                quantity: data.quantity || 0,
+                notes: data.notes || "",
+                createdAt: data.createdAt,
+                priority: data.priority || "main"
             });
         });
         allMaterials = list;
@@ -491,7 +606,10 @@ function startListener() {
         const app = document.getElementById('appContainer');
         if (splash && app && splash.style.display !== 'none') {
             splash.classList.add('hidden');
-            setTimeout(() => { splash.style.display = 'none'; app.style.display = 'block'; }, 500);
+            setTimeout(() => {
+                splash.style.display = 'none';
+                app.style.display = 'block';
+            }, 500);
         }
     }, (error) => {
         console.error(error);
@@ -513,16 +631,23 @@ function startAutoSync() {
 // ==================== ربط الأحداث ====================
 function bindEvents() {
     document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
-    document.getElementById('syncBtn').onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 جاري المزامنة..."); };
+    document.getElementById('syncBtn').onclick = () => {
+        if (unsubscribe) unsubscribe();
+        startListener();
+        showToast("🔄 جاري المزامنة...");
+    };
     document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
     
     document.getElementById('backupBtn').onclick = () => {
-        if (allMaterials.length === 0) { showToast("📭 لا توجد بيانات", true); return; }
+        if (allMaterials.length === 0) {
+            showToast("📭 لا توجد بيانات", true);
+            return;
+        }
         let data = JSON.stringify(allMaterials, null, 2);
         let blob = new Blob([data]);
         let a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `backup_${new Date().toISOString().slice(0,19)}.json`;
+        a.download = `backup_${new Date().toISOString().slice(0, 19)}.json`;
         a.click();
         showToast("💾 تم نسخ البيانات");
     };
@@ -546,7 +671,9 @@ function bindEvents() {
                         if (unsubscribe) unsubscribe();
                         startListener();
                     }
-                } catch(e) { showToast("❌ ملف غير صالح", true); }
+                } catch (e) {
+                    showToast("❌ ملف غير صالح", true);
+                }
             };
             reader.readAsText(file);
         };
@@ -554,7 +681,10 @@ function bindEvents() {
     };
     
     document.getElementById('clearAllBtn').onclick = async () => {
-        if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
+        if (allMaterials.length === 0) {
+            showToast("📭 القائمة فارغة", true);
+            return;
+        }
         if (confirm("⚠️ حذف جميع المواد نهائياً؟")) {
             let batch = db.batch();
             allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
@@ -564,11 +694,34 @@ function bindEvents() {
     };
     
     // أزرار الجداول
-    document.getElementById('importantProductsBtn').onclick = () => { renderImportantFiltered(''); document.getElementById('importantModal').classList.add('active'); };
-    document.getElementById('spicesExtraBtn').onclick = () => { renderSpicesExtraFiltered(''); document.getElementById('spicesExtraModal').classList.add('active'); };
-    document.getElementById('quickProductsBtn').onclick = () => { renderQuickFiltered(''); document.getElementById('quickModal').classList.add('active'); };
-    document.getElementById('bagsManagerBtn').onclick = () => { renderBags(); document.getElementById('bagsModal').classList.add('active'); };
-    document.getElementById('tawsayaQuickBtn').onclick = () => { document.getElementById('tawsayaModal').classList.add('active'); };
+    document.getElementById('importantProductsBtn').onclick = () => {
+        renderImportantFiltered('');
+        document.getElementById('importantModal').classList.add('active');
+        document.getElementById('importantSearchInput').focus();
+    };
+    
+    document.getElementById('spicesExtraBtn').onclick = () => {
+        renderSpicesExtraFiltered('');
+        document.getElementById('spicesExtraModal').classList.add('active');
+        document.getElementById('spicesExtraSearchInput').focus();
+    };
+    
+    document.getElementById('quickProductsBtn').onclick = () => {
+        renderQuickFiltered('');
+        document.getElementById('quickModal').classList.add('active');
+        document.getElementById('quickSearchInput').focus();
+    };
+    
+    document.getElementById('bagsManagerBtn').onclick = () => {
+        renderBags();
+        document.getElementById('bagsModal').classList.add('active');
+        document.getElementById('bagsSearchInput').focus();
+    };
+    
+    document.getElementById('tawsayaQuickBtn').onclick = () => {
+        document.getElementById('tawsayaModal').classList.add('active');
+        document.getElementById('tawsayaName').focus();
+    };
     
     // أزرار الحفظ
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
@@ -584,9 +737,9 @@ function bindEvents() {
     document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
     document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
     document.getElementById('bagsSearchInput').oninput = (e) => {
-        let term = e.target.value.toLowerCase();
+        const term = e.target.value.toLowerCase();
         document.querySelectorAll('#bagsListContainer .modern-item-card').forEach(item => {
-            let name = item.querySelector('.item-name')?.innerText.toLowerCase() || '';
+            const name = item.querySelector('.item-name')?.innerText.toLowerCase() || '';
             item.style.display = name.includes(term) ? 'flex' : 'none';
         });
     };
@@ -594,8 +747,8 @@ function bindEvents() {
 
 // ==================== تهيئة أزرار الوزن في النافذة الرئيسية ====================
 function initMainQuantityButtons() {
-    const decBtn = document.querySelector('#newItemModal .qty-picker .qty-dec-btn');
-    const incBtn = document.querySelector('#newItemModal .qty-picker .qty-inc-btn');
+    const decBtn = document.querySelector('#newItemModal .qty-dec-btn');
+    const incBtn = document.querySelector('#newItemModal .qty-inc-btn');
     const qtyInput = document.getElementById('newQuantityValue');
     
     if (decBtn && incBtn && qtyInput) {
@@ -616,6 +769,7 @@ function initMainQuantityButtons() {
 
 // ==================== التهيئة ====================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Material Manager starting...');
     bindEvents();
     startListener();
     startAutoSync();
@@ -633,4 +787,4 @@ if ('serviceWorker' in navigator) {
                 console.error('❌ Service Worker registration failed:', error);
             });
     });
-                                                         }
+        }
