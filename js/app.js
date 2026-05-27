@@ -3,35 +3,59 @@ let unsubscribe = null;
 let currentEditId = null;
 let autoSyncInterval = null;
 
-// ==================== القوائم الثابتة ====================
+// ==================== القوائم الثابتة (5 جداول) ====================
+
+// الجدول الأول: بهارات هامة
 const importantItemsList = [
-    "شطه حلوة", "شطة حدة", "بابريكا مدخنة", "فلفل اسود ناعم", "كزبرة ناعمة", "كزبرة حب",
-    "قرفة خشنة عيدان", "قرفة سيجار", "كمون ناعم", "كمون حب", "كاكاو نخب اول", "كاكاو نخب ثاني",
-    "كركم", "كريمة محلاية", "كبسة ناعمة", "كبسة خليجية", "كاري", "مندي", "زنجبيل خشن",
-    "زنجبيل ناعم", "سمسم", "سماق ناعم", "شيش", "شاورما", "حبة البركة", "ثوم ناعم", "بصل ناعم",
-    "ملح ليمون", "ملح صيني", "ماجي صفراء", "ماجي بيضاء", "مشكلة", "مشكلة بيضاء", "نشا مصري", "هيل ناعم", "هيل حب"
+    "شطة حلوة", "شطة حدة وسط", "شطة بابريكا مدخنة", "توابل هندية", "فلفل اسود ناعم", "توم ناعم",
+    "بصل ناعم", "جوز هند خشن", "حليب نصف دسم", "جوز امريكي", "حبة البركة", "زنجبيل خشن",
+    "زنجبيل ناعم", "سمسم محمص", "سماق ناعم", "شاورما", "كركدية", "كاري", "كربونة الصوديوم",
+    "كبسة خليجية", "كبسة ناعمة", "كركم", "كريمة محلاية", "كاكاو نخب اول", "كاكاو نخب ثاني",
+    "كمون حب", "كمون ناعم", "قرفة عيدان", "قرفة ناعمة", "قرفة سيجار", "كزبرة ناعمة",
+    "كزبرة حب", "قرنفل حب", "قرنفل ناعم", "اشلميش", "فستق ني ارجنتيني", "ملح صيني", "ملح ليمون",
+    "ماجي اصفر", "ماجي ابيض", "مشكلة", "مشكلة بيضاء", "نشا مصري", "هيل حب خشن", "هيل ناعم",
+    "نعنع يابس", "يانسون حب", "شوفان", "تمر سري"
 ];
 
+// الجدول الثاني: بهارات اضافية
 const spicesExtraItemsList = [
-    "عصفر", "توابل هندية حارة", "صفار الزعفران", "صفار البيض", "فلفل اسود حب", "فلفل ابيض ناعم",
-    "فلافل", "فاهيتا", "قرنفل ناعم", "قرنفل حب", "قرفة ناعمة", "قلي", "كتشب", "كراوية", "كريسبي",
-    "بطاطا", "بروستد", "زعتر اوريجانو", "بيتزا", "جوزة الطيب ناعمة", "جوزة الطيب حب", "حلبة حب",
-    "حلبة ناعمة", "خل نكهة", "خميرة", "لحمة خاروف", "مكسيكي", "مشاوي", "مدخنة", "محاشي", "نشا درس",
-    "يانسون ناعم", "سدر ناعم", "سمك", "سجق", "سحلب", "شبة ناعمة", "نوديلز اندومي", "الكليجة"
+    "بطاطا", "بروستد", "زعتر اوريغانو", "بيتزا", "جوزة الطيب حب", "جوزة الطيب ناعمة", "حلبه حب",
+    "حلبه ناعمة", "خل نكهة", "خميرة فرط", "سدر ناعم", "سكر نبات", "سمك", "سجق", "سحلب", "سلطة",
+    "شمرا ناعمة", "شمرا حب", "شيش", "شاورما", "كريسبي", "كليجة", "كاري", "كربونة الصوديوم",
+    "كراوية", "مجروش الكعك", "كلس خشن", "قلي", "فلافل", "فاهيتا", "لبان الدكر", "لحمة عجل",
+    "لومي", "لومي اسود", "مندي", "مكسيكي", "مشاوي", "مدخنة", "محاشي", "محلب", "نشا درس",
+    "نعنع يابس", "يانسون ناعم", "يانسون نجمة", "ورق غار", "صفار زعفران", "صفار بيض",
+    "فلفل اسود حب", "فلفل ابيض ناعم", "توابل هندية حارة", "طحينية", "رمان مجفف", "اندومي",
+    "رز مطحون", "ماجي حبيبات", "شمرا حب"
 ];
 
+// الجدول الثالث: المحمصة
+const roastedItemsList = [
+    "دوار شمس ملكي", "دوار شمس شبح", "فستق مدخن", "فستق مملح", "بذر كوسا", "بذر ابيض عريض",
+    "بذر اصفر مصري", "فستق ني ارجنتيني", "لوز بقشرو", "لوز ني", "كاجو ني", "بذور الشيا",
+    "بذور الكتان", "بذور اليقطين", "بذر الرشاد", "ذرة الفوشار", "خل نكهة", "جنبة نكهة",
+    "كتشب نكهة", "بابريكا نكهة", "زعتر اخضر", "زعتر احمر", "كابتشينو", "ميلو", "هوت شوكلت"
+];
+
+// الجدول الرابع: الأعشاب
+const herbsItemsList = [
+    "زهرة الالماسة", "زهورات مشكلة", "زعتر بري", "كركدية", "ميرمية", "ورد جوري", "عشرق",
+    "مرتكوش", "سنامكي", "بابونج", "اكليل الجبل"
+];
+
+// الجدول الخامس: مواد اضافية
 const extraItemsList = [
-    "بذر دوار شمس ملكي", "بذر دوار شمس الشبح", "بذر اصفر ملكي", "بذر اسود ملكي", "بذر كوسا",
-    "بذر ابيض عريض", "فستق مدخن", "فستق مملح", "ذرة الفوشار", "شوفان", "نعنع يابس", "نسكافية خشنة",
-    "اشلميش", "ลوز ني", "كاجو ني", "لوز بقشرو", "فستق ني", "لبان الدكر", "لومي", "لومي اسود", "كركدية",
-    "زهرة الالماسة", "شمرا ناعمة", "شمرا حب", "زهورات مشكلة", "جوز امريكي", "تمر سري", "جوز هند خشن",
-    "جوز هند ناعم", "بذور الشيا", "بذور الكتان", "بذور الرشاد", "رمان زركش"
+    "ماجي ظروف", "مكعبات ماجي", "ماجي شرائح", "خميره ظروفة", "مستكه", "فانيلا ظروفة الريم",
+    "فانيلا فرط", "بكمبودر ريم", "بكمبودر فرط", "تمر عجوه", "تمر سري"
 ];
 
 const bagTypesList = ["شفاف 10×12","شفاف 20×12","شفاف 10×20","شفاف 25×17","شفاف 20×30","شفاف 35×25","صيدلية","أسود 30","أسود 35","أسود 40","أسود 45"];
 
+// ==================== دوال الحصول على القوائم ====================
 function getImportantItems() { return importantItemsList.map(name => ({ name, min: 1, max: 5 })); }
 function getSpicesExtraItems() { return spicesExtraItemsList.map(name => ({ name, min: 1, max: 10 })); }
+function getRoastedItems() { return roastedItemsList.map(name => ({ name, min: 1, max: 10 })); }
+function getHerbsItems() { return herbsItemsList.map(name => ({ name, min: 1, max: 10 })); }
 function getExtraItems() { return extraItemsList.map(name => ({ name, min: 1, max: 10 })); }
 
 // ==================== دوال مساعدة ====================
@@ -70,12 +94,14 @@ function renderAllMaterials(materials) {
     
     const main = materials.filter(m => m.priority === 'main');
     const spicesExtra = materials.filter(m => m.priority === 'spices_extra');
+    const roasted = materials.filter(m => m.priority === 'roasted');
+    const herbs = materials.filter(m => m.priority === 'herbs');
     const extra = materials.filter(m => m.priority === 'extra');
     const taws = materials.filter(m => m.priority === 'tawsaya');
     
     let html = `
         <div class="priority-section">
-            <div class="section-title"><i class="fas fa-star-of-life"></i> المواد الهامة</div>
+            <div class="section-title"><i class="fas fa-star-of-life"></i> بهارات هامة</div>
             ${main.length === 0 ? '<div class="empty-state">✨ لا توجد مواد هامة</div>' : `<div class="materials-grid">${main.map(m => renderMaterialCard(m)).join('')}</div>`}
         </div>
         <div class="priority-section">
@@ -83,8 +109,16 @@ function renderAllMaterials(materials) {
             ${spicesExtra.length === 0 ? '<div class="empty-state">🌿 لا توجد بهارات اضافية</div>' : `<div class="materials-grid">${spicesExtra.map(m => renderMaterialCard(m)).join('')}</div>`}
         </div>
         <div class="priority-section">
-            <div class="section-title"><i class="fas fa-seedling"></i> بذوريات واعشاب</div>
-            ${extra.length === 0 ? '<div class="empty-state">🌱 لا توجد مواد في هذا القسم</div>' : `<div class="materials-grid">${extra.map(m => renderMaterialCard(m)).join('')}</div>`}
+            <div class="section-title"><i class="fas fa-fire"></i> المحمصة</div>
+            ${roasted.length === 0 ? '<div class="empty-state">🔥 لا توجد مواد في المحمصة</div>' : `<div class="materials-grid">${roasted.map(m => renderMaterialCard(m)).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-seedling"></i> الأعشاب</div>
+            ${herbs.length === 0 ? '<div class="empty-state">🌱 لا توجد أعشاب</div>' : `<div class="materials-grid">${herbs.map(m => renderMaterialCard(m)).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-plus-circle"></i> مواد اضافية</div>
+            ${extra.length === 0 ? '<div class="empty-state">📦 لا توجد مواد اضافية</div>' : `<div class="materials-grid">${extra.map(m => renderMaterialCard(m)).join('')}</div>`}
         </div>
         <div class="priority-section">
             <div class="section-title"><i class="fas fa-gift"></i> التوصاية</div>
@@ -261,7 +295,9 @@ function updateEditFieldByUnit(unit) {
     }
 }
 
-// ==================== عرض القوائم في النوافذ ====================
+// ==================== عرض القوائم في النوافذ (5 جداول) ====================
+
+// الجدول الأول: بهارات هامة
 function renderImportantFiltered(filter = '') {
     const container = document.getElementById('importantListContainer');
     if (!container) return;
@@ -270,15 +306,16 @@ function renderImportantFiltered(filter = '') {
     container.innerHTML = '';
     
     filtered.forEach((item, index) => {
+        const originalIndex = importantItemsList.indexOf(item);
         const div = document.createElement('div');
         div.className = 'modern-item-card';
         div.innerHTML = `
             <div class="item-info">
-                <input type="checkbox" class="important-checkbox" data-name="${escapeHtml(item)}" data-index="${index}">
+                <input type="checkbox" class="important-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
                 <span class="item-name">${escapeHtml(item)}</span>
             </div>
             <div class="quantity-modern">
-                <select class="qty-select important-unit" data-index="${index}">
+                <select class="qty-select important-unit" data-index="${originalIndex}">
                     <option value="kg">كيلو (kg)</option>
                     <option value="half">نصف كيلو</option>
                     <option value="quarter">ربع كيلو</option>
@@ -286,16 +323,16 @@ function renderImportantFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <div class="qty-controls" data-type="important" data-index="${index}">
-                    <button class="qty-dec-btn" data-idx="${index}" data-type="important">-</button>
-                    <input type="number" class="qty-value-modern important-qty" data-idx="${index}" value="1" step="1" min="1">
-                    <button class="qty-inc-btn" data-idx="${index}" data-type="important">+</button>
+                <div class="qty-controls" data-type="important" data-index="${originalIndex}">
+                    <button class="qty-dec-btn" data-idx="${originalIndex}" data-type="important">-</button>
+                    <input type="number" class="qty-value-modern important-qty" data-idx="${originalIndex}" value="1" step="1" min="1">
+                    <button class="qty-inc-btn" data-idx="${originalIndex}" data-type="important">+</button>
                 </div>
             </div>
         `;
         container.appendChild(div);
         
-        initItemQuantityControls(div, 'important', index);
+        initItemQuantityControls(div, 'important', originalIndex);
     });
     
     document.querySelectorAll('#importantListContainer .important-unit').forEach(select => {
@@ -308,6 +345,7 @@ function renderImportantFiltered(filter = '') {
     });
 }
 
+// الجدول الثاني: بهارات اضافية
 function renderSpicesExtraFiltered(filter = '') {
     const container = document.getElementById('spicesExtraListContainer');
     if (!container) return;
@@ -355,8 +393,105 @@ function renderSpicesExtraFiltered(filter = '') {
     });
 }
 
-function renderQuickFiltered(filter = '') {
-    const container = document.getElementById('quickListContainer');
+// الجدول الثالث: المحمصة
+function renderRoastedFiltered(filter = '') {
+    const container = document.getElementById('roastedListContainer');
+    if (!container) return;
+    
+    const filtered = roastedItemsList.filter(item => item.includes(filter));
+    container.innerHTML = '';
+    
+    filtered.forEach((item, idx) => {
+        const originalIndex = roastedItemsList.indexOf(item);
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
+            <div class="item-info">
+                <input type="checkbox" class="roasted-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
+                <span class="item-name">${escapeHtml(item)}</span>
+            </div>
+            <div class="quantity-modern">
+                <select class="qty-select roasted-unit" data-index="${originalIndex}">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
+                </select>
+                <div class="qty-controls" data-type="roasted" data-index="${originalIndex}">
+                    <button class="qty-dec-btn" data-idx="${originalIndex}" data-type="roasted">-</button>
+                    <input type="number" class="qty-value-modern roasted-qty" data-idx="${originalIndex}" value="1" step="1" min="1">
+                    <button class="qty-inc-btn" data-idx="${originalIndex}" data-type="roasted">+</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        initItemQuantityControls(div, 'roasted', originalIndex);
+    });
+    
+    document.querySelectorAll('#roastedListContainer .roasted-unit').forEach(select => {
+        select.onchange = function() {
+            const idx = this.dataset.index;
+            const controlsDiv = document.querySelector(`#roastedListContainer .qty-controls[data-index="${idx}"]`);
+            const unit = this.value;
+            updateItemQuantityControls(controlsDiv, unit, idx, 'roasted');
+        };
+    });
+}
+
+// الجدول الرابع: الأعشاب
+function renderHerbsFiltered(filter = '') {
+    const container = document.getElementById('herbsListContainer');
+    if (!container) return;
+    
+    const filtered = herbsItemsList.filter(item => item.includes(filter));
+    container.innerHTML = '';
+    
+    filtered.forEach((item, idx) => {
+        const originalIndex = herbsItemsList.indexOf(item);
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
+            <div class="item-info">
+                <input type="checkbox" class="herbs-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
+                <span class="item-name">${escapeHtml(item)}</span>
+            </div>
+            <div class="quantity-modern">
+                <select class="qty-select herbs-unit" data-index="${originalIndex}">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
+                </select>
+                <div class="qty-controls" data-type="herbs" data-index="${originalIndex}">
+                    <button class="qty-dec-btn" data-idx="${originalIndex}" data-type="herbs">-</button>
+                    <input type="number" class="qty-value-modern herbs-qty" data-idx="${originalIndex}" value="1" step="1" min="1">
+                    <button class="qty-inc-btn" data-idx="${originalIndex}" data-type="herbs">+</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        initItemQuantityControls(div, 'herbs', originalIndex);
+    });
+    
+    document.querySelectorAll('#herbsListContainer .herbs-unit').forEach(select => {
+        select.onchange = function() {
+            const idx = this.dataset.index;
+            const controlsDiv = document.querySelector(`#herbsListContainer .qty-controls[data-index="${idx}"]`);
+            const unit = this.value;
+            updateItemQuantityControls(controlsDiv, unit, idx, 'herbs');
+        };
+    });
+}
+
+// الجدول الخامس: مواد اضافية
+function renderExtraFiltered(filter = '') {
+    const container = document.getElementById('extraListContainer');
     if (!container) return;
     
     const filtered = extraItemsList.filter(item => item.includes(filter));
@@ -368,11 +503,11 @@ function renderQuickFiltered(filter = '') {
         div.className = 'modern-item-card';
         div.innerHTML = `
             <div class="item-info">
-                <input type="checkbox" class="quick-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
+                <input type="checkbox" class="extra-checkbox" data-name="${escapeHtml(item)}" data-index="${originalIndex}">
                 <span class="item-name">${escapeHtml(item)}</span>
             </div>
             <div class="quantity-modern">
-                <select class="qty-select quick-unit" data-index="${originalIndex}">
+                <select class="qty-select extra-unit" data-index="${originalIndex}">
                     <option value="kg">كيلو (kg)</option>
                     <option value="half">نصف كيلو</option>
                     <option value="quarter">ربع كيلو</option>
@@ -380,25 +515,43 @@ function renderQuickFiltered(filter = '') {
                     <option value="box">علبة</option>
                     <option value="piece">عدد</option>
                 </select>
-                <div class="qty-controls" data-type="quick" data-index="${originalIndex}">
-                    <button class="qty-dec-btn" data-idx="${originalIndex}" data-type="quick">-</button>
-                    <input type="number" class="qty-value-modern quick-qty" data-idx="${originalIndex}" value="1" step="1" min="1">
-                    <button class="qty-inc-btn" data-idx="${originalIndex}" data-type="quick">+</button>
+                <div class="qty-controls" data-type="extra" data-index="${originalIndex}">
+                    <button class="qty-dec-btn" data-idx="${originalIndex}" data-type="extra">-</button>
+                    <input type="number" class="qty-value-modern extra-qty" data-idx="${originalIndex}" value="1" step="1" min="1">
+                    <button class="qty-inc-btn" data-idx="${originalIndex}" data-type="extra">+</button>
                 </div>
             </div>
         `;
         container.appendChild(div);
         
-        initItemQuantityControls(div, 'quick', originalIndex);
+        initItemQuantityControls(div, 'extra', originalIndex);
     });
     
-    document.querySelectorAll('#quickListContainer .quick-unit').forEach(select => {
+    document.querySelectorAll('#extraListContainer .extra-unit').forEach(select => {
         select.onchange = function() {
             const idx = this.dataset.index;
-            const controlsDiv = document.querySelector(`#quickListContainer .qty-controls[data-index="${idx}"]`);
+            const controlsDiv = document.querySelector(`#extraListContainer .qty-controls[data-index="${idx}"]`);
             const unit = this.value;
-            updateItemQuantityControls(controlsDiv, unit, idx, 'quick');
+            updateItemQuantityControls(controlsDiv, unit, idx, 'extra');
         };
+    });
+}
+
+function renderBags() {
+    const container = document.getElementById('bagsListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    bagTypesList.forEach((bag, index) => {
+        const div = document.createElement('div');
+        div.className = 'modern-item-card';
+        div.innerHTML = `
+            <div class="item-info">
+                <input type="checkbox" class="bag-checkbox" data-name="${escapeHtml(bag)}" data-index="${index}">
+                <span class="item-name">${escapeHtml(bag)}</span>
+            </div>
+        `;
+        container.appendChild(div);
     });
 }
 
@@ -455,24 +608,6 @@ function updateItemQuantityControls(controlsDiv, unit, idx, type) {
     }
 }
 
-function renderBags() {
-    const container = document.getElementById('bagsListContainer');
-    if (!container) return;
-    container.innerHTML = '';
-    
-    bagTypesList.forEach((bag, index) => {
-        const div = document.createElement('div');
-        div.className = 'modern-item-card';
-        div.innerHTML = `
-            <div class="item-info">
-                <input type="checkbox" class="bag-checkbox" data-name="${escapeHtml(bag)}" data-index="${index}">
-                <span class="item-name">${escapeHtml(bag)}</span>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-}
-
 // ==================== دوال الإضافة ====================
 async function addSelectedImportant() {
     const items = [];
@@ -511,7 +646,7 @@ async function addSelectedImportant() {
                 name: item.name,
                 unitType: item.unitType,
                 quantity: item.quantity,
-                notes: "مواد هامة",
+                notes: "بهارات هامة",
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 priority: "main"
             });
@@ -519,9 +654,7 @@ async function addSelectedImportant() {
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} مادة بنجاح`);
         document.getElementById('importantModal').classList.remove('active');
-        
         checkboxes.forEach(cb => cb.checked = false);
-        
     } catch(e) {
         console.error(e);
         showToast("❌ فشل الإضافة", true);
@@ -573,24 +706,22 @@ async function addSelectedSpicesExtra() {
         await batch.commit();
         showToast(`✓ تم إضافة ${items.length} بهار بنجاح`);
         document.getElementById('spicesExtraModal').classList.remove('active');
-        
         checkboxes.forEach(cb => cb.checked = false);
-        
     } catch(e) {
         console.error(e);
         showToast("❌ فشل الإضافة", true);
     }
 }
 
-async function addSelectedQuick() {
+async function addSelectedRoasted() {
     const items = [];
-    const checkboxes = document.querySelectorAll('#quickListContainer .quick-checkbox');
+    const checkboxes = document.querySelectorAll('#roastedListContainer .roasted-checkbox');
     
     for (const checkbox of checkboxes) {
         if (checkbox.checked) {
             const name = checkbox.dataset.name;
             const index = checkbox.dataset.index;
-            const unitSelect = document.querySelector(`.quick-unit[data-index="${index}"]`);
+            const unitSelect = document.querySelector(`.roasted-unit[data-index="${index}"]`);
             const unit = unitSelect?.value || 'kg';
             let quantity = 1;
             
@@ -598,7 +729,7 @@ async function addSelectedQuick() {
             else if (unit === 'quarter') quantity = 0.25;
             else if (unit === 'oke') quantity = 0.2;
             else {
-                const qtyInput = document.querySelector(`.quick-qty[data-idx="${index}"]`);
+                const qtyInput = document.querySelector(`.roasted-qty[data-idx="${index}"]`);
                 quantity = parseFloat(qtyInput?.value) || 1;
             }
             
@@ -607,7 +738,7 @@ async function addSelectedQuick() {
     }
     
     if (items.length === 0) {
-        showToast("🌱 اختر منتجاً", true);
+        showToast("🔥 اختر منتج من المحمصة", true);
         return;
     }
     
@@ -619,17 +750,119 @@ async function addSelectedQuick() {
                 name: item.name,
                 unitType: item.unitType,
                 quantity: item.quantity,
-                notes: "بذوريات",
+                notes: "محمصة",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "roasted"
+            });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} منتج بنجاح`);
+        document.getElementById('roastedModal').classList.remove('active');
+        checkboxes.forEach(cb => cb.checked = false);
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل الإضافة", true);
+    }
+}
+
+async function addSelectedHerbs() {
+    const items = [];
+    const checkboxes = document.querySelectorAll('#herbsListContainer .herbs-checkbox');
+    
+    for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+            const name = checkbox.dataset.name;
+            const index = checkbox.dataset.index;
+            const unitSelect = document.querySelector(`.herbs-unit[data-index="${index}"]`);
+            const unit = unitSelect?.value || 'kg';
+            let quantity = 1;
+            
+            if (unit === 'half') quantity = 0.5;
+            else if (unit === 'quarter') quantity = 0.25;
+            else if (unit === 'oke') quantity = 0.2;
+            else {
+                const qtyInput = document.querySelector(`.herbs-qty[data-idx="${index}"]`);
+                quantity = parseFloat(qtyInput?.value) || 1;
+            }
+            
+            items.push({ name, quantity, unitType: unit });
+        }
+    }
+    
+    if (items.length === 0) {
+        showToast("🌱 اختر عشبة", true);
+        return;
+    }
+    
+    try {
+        const batch = db.batch();
+        items.forEach(item => {
+            const ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: item.name,
+                unitType: item.unitType,
+                quantity: item.quantity,
+                notes: "أعشاب",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                priority: "herbs"
+            });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} عشبة بنجاح`);
+        document.getElementById('herbsModal').classList.remove('active');
+        checkboxes.forEach(cb => cb.checked = false);
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل الإضافة", true);
+    }
+}
+
+async function addSelectedExtra() {
+    const items = [];
+    const checkboxes = document.querySelectorAll('#extraListContainer .extra-checkbox');
+    
+    for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+            const name = checkbox.dataset.name;
+            const index = checkbox.dataset.index;
+            const unitSelect = document.querySelector(`.extra-unit[data-index="${index}"]`);
+            const unit = unitSelect?.value || 'kg';
+            let quantity = 1;
+            
+            if (unit === 'half') quantity = 0.5;
+            else if (unit === 'quarter') quantity = 0.25;
+            else if (unit === 'oke') quantity = 0.2;
+            else {
+                const qtyInput = document.querySelector(`.extra-qty[data-idx="${index}"]`);
+                quantity = parseFloat(qtyInput?.value) || 1;
+            }
+            
+            items.push({ name, quantity, unitType: unit });
+        }
+    }
+    
+    if (items.length === 0) {
+        showToast("📦 اختر مادة اضافية", true);
+        return;
+    }
+    
+    try {
+        const batch = db.batch();
+        items.forEach(item => {
+            const ref = materialsCollection.doc();
+            batch.set(ref, {
+                name: item.name,
+                unitType: item.unitType,
+                quantity: item.quantity,
+                notes: "مواد اضافية",
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 priority: "extra"
             });
         });
         await batch.commit();
-        showToast(`✓ تم إضافة ${items.length} منتج بنجاح`);
-        document.getElementById('quickModal').classList.remove('active');
-        
+        showToast(`✓ تم إضافة ${items.length} مادة بنجاح`);
+        document.getElementById('extraModal').classList.remove('active');
         checkboxes.forEach(cb => cb.checked = false);
-        
     } catch(e) {
         console.error(e);
         showToast("❌ فشل الإضافة", true);
@@ -667,9 +900,7 @@ async function addSelectedBags() {
         await batch.commit();
         showToast(`✓ تم إضافة ${selected.length} نوع كيس بنجاح`);
         document.getElementById('bagsModal').classList.remove('active');
-        
         checkboxes.forEach(cb => cb.checked = false);
-        
     } catch(e) {
         console.error(e);
         showToast("❌ فشل إضافة الأكياس", true);
@@ -901,6 +1132,7 @@ function bindEvents() {
         }
     };
     
+    // أزرار الجداول (6 أزرار)
     document.getElementById('importantProductsBtn').onclick = () => {
         renderImportantFiltered('');
         document.getElementById('importantModal').classList.add('active');
@@ -913,10 +1145,22 @@ function bindEvents() {
         document.getElementById('spicesExtraSearchInput').focus();
     };
     
-    document.getElementById('quickProductsBtn').onclick = () => {
-        renderQuickFiltered('');
-        document.getElementById('quickModal').classList.add('active');
-        document.getElementById('quickSearchInput').focus();
+    document.getElementById('roastedBtn').onclick = () => {
+        renderRoastedFiltered('');
+        document.getElementById('roastedModal').classList.add('active');
+        document.getElementById('roastedSearchInput').focus();
+    };
+    
+    document.getElementById('herbsBtn').onclick = () => {
+        renderHerbsFiltered('');
+        document.getElementById('herbsModal').classList.add('active');
+        document.getElementById('herbsSearchInput').focus();
+    };
+    
+    document.getElementById('extraBtn').onclick = () => {
+        renderExtraFiltered('');
+        document.getElementById('extraModal').classList.add('active');
+        document.getElementById('extraSearchInput').focus();
     };
     
     document.getElementById('bagsManagerBtn').onclick = () => {
@@ -930,17 +1174,23 @@ function bindEvents() {
         document.getElementById('tawsayaName').focus();
     };
     
+    // أزرار الحفظ
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
     document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
     document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
-    document.getElementById('saveQuickBtn').onclick = addSelectedQuick;
+    document.getElementById('saveRoastedBtn').onclick = addSelectedRoasted;
+    document.getElementById('saveHerbsBtn').onclick = addSelectedHerbs;
+    document.getElementById('saveExtraBtn').onclick = addSelectedExtra;
     document.getElementById('saveBagsBtn').onclick = addSelectedBags;
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
     
+    // أزرار البحث
     document.getElementById('importantSearchInput').oninput = (e) => renderImportantFiltered(e.target.value);
     document.getElementById('spicesExtraSearchInput').oninput = (e) => renderSpicesExtraFiltered(e.target.value);
-    document.getElementById('quickSearchInput').oninput = (e) => renderQuickFiltered(e.target.value);
+    document.getElementById('roastedSearchInput').oninput = (e) => renderRoastedFiltered(e.target.value);
+    document.getElementById('herbsSearchInput').oninput = (e) => renderHerbsFiltered(e.target.value);
+    document.getElementById('extraSearchInput').oninput = (e) => renderExtraFiltered(e.target.value);
     document.getElementById('bagsSearchInput').oninput = (e) => {
         const term = e.target.value.toLowerCase();
         document.querySelectorAll('#bagsListContainer .modern-item-card').forEach(item => {
