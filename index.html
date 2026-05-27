@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#2e7d32">
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="مدير المواد">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
     <!-- ==================== FONTS ==================== -->
@@ -73,32 +69,51 @@
             </div>
         </div>
         
-        <!-- ==================== 5 CATEGORY CARDS ==================== -->
+        <!-- ==================== 7 CATEGORY CARDS ==================== -->
         <div class="categories-container">
+            <!-- 1. بهارات هامة -->
             <button class="category-card" id="importantProductsBtn">
                 <div class="category-icon"><i class="fas fa-star"></i></div>
                 <div class="category-info"><h3 class="category-title">بهارات هامة</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
+            <!-- 2. بهارات اضافية -->
             <button class="category-card" id="spicesExtraBtn">
                 <div class="category-icon"><i class="fas fa-leaf"></i></div>
                 <div class="category-info"><h3 class="category-title">بهارات اضافية</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
-            <button class="category-card" id="quickProductsBtn">
-                <div class="category-icon"><i class="fas fa-seedling"></i></div>
-                <div class="category-info"><h3 class="category-title">بذوريات وأعشاب</h3></div>
+            <!-- 3. المحمصة -->
+            <button class="category-card" id="roastedBtn">
+                <div class="category-icon"><i class="fas fa-fire"></i></div>
+                <div class="category-info"><h3 class="category-title">المحمصة</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
+            <!-- 4. الأعشاب -->
+            <button class="category-card" id="herbsBtn">
+                <div class="category-icon"><i class="fas fa-seedling"></i></div>
+                <div class="category-info"><h3 class="category-title">الأعشاب</h3></div>
+                <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+            </button>
+            
+            <!-- 5. مواد اضافية -->
+            <button class="category-card" id="extraBtn">
+                <div class="category-icon"><i class="fas fa-plus-circle"></i></div>
+                <div class="category-info"><h3 class="category-title">مواد اضافية</h3></div>
+                <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+            </button>
+            
+            <!-- 6. أكياس تعبئة -->
             <button class="category-card" id="bagsManagerBtn">
                 <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
                 <div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div>
                 <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
             </button>
             
+            <!-- 7. توصاية -->
             <button class="category-card" id="tawsayaQuickBtn">
                 <div class="category-icon"><i class="fas fa-gift"></i></div>
                 <div class="category-info"><h3 class="category-title">توصاية</h3></div>
@@ -149,9 +164,9 @@
                         <option value="piece">عدد</option>
                     </select>
                     <div class="qty-picker">
-                        <button type="button" class="qty-dec-btn">-</button>
-                        <input type="number" id="newQuantityValue" class="qty-input" step="0.25" value="1">
-                        <button type="button" class="qty-inc-btn">+</button>
+                        <button type="button" class="qty-dec-btn" id="newQtyDec">-</button>
+                        <input type="number" id="newQuantityValue" class="qty-input" step="1" min="1" value="1">
+                        <button type="button" class="qty-inc-btn" id="newQtyInc">+</button>
                     </div>
                 </div>
             </div>
@@ -188,15 +203,41 @@
         </div>
     </div>
 
-    <!-- Quick Products Modal -->
-    <div id="quickModal" class="modal">
+    <!-- Roasted Modal -->
+    <div id="roastedModal" class="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-seedling"></i> بذوريات وأعشاب</h3>
-            <input type="text" id="quickSearchInput" class="search-input" placeholder="بحث...">
-            <div id="quickListContainer" class="modern-card-list"></div>
+            <h3><i class="fas fa-fire"></i> المحمصة</h3>
+            <input type="text" id="roastedSearchInput" class="search-input" placeholder="بحث...">
+            <div id="roastedListContainer" class="modern-card-list"></div>
             <div class="modal-buttons">
-                <button id="saveQuickBtn" class="btn-save">إضافة المحددة</button>
-                <button id="closeQuickModalBtn" class="btn-cancel">إلغاء</button>
+                <button id="saveRoastedBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeRoastedModalBtn" class="btn-cancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Herbs Modal -->
+    <div id="herbsModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-seedling"></i> الأعشاب</h3>
+            <input type="text" id="herbsSearchInput" class="search-input" placeholder="بحث...">
+            <div id="herbsListContainer" class="modern-card-list"></div>
+            <div class="modal-buttons">
+                <button id="saveHerbsBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeHerbsModalBtn" class="btn-cancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Items Modal -->
+    <div id="extraModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus-circle"></i> مواد اضافية</h3>
+            <input type="text" id="extraSearchInput" class="search-input" placeholder="بحث...">
+            <div id="extraListContainer" class="modern-card-list"></div>
+            <div class="modal-buttons">
+                <button id="saveExtraBtn" class="btn-save">إضافة المحددة</button>
+                <button id="closeExtraModalBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
@@ -333,7 +374,7 @@
         
         // إغلاق جميع النوافذ
         window.closeAllModals = function() {
-            var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+            var modals = ['newItemModal', 'importantModal', 'spicesExtraModal', 'roastedModal', 'herbsModal', 'extraModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
             modals.forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.classList.remove('active');
@@ -341,14 +382,14 @@
         };
         
         // ربط أزرار الإلغاء
-        var cancelBtns = ['closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn', 'closeQuickModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn', 'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'];
+        var cancelBtns = ['closeNewModalBtn', 'closeImportantModalBtn', 'closeSpicesExtraModalBtn', 'closeRoastedModalBtn', 'closeHerbsModalBtn', 'closeExtraModalBtn', 'closeBagsModalBtn', 'closeTawsayaModalBtn', 'closeEditModalBtn', 'closeSystemMessageBtn', 'cancelDeleteBtn'];
         cancelBtns.forEach(function(btnId) {
             var btn = document.getElementById(btnId);
             if (btn) btn.onclick = function(e) { e.preventDefault(); window.closeAllModals(); };
         });
         
         // إغلاق النوافذ عند النقر خارجها
-        var modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'quickModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
+        var modalIds = ['newItemModal', 'importantModal', 'spicesExtraModal', 'roastedModal', 'herbsModal', 'extraModal', 'bagsModal', 'tawsayaModal', 'editModal', 'confirmDeleteModal', 'systemMessageModal'];
         modalIds.forEach(function(id) {
             var modal = document.getElementById(id);
             if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) window.closeAllModals(); });
@@ -365,29 +406,31 @@
             });
         });
         
-        // تهيئة أزرار الكمية
-        function initQuantityButtons() {
-            var decBtn = document.querySelector('#newItemModal .qty-dec-btn');
-            var incBtn = document.querySelector('#newItemModal .qty-inc-btn');
+        // تهيئة أزرار الكمية في نافذة الإضافة
+        function initNewItemQuantityButtons() {
+            var decBtn = document.getElementById('newQtyDec');
+            var incBtn = document.getElementById('newQtyInc');
             var qtyInput = document.getElementById('newQuantityValue');
             
             if (decBtn && incBtn && qtyInput) {
                 decBtn.onclick = function() {
-                    var val = parseFloat(qtyInput.value) || 1;
-                    var step = parseFloat(qtyInput.step) || 0.25;
-                    val = Math.max(0.25, val - step);
+                    var val = parseInt(qtyInput.value) || 1;
+                    val = Math.max(1, val - 1);
                     qtyInput.value = val;
                 };
                 incBtn.onclick = function() {
-                    var val = parseFloat(qtyInput.value) || 1;
-                    var step = parseFloat(qtyInput.step) || 0.25;
-                    val = val + step;
+                    var val = parseInt(qtyInput.value) || 1;
+                    val = val + 1;
                     qtyInput.value = val;
+                };
+                qtyInput.onchange = function() {
+                    var val = parseInt(qtyInput.value);
+                    if (isNaN(val) || val < 1) qtyInput.value = 1;
                 };
             }
         }
         
-        initQuantityButtons();
+        initNewItemQuantityButtons();
     </script>
 </body>
 </html>
