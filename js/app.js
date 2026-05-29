@@ -908,4 +908,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered'))
             .catch(err => console.error('❌ SW failed', err));
     });
-                }
+                                                                           }
