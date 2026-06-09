@@ -7,15 +7,11 @@
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية وتحليلات ذكاء اصطناعي">
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- PWA Icons -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
@@ -27,12 +23,10 @@
     <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
-    <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- Splash Screen -->
 <div id="splashScreen" class="splash">
     <div class="splash-logo"><i class="fas fa-boxes"></i></div>
     <h2>مدير المواد</h2>
@@ -40,24 +34,18 @@
     <div class="splash-version">نسخة احترافية v8.0</div>
 </div>
 
-<!-- Main App Container -->
 <div id="appContainer" class="app-main" style="display: none;">
-    
-    <!-- Hero Section -->
     <div class="hero">
         <h1>مدير المواد والمخزون</h1>
         <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
     </div>
     
-    <!-- Main Add Button -->
     <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
     
-    <!-- Sync Bar -->
     <div class="sync-bar">
         <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
     </div>
     
-    <!-- Toolbar -->
     <div class="toolbar">
         <div class="toolbar-row">
             <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
@@ -69,7 +57,6 @@
         </div>
     </div>
     
-    <!-- Categories -->
     <div class="categories-container">
         <button class="category-card" data-category="main" id="categoryMain">
             <div class="category-icon"><i class="fas fa-star"></i></div>
@@ -108,10 +95,8 @@
         </button>
     </div>
     
-    <!-- Dynamic Sections Container -->
     <div id="sectionsContainer"></div>
     
-    <!-- AI Stats Section -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
             <i class="fas fa-brain"></i>
@@ -157,11 +142,9 @@
         </div>
     </div>
     
-    <!-- Clear All Button -->
     <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
 </div>
 
-<!-- Sync Status Bar -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -170,8 +153,6 @@
     <span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span>
     <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
 </div>
-
-<!-- ==================== MODALS ==================== -->
 
 <!-- New Item Modal -->
 <div id="newItemModal" class="modal">
@@ -321,18 +302,15 @@
     </div>
 </div>
 
-<!-- ==================== SCRIPTS ==================== -->
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
-<!-- App Scripts -->
 <script src="js/firebase-config.js"></script>
 <script src="js/ai-engine.js"></script>
 <script src="js/drag-drop.js"></script>
 <script src="js/app.js"></script>
 
 <script>
-// Service Worker Registration
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/material-manager/service-worker.js').catch(err => console.error('SW failed:', err));
@@ -340,4 +318,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-                    </html>
+    </html>
