@@ -2,436 +2,288 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2e7d32">
-    <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
-    <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <link rel="manifest" href="/material-manager/manifest.json">
-    <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
-    
-    <link rel="stylesheet" href="/material-manager/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="نظام إدارة المخزون الذكي - مدير المواد مع تقنيات الذكاء الاصطناعي">
+    <title>مدير المواد الذكي | AI Inventory</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fas fa-brain"></i>
+                    <span class="ai-pulse"></span>
+                </div>
+                <h2>مدير<span>المواد</span></h2>
+                <span class="badge-ai">AI v2.0</span>
+            </div>
 
-<div id="splashScreen" class="splash">
-    <div class="splash-logo"><i class="fas fa-boxes"></i></div>
-    <h2>مدير المواد</h2>
-    <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
-    <div class="splash-version">نسخة احترافية v6.0</div>
-</div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>لوحة التحكم</span>
+                </a>
+                <a href="#" class="nav-item" data-page="inventory">
+                    <i class="fas fa-boxes"></i>
+                    <span>المخزون</span>
+                </a>
+                <a href="#" class="nav-item" data-page="recommendations">
+                    <i class="fas fa-robot"></i>
+                    <span>التوصيات الذكية</span>
+                    <span class="nav-badge" id="recBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="analytics">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>التحليلات</span>
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </a>
+            </nav>
 
-<div id="appContainer" class="app-main" style="display: none;">
-    <div class="hero">
-        <h1>مدير المواد والمخزون</h1>
-        <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
-    </div>
-    
-    <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
-    
-    <div class="sync-bar">
-        <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
-    </div>
-    
-    <div class="toolbar">
-        <div class="toolbar-row"><button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button></div>
-        <div class="toolbar-row">
-            <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
-            <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
-            <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
-        </div>
-    </div>
-    
-    <div class="categories-container">
-        <button class="category-card" id="importantProductsBtn"><div class="category-icon"><i class="fas fa-star"></i></div><div class="category-info"><h3 class="category-title">أساسيات</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="spicesExtraBtn"><div class="category-icon"><i class="fas fa-leaf"></i></div><div class="category-info"><h3 class="category-title">بهارات اضافية</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="roastedBtn"><div class="category-icon"><i class="fas fa-fire"></i></div><div class="category-info"><h3 class="category-title">المحمصة</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="herbsBtn"><div class="category-icon"><i class="fas fa-seedling"></i></div><div class="category-info"><h3 class="category-title">الأعشاب</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="extraBtn"><div class="category-icon"><i class="fas fa-plus-circle"></i></div><div class="category-info"><h3 class="category-title">مواد اضافية</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="bagsManagerBtn"><div class="category-icon"><i class="fas fa-shopping-bag"></i></div><div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="tawsayaQuickBtn"><div class="category-icon"><i class="fas fa-gift"></i></div><div class="category-info"><h3 class="category-title">توصيات</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-    </div>
-    
-    <div id="materialsContainer"></div>
-    
-    <div class="ai-stats-section">
-        <div class="ai-stats-header">
-            <i class="fas fa-brain"></i>
-            <h3>التحليل الذكي للمخزون</h3>
-            <div class="ai-badge">AI</div>
-        </div>
-        <div class="ai-stats-grid">
-            <div class="ai-stat-card">
-                <div class="ai-stat-icon"><i class="fas fa-cubes"></i></div>
-                <div class="ai-stat-info">
-                    <span class="ai-stat-label">إجمالي المواد</span>
-                    <span class="ai-stat-value" id="totalMaterialsCount">0</span>
-                    <span class="ai-stat-unit">مادة</span>
+            <div class="ai-status">
+                <div class="ai-indicator">
+                    <i class="fas fa-microchip"></i>
+                    <span>AI نشط</span>
+                </div>
+                <div class="ai-memory" id="aiMemory">ذاكرة: 100%</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="aiSearch" placeholder="بحث ذكي... (اكتب وسيقترح AI)" autocomplete="off">
+                    <div class="search-suggestions" id="searchSuggestions"></div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn-icon" id="exportBtn">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn-icon" id="importBtn">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="stats-grid">
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i class="fas fa-cubes"></i></div>
+                        <div class="stat-info">
+                            <h3>إجمالي المواد</h3>
+                            <div class="stat-value" id="totalMaterials">0</div>
+                            <small>مادة مسجلة</small>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i class="fas fa-weight-hanging"></i></div>
+                        <div class="stat-info">
+                            <h3>الحجم الكلي</h3>
+                            <div class="stat-value" id="totalVolume">0</div>
+                            <small>كيلوجرام</small>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-info">
+                            <h3>مواد ناقصة</h3>
+                            <div class="stat-value" id="lowStockCount">0</div>
+                            <small>تحتاج إعادة طلب</small>
+                        </div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-info">
+                            <h3>متوسط الكمية</h3>
+                            <div class="stat-value" id="avgQuantity">0</div>
+                            <small>كجم / مادة</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations Row -->
+                <div class="ai-recommendations">
+                    <div class="section-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>توصيات الذكاء الاصطناعي</h3>
+                        <span class="ai-tag">محدث لحظياً</span>
+                    </div>
+                    <div class="recs-container" id="aiRecommendations">
+                        <div class="rec-placeholder">⏳ جاري تحليل المخزون...</div>
+                    </div>
+                </div>
+
+                <!-- AI Predictions -->
+                <div class="predictions-grid">
+                    <div class="pred-card">
+                        <div class="pred-header">
+                            <i class="fas fa-chart-simple"></i>
+                            <h4>توقع النفاد</h4>
+                        </div>
+                        <div id="predictionsList">جاري التحميل...</div>
+                    </div>
+                    <div class="pred-card">
+                        <div class="pred-header">
+                            <i class="fas fa-ranking-star"></i>
+                            <h4>أولويات الشراء</h4>
+                        </div>
+                        <div id="priorityList">جاري التحميل...</div>
+                    </div>
                 </div>
             </div>
-            <div class="ai-stat-card">
-                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
-                <div class="ai-stat-info">
-                    <span class="ai-stat-label">الحجم الكلي</span>
-                    <span class="ai-stat-value" id="totalQuantityValue">0</span>
-                    <span class="ai-stat-unit">kg</span>
+
+            <!-- Inventory Page -->
+            <div id="inventoryPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-warehouse"></i> إدارة المخزون</h2>
+                    <button class="btn-primary" id="openAddModal">
+                        <i class="fas fa-plus"></i>
+                        إضافة مادة
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">كل التصنيفات</option>
+                        <option value="critical">حرجة</option>
+                        <option value="normal">عادية</option>
+                        <option value="stagnant">راكدة</option>
+                    </select>
+                    <button id="sortBtn" class="btn-outline">
+                        <i class="fas fa-arrow-down-wide-short"></i>
+                        ترتيب ذكي (AI)
+                    </button>
+                </div>
+
+                <!-- Materials Table with Drag & Drop -->
+                <div class="table-container">
+                    <table class="materials-table" id="materialsTable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>المادة</th>
+                                <th>الكمية (كجم)</th>
+                                <th>الحد الأدنى</th>
+                                <th>التصنيف</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="drag-container">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-hand-peace"></i>
+                                    <p>اسحب وأفلت المواد هنا أو اضغط إضافة</p>
+                                    <small>الجدول جاهز للسحب حتى لو كان فارغاً</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="ai-stat-card warning">
-                <div class="ai-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <div class="ai-stat-info">
-                    <span class="ai-stat-label">مواد ناقصة</span>
-                    <span class="ai-stat-value" id="lowStockCount">0</span>
-                    <span class="ai-stat-unit">مادة</span>
+
+            <!-- Recommendations Page (Separate) -->
+            <div id="recommendationsPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-robot"></i> التوصيات الذكية (غير مصنفة ضمن النواقص)</h2>
+                    <span class="badge-exclusive">خاص</span>
+                </div>
+                <div class="recommendations-list" id="recommendationsList">
+                    <!-- Will be populated by AI -->
                 </div>
             </div>
-            <div class="ai-stat-card success">
-                <div class="ai-stat-icon"><i class="fas fa-chart-pie"></i></div>
-                <div class="ai-stat-info">
-                    <span class="ai-stat-label">متوسط الكمية</span>
-                    <span class="ai-stat-value" id="avgQuantityValue">0</span>
-                    <span class="ai-stat-unit">kg</span>
+
+            <!-- Analytics Page -->
+            <div id="analyticsPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-chart-line"></i> التحليلات المتقدمة</h2>
+                </div>
+                <div class="analytics-cards">
+                    <div class="analytics-card">
+                        <h4>📊 توزيع المواد</h4>
+                        <canvas id="distributionChart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>📈 اتجاه الاستهلاك</h4>
+                        <div id="consumptionTrend">جاري التحليل...</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="ai-insights" id="aiInsights">
-            <i class="fas fa-robot"></i>
-            <span>تحليل البيانات...</span>
-        </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-sliders-h"></i> إعدادات الذكاء الاصطناعي</h2>
+                </div>
+                <div class="settings-group">
+                    <label class="setting-item">
+                        <span>🤖 AI Auto-Complete</span>
+                        <input type="checkbox" id="aiAutoComplete" checked>
+                    </label>
+                    <label class="setting-item">
+                        <span>📈 AI Predictions</span>
+                        <input type="checkbox" id="aiPredictions" checked>
+                    </label>
+                    <label class="setting-item">
+                        <span>⚠️ AI Warnings</span>
+                        <input type="checkbox" id="aiWarnings" checked>
+                    </label>
+                    <button id="resetDataBtn" class="btn-danger">إعادة تعيين المخزون</button>
+                </div>
+            </div>
+        </main>
     </div>
-    
-    <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
-</div>
 
-<div id="syncStatusBar" class="sync-status-bar">
-    <div class="sync-indicator"><div id="syncDot" class="sync-dot"></div><span id="syncStatusText">جاري التحميل...</span></div>
-    <span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span>
-    <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
-</div>
-
-<!-- New Item Modal -->
-<div id="newItemModal" class="modal">
-    <div class="modal-content">
-        <h3>إضافة مادة جديدة</h3>
-        <div class="modern-field">
-            <label>اسم المادة</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-tag"></i></div>
-                <input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون...">
+    <!-- Add/Edit Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3 id="modalTitle">إضافة مادة جديدة</h3>
+                <button class="close-modal">&times;</button>
             </div>
-        </div>
-        <div class="modern-field">
-            <label>الكمية</label>
-            <div class="quantity-field-container">
-                <select id="newUnitSelect" class="unit-select-input">
-                    <option value="kg">كيلو (kg)</option>
-                    <option value="half">نصف كيلو</option>
-                    <option value="quarter">ربع كيلو</option>
-                    <option value="oke">لوقية</option>
-                    <option value="box">علبة</option>
-                    <option value="piece">عدد</option>
+            <div class="modal-body">
+                <input type="text" id="materialName" placeholder="اسم المادة" autocomplete="off">
+                <div class="ai-suggestion" id="nameSuggestion"></div>
+                <input type="number" id="materialQuantity" placeholder="الكمية (كجم)" step="0.01">
+                <input type="number" id="materialMin" placeholder="الحد الأدنى (كجم)" step="0.01" value="10">
+                <select id="materialCategory">
+                    <option value="normal">عادية</option>
+                    <option value="critical">حرجة</option>
+                    <option value="stagnant">راكدة</option>
                 </select>
-                <div class="qty-picker">
-                    <button type="button" class="qty-dec-btn" id="newQtyDec">-</button>
-                    <input type="number" id="newQuantityValue" class="qty-input" step="0.25" min="0.25" value="1">
-                    <button type="button" class="qty-inc-btn" id="newQtyInc">+</button>
-                </div>
+                <div class="ai-warning" id="quantityWarning"></div>
             </div>
-        </div>
-        <div class="modal-buttons">
-            <button id="saveNewItemBtn" class="btn-save">إضافة</button>
-            <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Important Spices Modal (أساسيات) -->
-<div id="importantModal" class="modal">
-    <div class="modal-content">
-        <h3>أساسيات</h3>
-        <input type="text" id="importantSearchInput" class="search-input" placeholder="بحث...">
-        <div id="importantListContainer" class="modern-card-list"></div>
-        <div class="modal-buttons">
-            <button id="saveImportantBtn" class="btn-save">إضافة المحددة</button>
-            <button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Extra Spices Modal -->
-<div id="spicesExtraModal" class="modal">
-    <div class="modal-content">
-        <h3>بهارات اضافية</h3>
-        <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="بحث...">
-        <div id="spicesExtraListContainer" class="modern-card-list"></div>
-        <div class="modal-buttons">
-            <button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button>
-            <button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Roasted Modal -->
-<div id="roastedModal" class="modal">
-    <div class="modal-content">
-        <h3>المحمصة</h3>
-        <input type="text" id="roastedSearchInput" class="search-input" placeholder="بحث...">
-        <div id="roastedListContainer" class="modern-card-list"></div>
-        <div class="modal-buttons">
-            <button id="saveRoastedBtn" class="btn-save">إضافة المحددة</button>
-            <button id="closeRoastedModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Herbs Modal -->
-<div id="herbsModal" class="modal">
-    <div class="modal-content">
-        <h3>الأعشاب</h3>
-        <input type="text" id="herbsSearchInput" class="search-input" placeholder="بحث...">
-        <div id="herbsListContainer" class="modern-card-list"></div>
-        <div class="modal-buttons">
-            <button id="saveHerbsBtn" class="btn-save">إضافة المحددة</button>
-            <button id="closeHerbsModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Extra Items Modal -->
-<div id="extraModal" class="modal">
-    <div class="modal-content">
-        <h3>مواد اضافية</h3>
-        <input type="text" id="extraSearchInput" class="search-input" placeholder="بحث...">
-        <div id="extraListContainer" class="modern-card-list"></div>
-        <div class="modal-buttons">
-            <button id="saveExtraBtn" class="btn-save">إضافة المحددة</button>
-            <button id="closeExtraModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Bags Modal -->
-<div id="bagsModal" class="modal">
-    <div class="modal-content">
-        <h3>أكياس تعبئة</h3>
-        <input type="text" id="bagsSearchInput" class="search-input" placeholder="بحث...">
-        <div id="bagsListContainer" class="modern-card-list"></div>
-        <div class="modal-buttons">
-            <button id="saveBagsBtn" class="btn-save">إضافة المحددة</button>
-            <button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Tawsaya Modal -->
-<div id="tawsayaModal" class="modal">
-    <div class="modal-content">
-        <h3>توصيات</h3>
-        <div class="modern-field">
-            <label>المنتج</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-box"></i></div>
-                <input id="tawsayaName" placeholder="اسم المنتج...">
-            </div>
-        </div>
-        <div class="units-buttons" id="tawsayaTypeGroup">
-            <button class="unit-btn active" data-type="kg">كيلو</button>
-            <button class="unit-btn" data-type="half">نصف كيلو</button>
-            <button class="unit-btn" data-type="custom">مخصص</button>
-        </div>
-        <div id="tawsayaCustomQtyGroup" style="display:none">
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-hashtag"></i></div>
-                <input type="number" id="tawsayaCustomQty" step="0.25" min="0.25" value="1">
-                <div class="weight-presets">
-                    <button type="button" class="weight-preset" data-value="0.25">ربع كيلو</button>
-                    <button type="button" class="weight-preset" data-value="0.5">نصف كيلو</button>
-                    <button type="button" class="weight-preset" data-value="1">كيلو</button>
-                    <button type="button" class="weight-preset" data-value="1.5">كيلو ونصف</button>
-                    <button type="button" class="weight-preset" data-value="2">كيلوين</button>
-                    <button type="button" class="weight-preset" data-value="2.5">كيلوين ونصف</button>
-                    <button type="button" class="weight-preset" data-value="3">ثلاثة كيلو</button>
-                    <button type="button" class="weight-preset" data-value="5">خمسة كيلو</button>
-                </div>
-                <span>kg</span>
-            </div>
-        </div>
-        <div class="modal-buttons">
-            <button id="saveTawsayaBtn" class="btn-save">إضافة</button>
-            <button id="closeTawsayaModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>تعديل الكمية</h3>
-        <div class="modern-field">
-            <label>المادة</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-tag"></i></div>
-                <input id="editMaterialName" readonly>
-            </div>
-        </div>
-        <div class="modern-field">
-            <label>الكمية الجديدة</label>
-            <div class="edit-quantity-field">
-                <select id="editUnitSelect" class="unit-select-input">
-                    <option value="kg">كيلو (kg)</option>
-                    <option value="half">نصف كيلو</option>
-                    <option value="quarter">ربع كيلو</option>
-                    <option value="oke">لوقية</option>
-                    <option value="box">علبة</option>
-                    <option value="piece">عدد</option>
-                </select>
-                <div class="field-container" style="flex:1">
-                    <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
-                    <input type="number" id="editQuantityValue" step="0.25">
-                </div>
-            </div>
-        </div>
-        <div class="modal-buttons">
-            <button id="saveEditBtn" class="btn-save">تحديث</button>
-            <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Move Item Modal (نقل المواد) -->
-<div id="moveItemModal" class="modal">
-    <div class="modal-content">
-        <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
-        <div class="modern-field">
-            <label>المادة المراد نقلها</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-tag"></i></div>
-                <input id="moveItemName" readonly>
-            </div>
-        </div>
-        <div class="modern-field">
-            <label>نقل إلى القسم</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-folder-open"></i></div>
-                <select id="moveTargetSection">
-                    <option value="main">أساسيات</option>
-                    <option value="spices_extra">بهارات اضافية</option>
-                    <option value="roasted">المحمصة</option>
-                    <option value="herbs">الأعشاب</option>
-                    <option value="extra">مواد اضافية</option>
-                    <option value="tawsaya">توصيات</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-buttons">
-            <button id="confirmMoveBtn" class="btn-save">نقل</button>
-            <button id="cancelMoveBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Confirm Delete Modal -->
-<div id="confirmDeleteModal" class="modal">
-    <div class="confirm-card">
-        <div class="confirm-header"><i class="fas fa-exclamation-triangle"></i><h3>تأكيد الحذف</h3></div>
-        <div class="confirm-body">
-            <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
-            <div class="confirm-buttons">
-                <button id="confirmDeleteBtn" class="btn-confirm">نعم</button>
-                <button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button>
+            <div class="modal-footer">
+                <button class="btn-secondary cancel-modal">إلغاء</button>
+                <button class="btn-primary" id="saveMaterialBtn">حفظ</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- System Message Modal -->
-<div id="systemMessageModal" class="modal">
-    <div class="modal-content" style="text-align:center">
-        <i class="fas fa-info-circle" style="font-size:3rem;color:#2e7d32;margin-bottom:1rem"></i>
-        <h3 id="systemMessageTitle">رسالة</h3>
-        <p id="systemMessageText" style="margin:1rem 0"></p>
-        <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
-    </div>
-</div>
+    <!-- AI Toast Container -->
+    <div id="aiToast" class="ai-toast"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
-<script src="/material-manager/js/firebase-config.js"></script>
-<script src="/material-manager/js/utils.js"></script>
-<script src="/material-manager/js/app.js"></script>
-<script src="/material-manager/js/pwa.js"></script>
-
-<script>
-    (function() {
-        setTimeout(() => {
-            let splash = document.getElementById('splashScreen');
-            let app = document.getElementById('appContainer');
-            if (splash) {
-                splash.classList.add('hidden');
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    if (app) app.style.display = 'block';
-                }, 500);
-            } else if (app) app.style.display = 'block';
-        }, 2000);
-        
-        window.closeAllModals = () => {
-            let modals = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','moveItemModal','systemMessageModal'];
-            modals.forEach(id => { let el = document.getElementById(id); if (el) el.classList.remove('active'); });
-        };
-        
-        let cancelBtns = ['closeNewModalBtn','closeImportantModalBtn','closeSpicesExtraModalBtn','closeRoastedModalBtn','closeHerbsModalBtn','closeExtraModalBtn','closeBagsModalBtn','closeTawsayaModalBtn','closeEditModalBtn','closeSystemMessageBtn','cancelDeleteBtn','cancelMoveBtn'];
-        cancelBtns.forEach(btnId => {
-            let btn = document.getElementById(btnId);
-            if (btn) btn.onclick = (e) => { e.preventDefault(); window.closeAllModals(); };
-        });
-        
-        let modalIds = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','moveItemModal','systemMessageModal'];
-        modalIds.forEach(id => {
-            let modal = document.getElementById(id);
-            if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) window.closeAllModals(); });
-        });
-        
-        let typeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-        let customGroup = document.getElementById('tawsayaCustomQtyGroup');
-        typeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                typeBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
-            });
-        });
-        
-        document.querySelectorAll('.weight-preset').forEach(btn => {
-            btn.addEventListener('click', function() {
-                let value = parseFloat(this.dataset.value);
-                let qtyInput = document.getElementById('tawsayaCustomQty');
-                if (qtyInput) qtyInput.value = value;
-            });
-        });
-        
-        let dec = document.getElementById('newQtyDec');
-        let inc = document.getElementById('newQtyInc');
-        let qty = document.getElementById('newQuantityValue');
-        if (dec && inc && qty) {
-            dec.onclick = () => { let v = parseFloat(qty.value) || 1; v = Math.max(0.25, v - 0.25); qty.value = v; };
-            inc.onclick = () => { let v = parseFloat(qty.value) || 1; v = v + 0.25; qty.value = v; };
-            qty.onchange = () => { let v = parseFloat(qty.value); if (isNaN(v) || v < 0.25) qty.value = 1; };
-        }
-    })();
-</script>
+    <script src="js/app.js"></script>
 </body>
-</html>
+    </html>
