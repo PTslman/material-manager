@@ -1,3 +1,4 @@
+// ==================== المتغيرات العامة ====================
 let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
@@ -56,6 +57,24 @@ function showToast(msg, isErr = false) {
     setTimeout(() => div.remove(), 2500);
 }
 
+function showSystemMessage(title, message, type = 'info') {
+    const modal = document.getElementById('systemMessageModal');
+    const titleEl = document.getElementById('systemMessageTitle');
+    const textEl = document.getElementById('systemMessageText');
+    
+    if (titleEl) titleEl.innerText = title;
+    if (textEl) textEl.innerText = message;
+    
+    const icon = modal?.querySelector('.fa-info-circle');
+    if (icon) {
+        if (type === 'error') icon.style.color = '#d32f2f';
+        else if (type === 'warning') icon.style.color = '#ff9800';
+        else icon.style.color = '#2e7d32';
+    }
+    
+    if (modal) modal.classList.add('active');
+}
+
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -73,50 +92,255 @@ function formatDisplay(mat) {
     return `${mat.quantity} kg`;
 }
 
-// ==================== الذكاء الاصطناعي - تحليل المخزون ====================
+function getSectionName(section) {
+    const sections = {
+        'main': 'أساسيات',
+        'spices_extra': 'بهارات اضافية',
+        'roasted': 'المحمصة',
+        'herbs': 'الأعشاب',
+        'extra': 'مواد اضافية',
+        'tawsaya': 'توصيات'
+    };
+    return sections[section] || section;
+}
+
+// ==================== محرك الذكاء الاصطناعي المتقدم ====================
+class AIEngine {
+    constructor() {
+        this.learningData = this.loadLearningData();
+        this.seasonalFactors = this.getSeasonalFactors();
+    }
+
+    loadLearningData() {
+        const saved = localStorage.getItem('ai_learning_data');
+        return saved ? JSON.parse(saved) : {
+            consumptionPatterns: {},
+            popularCombinations: {},
+            restockFrequency: {},
+            wastePredictions: {}
+        };
+    }
+
+    saveLearningData() {
+        localStorage.setItem('ai_learning_data', JSON.stringify(this.learningData));
+    }
+
+    getSeasonalFactors() {
+        const month = new Date().getMonth();
+        if (month >= 7 && month <= 9) return { multiplier: 1.5, reason: "موسم رمضان والأعياد" };
+        if (month >= 10 && month <= 11) return { multiplier: 1.3, reason: "الشتاء والمشروبات الساخنة" };
+        if (month >= 4 && month <= 6) return { multiplier: 0.8, reason: "الصيف والإقبال أقل على البهارات" };
+        return { multiplier: 1.0, reason: "الموسم العادي" };
+    }
+
+    convertToKg(quantity, unit) {
+        if (!quantity) return 0;
+        const conversions = {
+            'kg': 1,
+            'half': 0.5,
+            'quarter': 0.25,
+            'oke': 0.128,
+            'box': 0.5,
+            'piece': 0.1,
+            'bag': 0.05
+        };
+        return quantity * (conversions[unit] || 1);
+    }
+
+    getConsumptionRate(materialName) {
+        const rates = {
+            'ملح': 0.5, 'فلفل اسود ناعم': 0.3, 'كمون ناعم': 0.4, 'كركم': 0.2,
+            'زنجبيل ناعم': 0.15, 'قرفة ناعمة': 0.2, 'هيل ناعم': 0.1, 'قرنفل ناعم': 0.05,
+            'كزبرة ناعمة': 0.25, 'شطة حدة وسط': 0.1, 'توم ناعم': 0.2, 'بصل ناعم': 0.2
+        };
+        return rates[materialName] || 0.1;
+    }
+
+    analyzeInventory(materials) {
+        const analysis = {
+            lowStock: [],
+            criticalStock: [],
+            excessStock: [],
+            recommendations: [],
+            predictions: [],
+            insights: [],
+            smartAlerts: [],
+            wasteRisks: []
+        };
+
+        let totalQuantity = 0;
+        let validMaterialsCount = 0;
+
+        for (const material of materials) {
+            // استثناء التوصيات من تحليل النواقص
+            if (material.priority === 'tawsaya') continue;
+            
+            const quantity = this.convertToKg(material.quantity, material.unitType);
+            totalQuantity += quantity;
+            validMaterialsCount++;
+            
+            if (quantity === 0 || quantity === null) {
+                analysis.lowStock.push({ name: material.name, quantity: 0, status: 'فارغ تماماً', urgency: 'عالية' });
+                analysis.criticalStock.push({ name: material.name, quantity: 0, reason: 'مادة مفقودة بالكامل' });
+            } else if (quantity < 0.5) {
+                analysis.lowStock.push({ name: material.name, quantity, status: 'حرج جداً', urgency: 'عالية' });
+                analysis.criticalStock.push({ name: material.name, quantity, reason: 'أقل من نصف كيلو' });
+            } else if (quantity < 1) {
+                analysis.lowStock.push({ name: material.name, quantity, status: 'منخفض', urgency: 'متوسطة' });
+            } else if (quantity > 10) {
+                analysis.excessStock.push({ name: material.name, quantity, reason: 'كمية كبيرة جداً قد تفسد' });
+                analysis.wasteRisks.push({ name: material.name, quantity, risk: 'خطر تلف مرتفع', suggestedAction: 'تخفيض الكمية' });
+            }
+
+            const consumptionRate = this.getConsumptionRate(material.name);
+            const daysUntilEmpty = consumptionRate > 0 && quantity > 0 ? Math.floor(quantity / consumptionRate) : Infinity;
+            
+            if (daysUntilEmpty < 7 && daysUntilEmpty > 0) {
+                analysis.predictions.push({
+                    name: material.name,
+                    daysUntilEmpty,
+                    recommendedRestock: Math.ceil(consumptionRate * 14),
+                    reason: `سوف تنفد خلال ${daysUntilEmpty} يوم`
+                });
+            }
+        }
+
+        const avgQuantity = validMaterialsCount > 0 ? (totalQuantity / validMaterialsCount).toFixed(1) : 0;
+        analysis.avgQuantity = avgQuantity;
+        analysis.totalQuantity = totalQuantity;
+        analysis.totalMaterials = validMaterialsCount;
+        
+        analysis.insights = this.generateInsights(analysis, materials);
+        analysis.smartRecommendations = this.generateSmartRecommendations(analysis);
+        
+        return analysis;
+    }
+
+    generateSmartRecommendations(analysis) {
+        const recommendations = [];
+        
+        if (analysis.criticalStock.length > 0) {
+            recommendations.push({
+                type: 'urgent',
+                title: '⚠️ مواد تحتاج شراء فوري',
+                items: analysis.criticalStock.slice(0, 3).map(c => `${c.name} (${c.reason})`),
+                priority: 1
+            });
+        }
+
+        if (analysis.excessStock.length > 0) {
+            recommendations.push({
+                type: 'reduce',
+                title: '📉 مواد بكميات زائدة',
+                items: analysis.excessStock.slice(0, 3).map(e => `${e.name} (${e.quantity} كجم)`),
+                priority: 2
+            });
+        }
+
+        const seasonal = this.seasonalFactors;
+        if (seasonal.multiplier > 1) {
+            recommendations.push({
+                type: 'seasonal',
+                title: `🌟 توصية موسمية: ${seasonal.reason}`,
+                items: ['خزّن كمية إضافية 30-50%', 'جهّز عروض خاصة للموسم'],
+                priority: 3
+            });
+        }
+
+        return recommendations;
+    }
+
+    generateInsights(analysis, materials) {
+        const insights = [];
+        
+        if (analysis.totalMaterials === 0) {
+            insights.push('✨ ابدأ بإضافة المواد إلى المخزون');
+            insights.push('💡 اضغط على "إضافة مادة جديدة" أو استخدم الأقسام الجاهزة');
+        } else {
+            if (analysis.lowStock.length === 0) {
+                insights.push('🎉 ممتاز! المخزون متوازن ولا توجد مواد ناقصة');
+            } else {
+                const percentage = ((analysis.lowStock.length / analysis.totalMaterials) * 100).toFixed(1);
+                insights.push(`📊 نسبة النواقص: ${percentage}%`);
+                insights.push(`🔔 لديك ${analysis.lowStock.length} مادة بحاجة لإعادة تعبئة`);
+            }
+
+            if (analysis.wasteRisks.length > 0 && analysis.wasteRisks[0]) {
+                insights.push(`⚠️ ${analysis.wasteRisks[0].suggestedAction || 'انتبه للمواد الزائدة'}`);
+            }
+        }
+
+        const tips = [
+            '💡 نصيحة: رتّب المواد حسب تاريخ الصلاحية',
+            '📦 نصيحة: المواد الأكثر استهلاكاً ضعها في مكان سهل الوصول',
+            '🔄 لا تنسَ تحديث الكميات عند كل صرف',
+            '📱 يمكنك استخدام التطبيق دون اتصال بالإنترنت'
+        ];
+        insights.push(tips[Math.floor(Math.random() * tips.length)]);
+
+        return insights;
+    }
+
+    learnFromAction(action, material, details) {
+        if (!this.learningData.consumptionPatterns[material]) {
+            this.learningData.consumptionPatterns[material] = [];
+        }
+        this.learningData.consumptionPatterns[material].push({
+            action,
+            details,
+            timestamp: Date.now()
+        });
+        this.saveLearningData();
+    }
+}
+
+const aiEngine = new AIEngine();
+
+// ==================== تحليل المخزون مع الذكاء الاصطناعي ====================
 function calculateAIMetrics() {
-    const totalCount = allMaterials.length;
-    let totalQuantity = 0;
-    let lowStockCount = 0;
-    
-    allMaterials.forEach(material => {
-        let quantity = material.quantity || 0;
-        totalQuantity += quantity;
-        if (quantity < 1) lowStockCount++;
-    });
-    
-    const avgQuantity = totalCount > 0 ? (totalQuantity / totalCount).toFixed(2) : 0;
+    const analysis = aiEngine.analyzeInventory(allMaterials);
     
     const totalEl = document.getElementById('totalMaterialsCount');
     const totalQtyEl = document.getElementById('totalQuantityValue');
     const lowStockEl = document.getElementById('lowStockCount');
     const avgQtyEl = document.getElementById('avgQuantityValue');
     
-    if (totalEl) totalEl.innerText = totalCount;
-    if (totalQtyEl) totalQtyEl.innerText = totalQuantity.toFixed(2);
-    if (lowStockEl) lowStockEl.innerText = lowStockCount;
-    if (avgQtyEl) avgQtyEl.innerText = avgQuantity;
+    if (totalEl) totalEl.innerText = analysis.totalMaterials;
+    if (totalQtyEl) totalQtyEl.innerText = analysis.totalQuantity.toFixed(1);
+    if (lowStockEl) lowStockEl.innerText = analysis.lowStock.length;
+    if (avgQtyEl) avgQtyEl.innerText = analysis.avgQuantity;
     
-    const insights = document.getElementById('aiInsights');
-    if (insights) {
-        let insightText = '';
-        if (totalCount === 0) {
-            insightText = '📊 لا توجد مواد في المخزون. أضف مواد جديدة للبدء.';
-        } else if (lowStockCount > 0) {
-            insightText = `⚠️ تنبيه: ${lowStockCount} مادة تحتاج إلى مراجعة الكمية.`;
-        } else {
-            insightText = `✅ المخزون جيد. إجمالي ${totalQuantity.toFixed(2)} كجم من المواد.`;
+    const insightsContainer = document.getElementById('aiInsights');
+    if (insightsContainer) {
+        let insightsHtml = `<i class="fas fa-robot"></i><div style="flex:1">`;
+        
+        analysis.insights.forEach(insight => {
+            insightsHtml += `<div class="insight-item">${insight}</div>`;
+        });
+        
+        analysis.smartRecommendations.slice(0, 2).forEach(rec => {
+            insightsHtml += `
+                <div class="recommendation-item">
+                    <strong>${rec.title}</strong>
+                    <ul>${rec.items.map(item => `<li>${item}</li>`).join('')}</ul>
+                </div>
+            `;
+        });
+        
+        insightsHtml += `</div>`;
+        insightsContainer.innerHTML = insightsHtml;
+    }
+    
+    // تنبيهات ذكية للمواد الناقصة (باستثناء التوصيات)
+    if (analysis.criticalStock.length > 0 && analysis.lowStock.length > 0) {
+        const criticalNames = analysis.criticalStock.slice(0, 3).map(c => c.name).join('، ');
+        if (criticalNames) {
+            showSystemMessage('تنبيه ذكي', `⚠️ المواد التالية ناقصة أو فارغة: ${criticalNames}. يرجى التكرم بإعادة تعبئتها.`, 'warning');
         }
-        if (totalCount > 0) {
-            const materialNames = allMaterials.map(m => m.name);
-            const uniqueNames = [...new Set(materialNames)];
-            insightText += ` يتضمن المخزون ${uniqueNames.length} نوعاً مختلفاً.`;
-        }
-        insights.innerHTML = `<i class="fas fa-robot"></i><span>${insightText}</span>`;
     }
 }
 
-// ==================== الضغطة المطولة لنقل المواد ====================
+// ==================== الضغطة المطولة لنقل المواد (بدون قيود) ====================
 function openMoveModal(materialId, materialName, currentSection) {
     currentEditId = materialId;
     const nameInput = document.getElementById('moveItemName');
@@ -130,9 +354,19 @@ function openMoveModal(materialId, materialName, currentSection) {
 async function moveMaterialToSection() {
     if (!currentEditId) return;
     const targetSection = document.getElementById('moveTargetSection').value;
+    const material = allMaterials.find(m => m.id === currentEditId);
+    const oldSection = material?.priority;
+    
     try {
         await materialsCollection.doc(currentEditId).update({ priority: targetSection });
-        showToast(`✓ تم نقل المادة بنجاح`);
+        
+        // تسجيل التعلم
+        aiEngine.learnFromAction('move', material?.name || '', {
+            from: oldSection,
+            to: targetSection
+        });
+        
+        showToast(`✓ تم نقل المادة إلى ${getSectionName(targetSection)}`);
         const modal = document.getElementById('moveItemModal');
         if (modal) modal.classList.remove('active');
         currentEditId = null;
@@ -148,7 +382,6 @@ function setupLongPress() {
     const cards = document.querySelectorAll('.material-card');
     
     cards.forEach(card => {
-        // اللمس على الشاشات التي تعمل باللمس
         card.addEventListener('touchstart', (e) => {
             longPressTimer = setTimeout(() => {
                 const id = card.getAttribute('data-id');
@@ -167,9 +400,7 @@ function setupLongPress() {
             if (longPressTimer) clearTimeout(longPressTimer);
         });
         
-        // الفأرة على سطح المكتب
         card.addEventListener('mousedown', (e) => {
-            // منع ظهور القائمة الافتراضية عند الضغط المطول
             e.preventDefault();
             longPressTimer = setTimeout(() => {
                 const id = card.getAttribute('data-id');
@@ -188,18 +419,6 @@ function setupLongPress() {
             if (longPressTimer) clearTimeout(longPressTimer);
         });
     });
-}
-
-function getSectionName(section) {
-    const sections = {
-        'main': 'أساسيات',
-        'spices_extra': 'بهارات اضافية',
-        'roasted': 'المحمصة',
-        'herbs': 'الأعشاب',
-        'extra': 'مواد اضافية',
-        'tawsaya': 'توصيات'
-    };
-    return sections[section] || section;
 }
 
 // ==================== إدارة حالة التحديدات ====================
@@ -784,8 +1003,20 @@ async function saveEdit() {
         newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
         if (isNaN(newQty) || newQty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
     }
+    const material = allMaterials.find(m => m.id === currentEditId);
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: newQty, unitType: newUnit });
+        
+        // تسجيل التعلم
+        if (material) {
+            aiEngine.learnFromAction('edit', material.name, {
+                oldQuantity: material.quantity,
+                newQuantity: newQty,
+                oldUnit: material.unitType,
+                newUnit: newUnit
+            });
+        }
+        
         showToast("✓ تم تحديث الكمية");
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
@@ -802,7 +1033,11 @@ async function addNewMaterialDirect() {
     else if (unit === 'oke') quantity = 0.2;
     else {
         quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
-        if (isNaN(quantity) || quantity <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+        if (isNaN(quantity) || quantity <= 0) { 
+            // إذا لم يتم إدخال كمية، تعتبر المادة ناقصة
+            quantity = 0;
+            showToast("⚠️ تمت الإضافة بدون كمية (مادة ناقصة)", false);
+        }
     }
     try {
         await materialsCollection.add({
@@ -900,7 +1135,8 @@ function renderAllMaterials(materials) {
 }
 
 function renderMaterialCard(m, section) {
-    return `<div class="material-card" data-id="${m.id}" data-section="${section}">
+    const lowStockClass = (m.quantity === 0 || (m.quantity < 1 && m.priority !== 'tawsaya')) ? 'low-stock-warning' : '';
+    return `<div class="material-card ${lowStockClass}" data-id="${m.id}" data-section="${section}">
         <div class="card-header">
             <div class="card-title"><i class="fas fa-box"></i> <span>${escapeHtml(m.name)}</span></div>
             <div class="card-actions">
@@ -922,7 +1158,7 @@ function updateEditFieldByUnit(unit) {
         if (!textSpan) {
             textSpan = document.createElement('span');
             textSpan.className = 'fixed-quantity-edit';
-            textSpan.style.cssText = 'padding: 12px 20px; background: var(--primary-50); border-radius: 60px; flex: 1; text-align: center; color: var(--primary-700);';
+            textSpan.style.cssText = 'padding: 12px 20px; background: #e8f5e9; border-radius: 60px; flex: 1; text-align: center; color: #2e7d32;';
             container.appendChild(textSpan);
         }
         let displayText = unit === 'half' ? 'نصف كيلو' : unit === 'quarter' ? 'ربع كيلو' : 'لوقية';
@@ -948,7 +1184,7 @@ function initNewItemModal() {
                 if (!textSpan) {
                     textSpan = document.createElement('span');
                     textSpan.className = 'fixed-quantity-new fixed-quantity';
-                    textSpan.style.cssText = 'padding: 10px 20px; background: var(--primary-50); border-radius: 60px; text-align: center; flex: 1; color: var(--primary-700);';
+                    textSpan.style.cssText = 'padding: 10px 20px; background: #e8f5e9; border-radius: 60px; text-align: center; flex: 1; color: #2e7d32;';
                     qtyPicker.parentElement.appendChild(textSpan);
                 }
                 textSpan.textContent = selectedUnit === 'half' ? 'نصف كيلو' : selectedUnit === 'quarter' ? 'ربع كيلو' : 'لوقية';
@@ -1107,6 +1343,7 @@ function bindEvents() {
     }, 300);
 }
 
+// ==================== تهيئة التطبيق ====================
 document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
     startListener();
@@ -1120,4 +1357,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered'))
             .catch(err => console.error('❌ SW failed', err));
     });
-                    }
+        }
