@@ -31,7 +31,7 @@
     <div class="splash-logo"><i class="fas fa-boxes"></i></div>
     <h2>مدير المواد</h2>
     <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
-    <div class="splash-version">نسخة احترافية v5.0</div>
+    <div class="splash-version">نسخة احترافية v6.0</div>
 </div>
 
 <div id="appContainer" class="app-main" style="display: none;">
@@ -56,16 +56,64 @@
     </div>
     
     <div class="categories-container">
-        <button class="category-card" id="importantProductsBtn"><div class="category-icon"><i class="fas fa-star"></i></div><div class="category-info"><h3 class="category-title">بهارات هامة</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
+        <button class="category-card" id="importantProductsBtn"><div class="category-icon"><i class="fas fa-star"></i></div><div class="category-info"><h3 class="category-title">أساسيات</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
         <button class="category-card" id="spicesExtraBtn"><div class="category-icon"><i class="fas fa-leaf"></i></div><div class="category-info"><h3 class="category-title">بهارات اضافية</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
         <button class="category-card" id="roastedBtn"><div class="category-icon"><i class="fas fa-fire"></i></div><div class="category-info"><h3 class="category-title">المحمصة</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
         <button class="category-card" id="herbsBtn"><div class="category-icon"><i class="fas fa-seedling"></i></div><div class="category-info"><h3 class="category-title">الأعشاب</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
         <button class="category-card" id="extraBtn"><div class="category-icon"><i class="fas fa-plus-circle"></i></div><div class="category-info"><h3 class="category-title">مواد اضافية</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
         <button class="category-card" id="bagsManagerBtn"><div class="category-icon"><i class="fas fa-shopping-bag"></i></div><div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
-        <button class="category-card" id="tawsayaQuickBtn"><div class="category-icon"><i class="fas fa-gift"></i></div><div class="category-info"><h3 class="category-title">توصاية</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
+        <button class="category-card" id="tawsayaQuickBtn"><div class="category-icon"><i class="fas fa-gift"></i></div><div class="category-info"><h3 class="category-title">توصيات</h3></div><div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>
     </div>
     
     <div id="materialsContainer"></div>
+    
+    <!-- قسم الإحصائيات الذكية -->
+    <div class="ai-stats-section">
+        <div class="ai-stats-header">
+            <i class="fas fa-brain"></i>
+            <h3>التحليل الذكي للمخزون</h3>
+            <div class="ai-badge">AI</div>
+        </div>
+        <div class="ai-stats-grid">
+            <div class="ai-stat-card">
+                <div class="ai-stat-icon"><i class="fas fa-cubes"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">إجمالي المواد</span>
+                    <span class="ai-stat-value" id="totalMaterialsCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
+                </div>
+            </div>
+            <div class="ai-stat-card">
+                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">الحجم الكلي</span>
+                    <span class="ai-stat-value" id="totalQuantityValue">0</span>
+                    <span class="ai-stat-unit">kg</span>
+                </div>
+            </div>
+            <div class="ai-stat-card warning">
+                <div class="ai-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">مواد ناقصة</span>
+                    <span class="ai-stat-value" id="lowStockCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
+                </div>
+            </div>
+            <div class="ai-stat-card success">
+                <div class="ai-stat-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">متوسط الكمية</span>
+                    <span class="ai-stat-value" id="avgQuantityValue">0</span>
+                    <span class="ai-stat-unit">kg</span>
+                </div>
+            </div>
+        </div>
+        <div class="ai-insights" id="aiInsights">
+            <i class="fas fa-robot"></i>
+            <span>تحليل البيانات...</span>
+        </div>
+    </div>
+    
     <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
 </div>
 
@@ -99,7 +147,7 @@
                 </select>
                 <div class="qty-picker">
                     <button type="button" class="qty-dec-btn" id="newQtyDec">-</button>
-                    <input type="number" id="newQuantityValue" class="qty-input" step="1" min="1" value="1">
+                    <input type="number" id="newQuantityValue" class="qty-input" step="0.25" min="0.25" value="1">
                     <button type="button" class="qty-inc-btn" id="newQtyInc">+</button>
                 </div>
             </div>
@@ -111,10 +159,10 @@
     </div>
 </div>
 
-<!-- Important Spices Modal -->
+<!-- Important Spices Modal (أساسيات) -->
 <div id="importantModal" class="modal">
     <div class="modal-content">
-        <h3>بهارات هامة</h3>
+        <h3>أساسيات</h3>
         <input type="text" id="importantSearchInput" class="search-input" placeholder="بحث...">
         <div id="importantListContainer" class="modern-card-list"></div>
         <div class="modal-buttons">
@@ -189,10 +237,10 @@
     </div>
 </div>
 
-<!-- Tawsaya Modal -->
+<!-- Tawsaya Modal (توصيات) -->
 <div id="tawsayaModal" class="modal">
     <div class="modal-content">
-        <h3>توصاية</h3>
+        <h3>توصيات</h3>
         <div class="modern-field">
             <label>المنتج</label>
             <div class="field-container">
@@ -208,7 +256,17 @@
         <div id="tawsayaCustomQtyGroup" style="display:none">
             <div class="field-container">
                 <div class="field-icon"><i class="fas fa-hashtag"></i></div>
-                <input type="number" id="tawsayaCustomQty" step="any" value="1">
+                <input type="number" id="tawsayaCustomQty" step="0.25" min="0.25" value="1">
+                <div class="weight-presets">
+                    <button type="button" class="weight-preset" data-value="0.25">ربع كيلو</button>
+                    <button type="button" class="weight-preset" data-value="0.5">نصف كيلو</button>
+                    <button type="button" class="weight-preset" data-value="1">كيلو</button>
+                    <button type="button" class="weight-preset" data-value="1.5">كيلو ونصف</button>
+                    <button type="button" class="weight-preset" data-value="2">كيلوين</button>
+                    <button type="button" class="weight-preset" data-value="2.5">كيلوين ونصف</button>
+                    <button type="button" class="weight-preset" data-value="3">ثلاثة كيلو</button>
+                    <button type="button" class="weight-preset" data-value="5">خمسة كيلو</button>
+                </div>
                 <span>kg</span>
             </div>
         </div>
@@ -250,6 +308,38 @@
         <div class="modal-buttons">
             <button id="saveEditBtn" class="btn-save">تحديث</button>
             <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Move Item Modal (نقل المواد) -->
+<div id="moveItemModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
+        <div class="modern-field">
+            <label>المادة</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-tag"></i></div>
+                <input id="moveItemName" readonly>
+            </div>
+        </div>
+        <div class="modern-field">
+            <label>نقل إلى القسم</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-folder-open"></i></div>
+                <select id="moveTargetSection">
+                    <option value="main">أساسيات</option>
+                    <option value="spices_extra">بهارات اضافية</option>
+                    <option value="roasted">المحمصة</option>
+                    <option value="herbs">الأعشاب</option>
+                    <option value="extra">مواد اضافية</option>
+                    <option value="tawsaya">توصيات</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button id="confirmMoveBtn" class="btn-save">نقل</button>
+            <button id="cancelMoveBtn" class="btn-cancel">إلغاء</button>
         </div>
     </div>
 </div>
@@ -300,17 +390,17 @@
         }, 2000);
         
         window.closeAllModals = () => {
-            let modals = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','systemMessageModal'];
+            let modals = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','moveItemModal','systemMessageModal'];
             modals.forEach(id => { let el = document.getElementById(id); if (el) el.classList.remove('active'); });
         };
         
-        let cancelBtns = ['closeNewModalBtn','closeImportantModalBtn','closeSpicesExtraModalBtn','closeRoastedModalBtn','closeHerbsModalBtn','closeExtraModalBtn','closeBagsModalBtn','closeTawsayaModalBtn','closeEditModalBtn','closeSystemMessageBtn','cancelDeleteBtn'];
+        let cancelBtns = ['closeNewModalBtn','closeImportantModalBtn','closeSpicesExtraModalBtn','closeRoastedModalBtn','closeHerbsModalBtn','closeExtraModalBtn','closeBagsModalBtn','closeTawsayaModalBtn','closeEditModalBtn','closeSystemMessageBtn','cancelDeleteBtn','cancelMoveBtn'];
         cancelBtns.forEach(btnId => {
             let btn = document.getElementById(btnId);
             if (btn) btn.onclick = (e) => { e.preventDefault(); window.closeAllModals(); };
         });
         
-        let modalIds = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','systemMessageModal'];
+        let modalIds = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','moveItemModal','systemMessageModal'];
         modalIds.forEach(id => {
             let modal = document.getElementById(id);
             if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) window.closeAllModals(); });
@@ -326,13 +416,21 @@
             });
         });
         
+        document.querySelectorAll('.weight-preset').forEach(btn => {
+            btn.addEventListener('click', function() {
+                let value = parseFloat(this.dataset.value);
+                let qtyInput = document.getElementById('tawsayaCustomQty');
+                if (qtyInput) qtyInput.value = value;
+            });
+        });
+        
         let dec = document.getElementById('newQtyDec');
         let inc = document.getElementById('newQtyInc');
         let qty = document.getElementById('newQuantityValue');
         if (dec && inc && qty) {
-            dec.onclick = () => { let v = parseInt(qty.value) || 1; v = Math.max(1, v - 1); qty.value = v; };
-            inc.onclick = () => { let v = parseInt(qty.value) || 1; v = v + 1; qty.value = v; };
-            qty.onchange = () => { let v = parseInt(qty.value); if (isNaN(v) || v < 1) qty.value = 1; };
+            dec.onclick = () => { let v = parseFloat(qty.value) || 1; v = Math.max(0.25, v - 0.25); qty.value = v; };
+            inc.onclick = () => { let v = parseFloat(qty.value) || 1; v = v + 0.25; qty.value = v; };
+            qty.onchange = () => { let v = parseFloat(qty.value); if (isNaN(v) || v < 0.25) qty.value = 1; };
         }
     })();
 </script>
