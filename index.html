@@ -14,14 +14,7 @@
     
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
     <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
@@ -237,7 +230,7 @@
     </div>
 </div>
 
-<!-- Tawsaya Modal (توصيات) -->
+<!-- Tawsaya Modal -->
 <div id="tawsayaModal" class="modal">
     <div class="modal-content">
         <h3>توصيات</h3>
@@ -249,7 +242,7 @@
             </div>
         </div>
         <div class="units-buttons" id="tawsayaTypeGroup">
-            <button class="unit-btn active" data-type="kg">كيلو</button>
+            <button class="unit-btn active" data-type="kg">كيلو (kg)</button>
             <button class="unit-btn" data-type="half">نصف كيلو</button>
             <button class="unit-btn" data-type="custom">مخصص</button>
         </div>
@@ -257,16 +250,6 @@
             <div class="field-container">
                 <div class="field-icon"><i class="fas fa-hashtag"></i></div>
                 <input type="number" id="tawsayaCustomQty" step="0.25" min="0.25" value="1">
-                <div class="weight-presets">
-                    <button type="button" class="weight-preset" data-value="0.25">ربع كيلو</button>
-                    <button type="button" class="weight-preset" data-value="0.5">نصف كيلو</button>
-                    <button type="button" class="weight-preset" data-value="1">كيلو</button>
-                    <button type="button" class="weight-preset" data-value="1.5">كيلو ونصف</button>
-                    <button type="button" class="weight-preset" data-value="2">كيلوين</button>
-                    <button type="button" class="weight-preset" data-value="2.5">كيلوين ونصف</button>
-                    <button type="button" class="weight-preset" data-value="3">ثلاثة كيلو</button>
-                    <button type="button" class="weight-preset" data-value="5">خمسة كيلو</button>
-                </div>
                 <span>kg</span>
             </div>
         </div>
@@ -308,38 +291,6 @@
         <div class="modal-buttons">
             <button id="saveEditBtn" class="btn-save">تحديث</button>
             <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- Move Item Modal (نقل المواد) -->
-<div id="moveItemModal" class="modal">
-    <div class="modal-content">
-        <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
-        <div class="modern-field">
-            <label>المادة</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-tag"></i></div>
-                <input id="moveItemName" readonly>
-            </div>
-        </div>
-        <div class="modern-field">
-            <label>نقل إلى القسم</label>
-            <div class="field-container">
-                <div class="field-icon"><i class="fas fa-folder-open"></i></div>
-                <select id="moveTargetSection">
-                    <option value="main">أساسيات</option>
-                    <option value="spices_extra">بهارات اضافية</option>
-                    <option value="roasted">المحمصة</option>
-                    <option value="herbs">الأعشاب</option>
-                    <option value="extra">مواد اضافية</option>
-                    <option value="tawsaya">توصيات</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-buttons">
-            <button id="confirmMoveBtn" class="btn-save">نقل</button>
-            <button id="cancelMoveBtn" class="btn-cancel">إلغاء</button>
         </div>
     </div>
 </div>
@@ -390,17 +341,17 @@
         }, 2000);
         
         window.closeAllModals = () => {
-            let modals = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','moveItemModal','systemMessageModal'];
+            let modals = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','systemMessageModal'];
             modals.forEach(id => { let el = document.getElementById(id); if (el) el.classList.remove('active'); });
         };
         
-        let cancelBtns = ['closeNewModalBtn','closeImportantModalBtn','closeSpicesExtraModalBtn','closeRoastedModalBtn','closeHerbsModalBtn','closeExtraModalBtn','closeBagsModalBtn','closeTawsayaModalBtn','closeEditModalBtn','closeSystemMessageBtn','cancelDeleteBtn','cancelMoveBtn'];
+        let cancelBtns = ['closeNewModalBtn','closeImportantModalBtn','closeSpicesExtraModalBtn','closeRoastedModalBtn','closeHerbsModalBtn','closeExtraModalBtn','closeBagsModalBtn','closeTawsayaModalBtn','closeEditModalBtn','closeSystemMessageBtn','cancelDeleteBtn'];
         cancelBtns.forEach(btnId => {
             let btn = document.getElementById(btnId);
             if (btn) btn.onclick = (e) => { e.preventDefault(); window.closeAllModals(); };
         });
         
-        let modalIds = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','moveItemModal','systemMessageModal'];
+        let modalIds = ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','confirmDeleteModal','systemMessageModal'];
         modalIds.forEach(id => {
             let modal = document.getElementById(id);
             if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) window.closeAllModals(); });
@@ -416,14 +367,6 @@
             });
         });
         
-        document.querySelectorAll('.weight-preset').forEach(btn => {
-            btn.addEventListener('click', function() {
-                let value = parseFloat(this.dataset.value);
-                let qtyInput = document.getElementById('tawsayaCustomQty');
-                if (qtyInput) qtyInput.value = value;
-            });
-        });
-        
         let dec = document.getElementById('newQtyDec');
         let inc = document.getElementById('newQtyInc');
         let qty = document.getElementById('newQuantityValue');
@@ -435,4 +378,4 @@
     })();
 </script>
 </body>
-</html>
+                                                                         </html>
