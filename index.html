@@ -2,288 +2,1390 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="description" content="نظام إدارة المخزون الذكي - مدير المواد مع تقنيات الذكاء الاصطناعي">
-    <title>مدير المواد الذكي | AI Inventory</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icons/favicon.png">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="theme-color" content="#10b981">
+    <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية وتحليلات ذكاء اصطناعي">
+    <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- PWA Icons -->
+    <link rel="manifest" href="/material-manager/manifest.json">
+    <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo-area">
-                <div class="logo-icon">
-                    <i class="fas fa-brain"></i>
-                    <span class="ai-pulse"></span>
-                </div>
-                <h2>مدير<span>المواد</span></h2>
-                <span class="badge-ai">AI v2.0</span>
-            </div>
 
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active" data-page="dashboard">
-                    <i class="fas fa-chart-line"></i>
-                    <span>لوحة التحكم</span>
-                </a>
-                <a href="#" class="nav-item" data-page="inventory">
-                    <i class="fas fa-boxes"></i>
-                    <span>المخزون</span>
-                </a>
-                <a href="#" class="nav-item" data-page="recommendations">
-                    <i class="fas fa-robot"></i>
-                    <span>التوصيات الذكية</span>
-                    <span class="nav-badge" id="recBadge">0</span>
-                </a>
-                <a href="#" class="nav-item" data-page="analytics">
-                    <i class="fas fa-chart-pie"></i>
-                    <span>التحليلات</span>
-                </a>
-                <a href="#" class="nav-item" data-page="settings">
-                    <i class="fas fa-cog"></i>
-                    <span>الإعدادات</span>
-                </a>
-            </nav>
+<!-- Splash Screen -->
+<div id="splashScreen" class="splash">
+    <div class="splash-logo"><i class="fas fa-boxes"></i></div>
+    <h2>مدير المواد</h2>
+    <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
+    <div class="splash-version">نسخة احترافية v7.0</div>
+</div>
 
-            <div class="ai-status">
-                <div class="ai-indicator">
-                    <i class="fas fa-microchip"></i>
-                    <span>AI نشط</span>
-                </div>
-                <div class="ai-memory" id="aiMemory">ذاكرة: 100%</div>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="main-header">
-                <div class="header-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="aiSearch" placeholder="بحث ذكي... (اكتب وسيقترح AI)" autocomplete="off">
-                    <div class="search-suggestions" id="searchSuggestions"></div>
-                </div>
-                <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <button class="btn-icon" id="exportBtn">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button class="btn-icon" id="importBtn">
-                        <i class="fas fa-upload"></i>
-                    </button>
-                    <div class="user-avatar">
-                        <i class="fas fa-user-astronaut"></i>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Dashboard Page -->
-            <div id="dashboardPage" class="page active">
-                <div class="stats-grid">
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><i class="fas fa-cubes"></i></div>
-                        <div class="stat-info">
-                            <h3>إجمالي المواد</h3>
-                            <div class="stat-value" id="totalMaterials">0</div>
-                            <small>مادة مسجلة</small>
-                        </div>
-                    </div>
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><i class="fas fa-weight-hanging"></i></div>
-                        <div class="stat-info">
-                            <h3>الحجم الكلي</h3>
-                            <div class="stat-value" id="totalVolume">0</div>
-                            <small>كيلوجرام</small>
-                        </div>
-                    </div>
-                    <div class="stat-card warning">
-                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div class="stat-info">
-                            <h3>مواد ناقصة</h3>
-                            <div class="stat-value" id="lowStockCount">0</div>
-                            <small>تحتاج إعادة طلب</small>
-                        </div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="stat-info">
-                            <h3>متوسط الكمية</h3>
-                            <div class="stat-value" id="avgQuantity">0</div>
-                            <small>كجم / مادة</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Recommendations Row -->
-                <div class="ai-recommendations">
-                    <div class="section-header">
-                        <i class="fas fa-lightbulb"></i>
-                        <h3>توصيات الذكاء الاصطناعي</h3>
-                        <span class="ai-tag">محدث لحظياً</span>
-                    </div>
-                    <div class="recs-container" id="aiRecommendations">
-                        <div class="rec-placeholder">⏳ جاري تحليل المخزون...</div>
-                    </div>
-                </div>
-
-                <!-- AI Predictions -->
-                <div class="predictions-grid">
-                    <div class="pred-card">
-                        <div class="pred-header">
-                            <i class="fas fa-chart-simple"></i>
-                            <h4>توقع النفاد</h4>
-                        </div>
-                        <div id="predictionsList">جاري التحميل...</div>
-                    </div>
-                    <div class="pred-card">
-                        <div class="pred-header">
-                            <i class="fas fa-ranking-star"></i>
-                            <h4>أولويات الشراء</h4>
-                        </div>
-                        <div id="priorityList">جاري التحميل...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Inventory Page -->
-            <div id="inventoryPage" class="page">
-                <div class="page-header">
-                    <h2><i class="fas fa-warehouse"></i> إدارة المخزون</h2>
-                    <button class="btn-primary" id="openAddModal">
-                        <i class="fas fa-plus"></i>
-                        إضافة مادة
-                    </button>
-                </div>
-
-                <!-- Filters -->
-                <div class="filters-bar">
-                    <select id="categoryFilter" class="filter-select">
-                        <option value="all">كل التصنيفات</option>
-                        <option value="critical">حرجة</option>
-                        <option value="normal">عادية</option>
-                        <option value="stagnant">راكدة</option>
-                    </select>
-                    <button id="sortBtn" class="btn-outline">
-                        <i class="fas fa-arrow-down-wide-short"></i>
-                        ترتيب ذكي (AI)
-                    </button>
-                </div>
-
-                <!-- Materials Table with Drag & Drop -->
-                <div class="table-container">
-                    <table class="materials-table" id="materialsTable">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>المادة</th>
-                                <th>الكمية (كجم)</th>
-                                <th>الحد الأدنى</th>
-                                <th>التصنيف</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="drag-container">
-                            <tr>
-                                <td colspan="7" class="empty-state">
-                                    <i class="fas fa-hand-peace"></i>
-                                    <p>اسحب وأفلت المواد هنا أو اضغط إضافة</p>
-                                    <small>الجدول جاهز للسحب حتى لو كان فارغاً</small>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Recommendations Page (Separate) -->
-            <div id="recommendationsPage" class="page">
-                <div class="page-header">
-                    <h2><i class="fas fa-robot"></i> التوصيات الذكية (غير مصنفة ضمن النواقص)</h2>
-                    <span class="badge-exclusive">خاص</span>
-                </div>
-                <div class="recommendations-list" id="recommendationsList">
-                    <!-- Will be populated by AI -->
-                </div>
-            </div>
-
-            <!-- Analytics Page -->
-            <div id="analyticsPage" class="page">
-                <div class="page-header">
-                    <h2><i class="fas fa-chart-line"></i> التحليلات المتقدمة</h2>
-                </div>
-                <div class="analytics-cards">
-                    <div class="analytics-card">
-                        <h4>📊 توزيع المواد</h4>
-                        <canvas id="distributionChart" width="300" height="200"></canvas>
-                    </div>
-                    <div class="analytics-card">
-                        <h4>📈 اتجاه الاستهلاك</h4>
-                        <div id="consumptionTrend">جاري التحليل...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Page -->
-            <div id="settingsPage" class="page">
-                <div class="page-header">
-                    <h2><i class="fas fa-sliders-h"></i> إعدادات الذكاء الاصطناعي</h2>
-                </div>
-                <div class="settings-group">
-                    <label class="setting-item">
-                        <span>🤖 AI Auto-Complete</span>
-                        <input type="checkbox" id="aiAutoComplete" checked>
-                    </label>
-                    <label class="setting-item">
-                        <span>📈 AI Predictions</span>
-                        <input type="checkbox" id="aiPredictions" checked>
-                    </label>
-                    <label class="setting-item">
-                        <span>⚠️ AI Warnings</span>
-                        <input type="checkbox" id="aiWarnings" checked>
-                    </label>
-                    <button id="resetDataBtn" class="btn-danger">إعادة تعيين المخزون</button>
-                </div>
-            </div>
-        </main>
+<!-- Main App Container -->
+<div id="appContainer" class="app-main" style="display: none;">
+    
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>مدير المواد والمخزون</h1>
+        <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
     </div>
+    
+    <!-- Main Add Button -->
+    <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
+    
+    <!-- Sync Bar -->
+    <div class="sync-bar">
+        <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
+    </div>
+    
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-row">
+            <button id="themeToggle" class="action-btn"><i class="fas fa-moon"></i> الوضع الليلي</button>
+        </div>
+        <div class="toolbar-row">
+            <button id="backupBtn" class="action-btn"><i class="fas fa-download"></i> نسخ احتياطي</button>
+            <button id="restoreBtn" class="action-btn"><i class="fas fa-upload"></i> استعادة</button>
+            <button id="installBtn" class="action-btn install-btn"><i class="fas fa-download"></i> تثبيت</button>
+        </div>
+    </div>
+    
+    <!-- Categories -->
+    <div class="categories-container">
+        <button class="category-card" id="importantProductsBtn">
+            <div class="category-icon"><i class="fas fa-star"></i></div>
+            <div class="category-info"><h3 class="category-title">أساسيات</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+        <button class="category-card" id="spicesExtraBtn">
+            <div class="category-icon"><i class="fas fa-leaf"></i></div>
+            <div class="category-info"><h3 class="category-title">بهارات اضافية</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+        <button class="category-card" id="roastedBtn">
+            <div class="category-icon"><i class="fas fa-fire"></i></div>
+            <div class="category-info"><h3 class="category-title">المحمصة</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+        <button class="category-card" id="herbsBtn">
+            <div class="category-icon"><i class="fas fa-seedling"></i></div>
+            <div class="category-info"><h3 class="category-title">الأعشاب</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+        <button class="category-card" id="extraBtn">
+            <div class="category-icon"><i class="fas fa-plus-circle"></i></div>
+            <div class="category-info"><h3 class="category-title">مواد اضافية</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+        <button class="category-card" id="bagsManagerBtn">
+            <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
+            <div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+        <button class="category-card" id="tawsayaQuickBtn">
+            <div class="category-icon"><i class="fas fa-gift"></i></div>
+            <div class="category-info"><h3 class="category-title">توصيات</h3></div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
+        </button>
+    </div>
+    
+    <!-- Materials Container -->
+    <div id="materialsContainer"></div>
+    
+    <!-- AI Stats Section -->
+    <div class="ai-stats-section">
+        <div class="ai-stats-header">
+            <i class="fas fa-brain"></i>
+            <h3>التحليل الذكي للمخزون</h3>
+            <div class="ai-badge">AI</div>
+        </div>
+        <div class="ai-stats-grid">
+            <div class="ai-stat-card">
+                <div class="ai-stat-icon"><i class="fas fa-cubes"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">إجمالي المواد</span>
+                    <span class="ai-stat-value" id="totalMaterialsCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
+                </div>
+            </div>
+            <div class="ai-stat-card">
+                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">الحجم الكلي</span>
+                    <span class="ai-stat-value" id="totalQuantityValue">0</span>
+                    <span class="ai-stat-unit">kg</span>
+                </div>
+            </div>
+            <div class="ai-stat-card warning">
+                <div class="ai-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">مواد ناقصة</span>
+                    <span class="ai-stat-value" id="lowStockCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
+                </div>
+            </div>
+            <div class="ai-stat-card success">
+                <div class="ai-stat-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">متوسط الكمية</span>
+                    <span class="ai-stat-value" id="avgQuantityValue">0</span>
+                    <span class="ai-stat-unit">kg</span>
+                </div>
+            </div>
+        </div>
+        <div class="ai-insights" id="aiInsights">
+            <i class="fas fa-robot"></i>
+            <span>جاري تحليل البيانات...</span>
+        </div>
+    </div>
+    
+    <!-- Clear All Button -->
+    <button id="clearAllBtn" class="clear-full-btn"><i class="fas fa-trash-alt"></i> مسح جميع المواد</button>
+</div>
 
-    <!-- Add/Edit Modal -->
-    <div id="itemModal" class="modal">
-        <div class="modal-content glass">
-            <div class="modal-header">
-                <h3 id="modalTitle">إضافة مادة جديدة</h3>
-                <button class="close-modal">&times;</button>
+<!-- Sync Status Bar -->
+<div id="syncStatusBar" class="sync-status-bar">
+    <div class="sync-indicator">
+        <div id="syncDot" class="sync-dot"></div>
+        <span id="syncStatusText">جاري التحميل...</span>
+    </div>
+    <span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span>
+    <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- New Item Modal -->
+<div id="newItemModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
+        <div class="modern-field">
+            <label>اسم المادة</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-tag"></i></div>
+                <input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون...">
             </div>
-            <div class="modal-body">
-                <input type="text" id="materialName" placeholder="اسم المادة" autocomplete="off">
-                <div class="ai-suggestion" id="nameSuggestion"></div>
-                <input type="number" id="materialQuantity" placeholder="الكمية (كجم)" step="0.01">
-                <input type="number" id="materialMin" placeholder="الحد الأدنى (كجم)" step="0.01" value="10">
-                <select id="materialCategory">
-                    <option value="normal">عادية</option>
-                    <option value="critical">حرجة</option>
-                    <option value="stagnant">راكدة</option>
+        </div>
+        <div class="modern-field">
+            <label>الكمية</label>
+            <div class="quantity-field-container">
+                <select id="newUnitSelect" class="unit-select-input">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
                 </select>
-                <div class="ai-warning" id="quantityWarning"></div>
+                <div class="qty-picker">
+                    <button type="button" class="qty-dec-btn" id="newQtyDec">-</button>
+                    <input type="number" id="newQuantityValue" class="qty-input" step="0.25" min="0.25" value="1">
+                    <button type="button" class="qty-inc-btn" id="newQtyInc">+</button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary cancel-modal">إلغاء</button>
-                <button class="btn-primary" id="saveMaterialBtn">حفظ</button>
+        </div>
+        <div class="modal-buttons">
+            <button id="saveNewItemBtn" class="btn-save">إضافة</button>
+            <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Important Spices Modal -->
+<div id="importantModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-star"></i> أساسيات</h3>
+        <input type="text" id="importantSearchInput" class="search-input" placeholder="بحث...">
+        <div id="importantListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="saveImportantBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closeImportantModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Extra Spices Modal -->
+<div id="spicesExtraModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-leaf"></i> بهارات اضافية</h3>
+        <input type="text" id="spicesExtraSearchInput" class="search-input" placeholder="بحث...">
+        <div id="spicesExtraListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="saveSpicesExtraBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closeSpicesExtraModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Roasted Modal -->
+<div id="roastedModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-fire"></i> المحمصة</h3>
+        <input type="text" id="roastedSearchInput" class="search-input" placeholder="بحث...">
+        <div id="roastedListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="saveRoastedBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closeRoastedModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Herbs Modal -->
+<div id="herbsModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-seedling"></i> الأعشاب</h3>
+        <input type="text" id="herbsSearchInput" class="search-input" placeholder="بحث...">
+        <div id="herbsListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="saveHerbsBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closeHerbsModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Extra Items Modal -->
+<div id="extraModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-box"></i> مواد اضافية</h3>
+        <input type="text" id="extraSearchInput" class="search-input" placeholder="بحث...">
+        <div id="extraListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="saveExtraBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closeExtraModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bags Modal -->
+<div id="bagsModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-shopping-bag"></i> أكياس تعبئة</h3>
+        <input type="text" id="bagsSearchInput" class="search-input" placeholder="بحث...">
+        <div id="bagsListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="saveBagsBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closeBagsModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Tawsaya Modal -->
+<div id="tawsayaModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-gift"></i> إضافة توصية</h3>
+        <div class="modern-field">
+            <label>المنتج</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-box"></i></div>
+                <input id="tawsayaName" placeholder="اسم المنتج...">
+            </div>
+        </div>
+        <div class="units-buttons" id="tawsayaTypeGroup">
+            <button class="unit-btn active" data-type="kg">كيلو</button>
+            <button class="unit-btn" data-type="half">نصف كيلو</button>
+            <button class="unit-btn" data-type="custom">مخصص</button>
+        </div>
+        <div id="tawsayaCustomQtyGroup" style="display:none">
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-hashtag"></i></div>
+                <input type="number" id="tawsayaCustomQty" step="0.25" min="0.25" value="1">
+                <span>kg</span>
+            </div>
+            <div class="weight-presets">
+                <button type="button" class="weight-preset" data-value="0.25">ربع كيلو</button>
+                <button type="button" class="weight-preset" data-value="0.5">نصف كيلو</button>
+                <button type="button" class="weight-preset" data-value="1">كيلو</button>
+                <button type="button" class="weight-preset" data-value="1.5">كيلو ونصف</button>
+                <button type="button" class="weight-preset" data-value="2">كيلوين</button>
+                <button type="button" class="weight-preset" data-value="2.5">كيلوين ونصف</button>
+                <button type="button" class="weight-preset" data-value="3">ثلاثة كيلو</button>
+                <button type="button" class="weight-preset" data-value="5">خمسة كيلو</button>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button id="saveTawsayaBtn" class="btn-save">إضافة</button>
+            <button id="closeTawsayaModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
+        <div class="modern-field">
+            <label>المادة</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-tag"></i></div>
+                <input id="editMaterialName" readonly>
+            </div>
+        </div>
+        <div class="modern-field">
+            <label>الكمية الجديدة</label>
+            <div class="edit-quantity-field">
+                <select id="editUnitSelect" class="unit-select-input">
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
+                </select>
+                <div class="field-container" style="flex:1">
+                    <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
+                    <input type="number" id="editQuantityValue" step="0.25">
+                </div>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button id="saveEditBtn" class="btn-save">تحديث</button>
+            <button id="closeEditModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Move Item Modal -->
+<div id="moveItemModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
+        <div class="modern-field">
+            <label>المادة المراد نقلها</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-tag"></i></div>
+                <input id="moveItemName" readonly>
+            </div>
+        </div>
+        <div class="modern-field">
+            <label>نقل إلى القسم</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-folder-open"></i></div>
+                <select id="moveTargetSection">
+                    <option value="main">أساسيات</option>
+                    <option value="spices_extra">بهارات اضافية</option>
+                    <option value="roasted">المحمصة</option>
+                    <option value="herbs">الأعشاب</option>
+                    <option value="extra">مواد اضافية</option>
+                    <option value="tawsaya">توصيات</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button id="confirmMoveBtn" class="btn-save">نقل</button>
+            <button id="cancelMoveBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="confirmDeleteModal" class="modal">
+    <div class="confirm-card">
+        <div class="confirm-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>تأكيد الحذف</h3>
+        </div>
+        <div class="confirm-body">
+            <p id="confirmDeleteMessage">هل أنت متأكد من حذف هذه المادة؟</p>
+            <div class="confirm-buttons">
+                <button id="confirmDeleteBtn" class="btn-confirm">نعم، احذف</button>
+                <button id="cancelDeleteBtn" class="btn-cancel">إلغاء</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- AI Toast Container -->
-    <div id="aiToast" class="ai-toast"></div>
+<!-- System Message Modal -->
+<div id="systemMessageModal" class="modal">
+    <div class="modal-content" style="text-align:center">
+        <i class="fas fa-info-circle" style="font-size:3rem;color:#10b981;margin-bottom:1rem"></i>
+        <h3 id="systemMessageTitle">رسالة</h3>
+        <p id="systemMessageText" style="margin:1rem 0"></p>
+        <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
+    </div>
+</div>
 
-    <script src="js/app.js"></script>
+<!-- ==================== SCRIPTS ==================== -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+
+<!-- Firebase Config -->
+<script src="/material-manager/js/firebase-config.js"></script>
+
+<!-- Main App Script -->
+<script>
+// ==================== المتغيرات العامة ====================
+let allMaterials = [];
+let unsubscribe = null;
+let currentEditId = null;
+let autoSyncInterval = null;
+let longPressTimer = null;
+
+// ==================== القوائم الكاملة ====================
+const importantItemsList = [
+    "شطة حلوة", "شطة حدة وسط", "شطة بابريكا مدخنة", "توابل هندية", "فلفل اسود ناعم", "توم ناعم", "بصل ناعم",
+    "جوز هند خشن", "حليب نصف دسم", "جوز امريكي", "حبة البركة", "زنجبيل خشن", "زنجبيل ناعم", "سمسم محمص",
+    "سماق ناعم", "شاورما", "كركدية", "كاري", "كربونة الصوديوم", "كبسة خليجية", "كبسة ناعمة", "كركم",
+    "كريمة محلاية", "كاكاو نخب اول", "كاكاو نخب ثاني", "كمون حب", "كمون ناعم", "قرفة عيدان", "قرفة ناعمة",
+    "قرفة سيجار", "كزبرة ناعمة", "كزبرة حب", "قرنفل حب", "قرنفل ناعم", "اشلميش", "فستق ني ارجنتيني",
+    "ملح صيني", "ملح ليمون", "ماجي اصفر", "ماجي ابيض", "مشكلة", "مشكلة بيضاء", "نشا مصري", "هيل حب خشن",
+    "هيل ناعم", "نعنع يابس", "يانسون حب", "شوفان", "تمر سري"
+];
+
+const spicesExtraItemsList = [
+    "بطاطا", "بروستد", "زعتر اوريغانو", "بيتزا", "جوزة الطيب حب", "جوزة الطيب ناعمة", "حلبه حب", "حلبه ناعمة",
+    "خل نكهة", "خميرة فرط", "سدر ناعم", "سكر نبات", "سمك", "سجق", "سحلب", "سلطة", "شمرا ناعمة", "شمرا حب",
+    "شيش", "شاورما", "كريسبي", "كليجة", "كاري", "كربونة الصوديوم", "كراوية", "مجروش الكعك", "كلس خشن",
+    "قلي", "فلافل", "فاهيتا", "لبان الدكر", "لحمة عجل", "لومي", "لومي اسود", "مندي", "مكسيكي", "مشاوي",
+    "مدخنة", "محاشي", "محلب", "نشا درس", "نعنع يابس", "يانسون ناعم", "يانسون نجمة", "ورق غار", "صفار زعفران",
+    "صفار بيض", "فلفل اسود حب", "فلفل ابيض ناعم", "توابل هندية حارة", "طحينية", "رمان مجفف", "اندومي",
+    "رز مطحون", "ماجي حبيبات", "شمرا حب"
+];
+
+const roastedItemsList = [
+    "دوار شمس ملكي", "دوار شمس شبح", "فستق مدخن", "فستق مملح", "بذر كوسا", "بذر ابيض عريض", "بذر اصفر مصري",
+    "فستق ني ارجنتيني", "لوز بقشرو", "لوز ني", "كاجو ني", "بذور الشيا", "بذور الكتان", "بذور اليقطين",
+    "بذر الرشاد", "ذرة الفوشار", "خل نكهة", "جنبة نكهة", "كتشب نكهة", "بابريكا نكهة", "زعتر اخضر", "زعتر احمر",
+    "كابتشينو", "ميلو", "هوت شوكلت"
+];
+
+const herbsItemsList = [
+    "زهرة الالماسة", "زهورات مشكلة", "زعتر بري", "كركدية", "ميرمية", "ورد جوري", "عشرق", "مرتكوش", "سنامكي",
+    "بابونج", "اكليل الجبل"
+];
+
+const extraItemsList = [
+    "ماجي ظروف", "مكعبات ماجي", "ماجي شرائح", "خميره ظروفة", "مستكه", "فانيلا ظروفة الريم", "فانيلا فرط",
+    "بكمبودر ريم", "بكمبودر فرط", "تمر عجوه", "تمر سري"
+];
+
+const bagTypesList = ["شفاف 10×12","شفاف 20×12","شفاف 10×20","شفاف 25×17","شفاف 20×30","شفاف 35×25","صيدلية","أسود 30","أسود 35","أسود 40","أسود 45"];
+
+// ==================== دوال مساعدة ====================
+function showToast(msg, isErr = false) {
+    let t = document.querySelector('.toast');
+    if (t) t.remove();
+    let div = document.createElement('div');
+    div.className = 'toast';
+    div.style.background = isErr ? '#ef4444' : '#10b981';
+    div.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 2500);
+}
+
+function showSystemMessage(title, message, type = 'info') {
+    const modal = document.getElementById('systemMessageModal');
+    const titleEl = document.getElementById('systemMessageTitle');
+    const textEl = document.getElementById('systemMessageText');
+    
+    if (titleEl) titleEl.innerText = title;
+    if (textEl) textEl.innerText = message;
+    
+    const icon = modal?.querySelector('.fa-info-circle');
+    if (icon) {
+        if (type === 'error') icon.style.color = '#ef4444';
+        else if (type === 'warning') icon.style.color = '#f59e0b';
+        else icon.style.color = '#10b981';
+    }
+    
+    if (modal) modal.classList.add('active');
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+}
+
+function formatDisplay(mat) {
+    const u = mat.unitType;
+    if (u === 'kg') return `${mat.quantity} kg`;
+    if (u === 'half') return `نصف كيلو`;
+    if (u === 'quarter') return `ربع كيلو`;
+    if (u === 'oke') return `لوقية`;
+    if (u === 'box') return `${mat.quantity} علبة`;
+    if (u === 'piece') return `${mat.quantity} عدد`;
+    if (u === 'bag') return `${mat.quantity} كيس`;
+    return `${mat.quantity} kg`;
+}
+
+function getSectionName(section) {
+    const sections = {
+        'main': 'أساسيات',
+        'spices_extra': 'بهارات اضافية',
+        'roasted': 'المحمصة',
+        'herbs': 'الأعشاب',
+        'extra': 'مواد اضافية',
+        'tawsaya': 'توصيات'
+    };
+    return sections[section] || section;
+}
+
+// ==================== محرك الذكاء الاصطناعي ====================
+class AIEngine {
+    constructor() {
+        this.learningData = this.loadLearningData();
+        this.seasonalFactors = this.getSeasonalFactors();
+    }
+
+    loadLearningData() {
+        const saved = localStorage.getItem('ai_learning_data');
+        return saved ? JSON.parse(saved) : {
+            consumptionPatterns: {},
+            popularCombinations: {},
+            restockFrequency: {},
+            wastePredictions: {}
+        };
+    }
+
+    saveLearningData() {
+        localStorage.setItem('ai_learning_data', JSON.stringify(this.learningData));
+    }
+
+    getSeasonalFactors() {
+        const month = new Date().getMonth();
+        if (month >= 7 && month <= 9) return { multiplier: 1.5, reason: "موسم رمضان والأعياد" };
+        if (month >= 10 && month <= 11) return { multiplier: 1.3, reason: "الشتاء والمشروبات الساخنة" };
+        if (month >= 4 && month <= 6) return { multiplier: 0.8, reason: "الصيف والإقبال أقل" };
+        return { multiplier: 1.0, reason: "الموسم العادي" };
+    }
+
+    convertToKg(quantity, unit) {
+        if (!quantity) return 0;
+        const conversions = {
+            'kg': 1, 'half': 0.5, 'quarter': 0.25,
+            'oke': 0.128, 'box': 0.5, 'piece': 0.1, 'bag': 0.05
+        };
+        return quantity * (conversions[unit] || 1);
+    }
+
+    getConsumptionRate(materialName) {
+        const rates = {
+            'ملح': 0.5, 'فلفل اسود ناعم': 0.3, 'كمون ناعم': 0.4, 'كركم': 0.2,
+            'زنجبيل ناعم': 0.15, 'قرفة ناعمة': 0.2, 'هيل ناعم': 0.1
+        };
+        return rates[materialName] || 0.1;
+    }
+
+    analyzeInventory(materials) {
+        const analysis = {
+            lowStock: [], criticalStock: [], excessStock: [],
+            recommendations: [], predictions: [], insights: [],
+            smartAlerts: [], wasteRisks: []
+        };
+
+        let totalQuantity = 0;
+        let validMaterialsCount = 0;
+
+        for (const material of materials) {
+            if (material.priority === 'tawsaya') continue;
+            
+            const quantity = this.convertToKg(material.quantity, material.unitType);
+            totalQuantity += quantity;
+            validMaterialsCount++;
+            
+            if (quantity === 0 || quantity === null) {
+                analysis.lowStock.push({ name: material.name, quantity: 0, status: 'فارغ' });
+                analysis.criticalStock.push({ name: material.name, reason: 'مادة مفقودة' });
+            } else if (quantity < 0.5) {
+                analysis.lowStock.push({ name: material.name, quantity, status: 'حرج' });
+                analysis.criticalStock.push({ name: material.name, reason: 'أقل من نصف كيلو' });
+            } else if (quantity < 1) {
+                analysis.lowStock.push({ name: material.name, quantity, status: 'منخفض' });
+            } else if (quantity > 10) {
+                analysis.excessStock.push({ name: material.name, quantity, reason: 'كمية كبيرة' });
+            }
+        }
+
+        analysis.totalQuantity = totalQuantity;
+        analysis.totalMaterials = validMaterialsCount;
+        analysis.avgQuantity = validMaterialsCount > 0 ? (totalQuantity / validMaterialsCount).toFixed(1) : 0;
+        analysis.insights = this.generateInsights(analysis);
+        
+        return analysis;
+    }
+
+    generateInsights(analysis) {
+        const insights = [];
+        
+        if (analysis.totalMaterials === 0) {
+            insights.push('✨ ابدأ بإضافة المواد إلى المخزون');
+        } else if (analysis.lowStock.length === 0) {
+            insights.push('🎉 ممتاز! المخزون متوازن ولا توجد مواد ناقصة');
+        } else {
+            insights.push(`🔔 لديك ${analysis.lowStock.length} مادة بحاجة لإعادة تعبئة`);
+        }
+        
+        const tips = ['💡 رتّب المواد حسب تاريخ الصلاحية', '📦 المواد الأكثر استهلاكاً ضعها في مكان سهل'];
+        insights.push(tips[Math.floor(Math.random() * tips.length)]);
+        
+        return insights;
+    }
+
+    learnFromAction(action, material, details) {
+        if (!this.learningData.consumptionPatterns[material]) {
+            this.learningData.consumptionPatterns[material] = [];
+        }
+        this.learningData.consumptionPatterns[material].push({ action, details, timestamp: Date.now() });
+        this.saveLearningData();
+    }
+}
+
+const aiEngine = new AIEngine();
+
+// ==================== تحليل المخزون ====================
+function calculateAIMetrics() {
+    const analysis = aiEngine.analyzeInventory(allMaterials);
+    
+    document.getElementById('totalMaterialsCount').innerText = analysis.totalMaterials;
+    document.getElementById('totalQuantityValue').innerText = analysis.totalQuantity.toFixed(1);
+    document.getElementById('lowStockCount').innerText = analysis.lowStock.length;
+    document.getElementById('avgQuantityValue').innerText = analysis.avgQuantity;
+    
+    const insightsContainer = document.getElementById('aiInsights');
+    if (insightsContainer) {
+        insightsContainer.innerHTML = `<i class="fas fa-robot"></i><span>${analysis.insights.join(' • ')}</span>`;
+    }
+    
+    if (analysis.criticalStock.length > 0 && analysis.lowStock.length > 0) {
+        const criticalNames = analysis.criticalStock.slice(0, 3).map(c => c.name).join('، ');
+        if (criticalNames) {
+            showSystemMessage('تنبيه ذكي', `⚠️ المواد التالية ناقصة: ${criticalNames}. يرجى إعادة تعبئتها.`, 'warning');
+        }
+    }
+}
+
+// ==================== نقل المادة ====================
+function openMoveModal(materialId, materialName, currentSection) {
+    currentEditId = materialId;
+    document.getElementById('moveItemName').value = materialName;
+    document.getElementById('moveTargetSection').value = currentSection;
+    document.getElementById('moveItemModal').classList.add('active');
+}
+
+async function moveMaterialToSection() {
+    if (!currentEditId) return;
+    const targetSection = document.getElementById('moveTargetSection').value;
+    const material = allMaterials.find(m => m.id === currentEditId);
+    
+    try {
+        await materialsCollection.doc(currentEditId).update({ priority: targetSection });
+        aiEngine.learnFromAction('move', material?.name || '', { from: material?.priority, to: targetSection });
+        showToast(`✓ تم نقل المادة إلى ${getSectionName(targetSection)}`);
+        document.getElementById('moveItemModal').classList.remove('active');
+        currentEditId = null;
+        if (unsubscribe) unsubscribe();
+        startListener();
+    } catch(e) {
+        showToast("❌ فشل نقل المادة", true);
+    }
+}
+
+function setupLongPress() {
+    document.querySelectorAll('.material-card').forEach(card => {
+        const handleLongPress = () => {
+            const id = card.getAttribute('data-id');
+            const nameSpan = card.querySelector('.card-title span');
+            const name = nameSpan ? nameSpan.innerText : '';
+            const section = card.getAttribute('data-section');
+            if (id) openMoveModal(id, name, section);
+        };
+        
+        let timer;
+        card.addEventListener('touchstart', (e) => { timer = setTimeout(handleLongPress, 800); });
+        card.addEventListener('touchend', () => clearTimeout(timer));
+        card.addEventListener('touchmove', () => clearTimeout(timer));
+        card.addEventListener('mousedown', (e) => { e.preventDefault(); timer = setTimeout(handleLongPress, 800); });
+        card.addEventListener('mouseup', () => clearTimeout(timer));
+        card.addEventListener('mouseleave', () => clearTimeout(timer));
+    });
+}
+
+// ==================== إدارة التحديدات ====================
+const selectionState = { important: new Map(), spices: new Map(), roasted: new Map(), herbs: new Map(), extra: new Map(), bags: new Map() };
+
+function saveSelection(type, index, isChecked) {
+    if (!selectionState[type]) selectionState[type] = new Map();
+    selectionState[type].set(index, isChecked);
+}
+
+function loadSelection(type) { return selectionState[type] || new Map(); }
+function clearSelection(type) { if (selectionState[type]) selectionState[type].clear(); }
+
+// ==================== عرض القوائم ====================
+function renderImportantFiltered(filter = '') {
+    const container = document.getElementById('importantListContainer');
+    if (!container) return;
+    const filtered = importantItemsList.filter(item => item.includes(filter));
+    const saved = loadSelection('important');
+    container.innerHTML = '';
+    filtered.forEach(item => {
+        const origIdx = importantItemsList.indexOf(item);
+        const isChecked = saved.get(origIdx) || false;
+        container.innerHTML += `
+            <div class="modern-item-card">
+                <div class="item-info">
+                    <input type="checkbox" class="important-checkbox" data-name="${escapeHtml(item)}" data-index="${origIdx}" ${isChecked ? 'checked' : ''}>
+                    <span class="item-name">${escapeHtml(item)}</span>
+                </div>
+                <div class="quantity-modern">
+                    <select class="qty-select important-unit" data-index="${origIdx}">
+                        <option value="kg">كيلو</option><option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option><option value="oke">لوقية</option>
+                        <option value="box">علبة</option><option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-controls" data-type="important" data-index="${origIdx}">
+                        <button class="qty-dec-btn" data-idx="${origIdx}" data-type="important">-</button>
+                        <input type="number" class="qty-value-modern important-qty" data-idx="${origIdx}" value="1">
+                        <button class="qty-inc-btn" data-idx="${origIdx}" data-type="important">+</button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    attachItemEvents('important');
+    document.querySelectorAll('#importantListContainer .important-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => saveSelection('important', parseInt(e.target.dataset.index), e.target.checked));
+    });
+}
+
+function renderSpicesExtraFiltered(filter = '') {
+    const container = document.getElementById('spicesExtraListContainer');
+    if (!container) return;
+    const filtered = spicesExtraItemsList.filter(item => item.includes(filter));
+    const saved = loadSelection('spices');
+    container.innerHTML = '';
+    filtered.forEach(item => {
+        const origIdx = spicesExtraItemsList.indexOf(item);
+        const isChecked = saved.get(origIdx) || false;
+        container.innerHTML += `
+            <div class="modern-item-card">
+                <div class="item-info">
+                    <input type="checkbox" class="spices-checkbox" data-name="${escapeHtml(item)}" data-index="${origIdx}" ${isChecked ? 'checked' : ''}>
+                    <span class="item-name">${escapeHtml(item)}</span>
+                </div>
+                <div class="quantity-modern">
+                    <select class="qty-select spices-unit" data-index="${origIdx}">
+                        <option value="kg">كيلو</option><option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option><option value="oke">لوقية</option>
+                        <option value="box">علبة</option><option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-controls" data-type="spices" data-index="${origIdx}">
+                        <button class="qty-dec-btn" data-idx="${origIdx}" data-type="spices">-</button>
+                        <input type="number" class="qty-value-modern spices-qty" data-idx="${origIdx}" value="1">
+                        <button class="qty-inc-btn" data-idx="${origIdx}" data-type="spices">+</button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    attachItemEvents('spices');
+    document.querySelectorAll('#spicesExtraListContainer .spices-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => saveSelection('spices', parseInt(e.target.dataset.index), e.target.checked));
+    });
+}
+
+function renderRoastedFiltered(filter = '') {
+    const container = document.getElementById('roastedListContainer');
+    if (!container) return;
+    const filtered = roastedItemsList.filter(item => item.includes(filter));
+    const saved = loadSelection('roasted');
+    container.innerHTML = '';
+    filtered.forEach(item => {
+        const origIdx = roastedItemsList.indexOf(item);
+        const isChecked = saved.get(origIdx) || false;
+        container.innerHTML += `
+            <div class="modern-item-card">
+                <div class="item-info">
+                    <input type="checkbox" class="roasted-checkbox" data-name="${escapeHtml(item)}" data-index="${origIdx}" ${isChecked ? 'checked' : ''}>
+                    <span class="item-name">${escapeHtml(item)}</span>
+                </div>
+                <div class="quantity-modern">
+                    <select class="qty-select roasted-unit" data-index="${origIdx}">
+                        <option value="kg">كيلو</option><option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option><option value="oke">لوقية</option>
+                        <option value="box">علبة</option><option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-controls" data-type="roasted" data-index="${origIdx}">
+                        <button class="qty-dec-btn" data-idx="${origIdx}" data-type="roasted">-</button>
+                        <input type="number" class="qty-value-modern roasted-qty" data-idx="${origIdx}" value="1">
+                        <button class="qty-inc-btn" data-idx="${origIdx}" data-type="roasted">+</button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    attachItemEvents('roasted');
+    document.querySelectorAll('#roastedListContainer .roasted-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => saveSelection('roasted', parseInt(e.target.dataset.index), e.target.checked));
+    });
+}
+
+function renderHerbsFiltered(filter = '') {
+    const container = document.getElementById('herbsListContainer');
+    if (!container) return;
+    const filtered = herbsItemsList.filter(item => item.includes(filter));
+    const saved = loadSelection('herbs');
+    container.innerHTML = '';
+    filtered.forEach(item => {
+        const origIdx = herbsItemsList.indexOf(item);
+        const isChecked = saved.get(origIdx) || false;
+        container.innerHTML += `
+            <div class="modern-item-card">
+                <div class="item-info">
+                    <input type="checkbox" class="herbs-checkbox" data-name="${escapeHtml(item)}" data-index="${origIdx}" ${isChecked ? 'checked' : ''}>
+                    <span class="item-name">${escapeHtml(item)}</span>
+                </div>
+                <div class="quantity-modern">
+                    <select class="qty-select herbs-unit" data-index="${origIdx}">
+                        <option value="kg">كيلو</option><option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option><option value="oke">لوقية</option>
+                        <option value="box">علبة</option><option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-controls" data-type="herbs" data-index="${origIdx}">
+                        <button class="qty-dec-btn" data-idx="${origIdx}" data-type="herbs">-</button>
+                        <input type="number" class="qty-value-modern herbs-qty" data-idx="${origIdx}" value="1">
+                        <button class="qty-inc-btn" data-idx="${origIdx}" data-type="herbs">+</button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    attachItemEvents('herbs');
+    document.querySelectorAll('#herbsListContainer .herbs-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => saveSelection('herbs', parseInt(e.target.dataset.index), e.target.checked));
+    });
+}
+
+function renderExtraFiltered(filter = '') {
+    const container = document.getElementById('extraListContainer');
+    if (!container) return;
+    const filtered = extraItemsList.filter(item => item.includes(filter));
+    const saved = loadSelection('extra');
+    container.innerHTML = '';
+    filtered.forEach(item => {
+        const origIdx = extraItemsList.indexOf(item);
+        const isChecked = saved.get(origIdx) || false;
+        container.innerHTML += `
+            <div class="modern-item-card">
+                <div class="item-info">
+                    <input type="checkbox" class="extra-checkbox" data-name="${escapeHtml(item)}" data-index="${origIdx}" ${isChecked ? 'checked' : ''}>
+                    <span class="item-name">${escapeHtml(item)}</span>
+                </div>
+                <div class="quantity-modern">
+                    <select class="qty-select extra-unit" data-index="${origIdx}">
+                        <option value="kg">كيلو</option><option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option><option value="oke">لوقية</option>
+                        <option value="box">علبة</option><option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-controls" data-type="extra" data-index="${origIdx}">
+                        <button class="qty-dec-btn" data-idx="${origIdx}" data-type="extra">-</button>
+                        <input type="number" class="qty-value-modern extra-qty" data-idx="${origIdx}" value="1">
+                        <button class="qty-inc-btn" data-idx="${origIdx}" data-type="extra">+</button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    attachItemEvents('extra');
+    document.querySelectorAll('#extraListContainer .extra-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => saveSelection('extra', parseInt(e.target.dataset.index), e.target.checked));
+    });
+}
+
+function renderBags() {
+    const container = document.getElementById('bagsListContainer');
+    if (!container) return;
+    const saved = loadSelection('bags');
+    container.innerHTML = '';
+    bagTypesList.forEach((bag, idx) => {
+        const isChecked = saved.get(idx) || false;
+        container.innerHTML += `
+            <div class="modern-item-card">
+                <div class="item-info">
+                    <input type="checkbox" class="bag-checkbox" data-name="${escapeHtml(bag)}" data-index="${idx}" ${isChecked ? 'checked' : ''}>
+                    <span class="item-name">${escapeHtml(bag)}</span>
+                </div>
+            </div>`;
+    });
+    document.querySelectorAll('#bagsListContainer .bag-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => saveSelection('bags', parseInt(e.target.dataset.index), e.target.checked));
+    });
+}
+
+function attachItemEvents(type) {
+    document.querySelectorAll(`.qty-dec-btn[data-type="${type}"]`).forEach(btn => {
+        btn.onclick = () => {
+            const idx = parseInt(btn.dataset.idx);
+            const input = document.querySelector(`.${type}-qty[data-idx="${idx}"]`);
+            if (input) input.value = Math.max(1, (parseInt(input.value) || 1) - 1);
+        };
+    });
+    document.querySelectorAll(`.qty-inc-btn[data-type="${type}"]`).forEach(btn => {
+        btn.onclick = () => {
+            const idx = parseInt(btn.dataset.idx);
+            const input = document.querySelector(`.${type}-qty[data-idx="${idx}"]`);
+            if (input) input.value = (parseInt(input.value) || 1) + 1;
+        };
+    });
+}
+
+// ==================== دوال الإضافة ====================
+async function addSelectedImportant() {
+    const items = [];
+    document.querySelectorAll('#importantListContainer .important-checkbox:checked').forEach(cb => {
+        const name = cb.dataset.name;
+        const idx = parseInt(cb.dataset.index);
+        const unit = document.querySelector(`.important-unit[data-index="${idx}"]`)?.value || 'kg';
+        let qty = 1;
+        if (unit === 'half') qty = 0.5;
+        else if (unit === 'quarter') qty = 0.25;
+        else if (unit === 'oke') qty = 0.2;
+        else qty = parseFloat(document.querySelector(`.important-qty[data-idx="${idx}"]`)?.value) || 1;
+        items.push({ name, quantity: qty, unitType: unit });
+    });
+    if (items.length === 0) { showToast("⭐ اختر مادة", true); return; }
+    try {
+        const batch = db.batch();
+        items.forEach(it => {
+            batch.set(materialsCollection.doc(), { name: it.name, unitType: it.unitType, quantity: it.quantity, notes: "أساسيات", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} مادة`);
+        document.getElementById('importantModal').classList.remove('active');
+        clearSelection('important');
+        renderImportantFiltered('');
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function addSelectedSpicesExtra() {
+    const items = [];
+    document.querySelectorAll('#spicesExtraListContainer .spices-checkbox:checked').forEach(cb => {
+        const name = cb.dataset.name;
+        const idx = parseInt(cb.dataset.index);
+        const unit = document.querySelector(`.spices-unit[data-index="${idx}"]`)?.value || 'kg';
+        let qty = 1;
+        if (unit === 'half') qty = 0.5;
+        else if (unit === 'quarter') qty = 0.25;
+        else if (unit === 'oke') qty = 0.2;
+        else qty = parseFloat(document.querySelector(`.spices-qty[data-idx="${idx}"]`)?.value) || 1;
+        items.push({ name, quantity: qty, unitType: unit });
+    });
+    if (items.length === 0) { showToast("🌿 اختر بهاراً", true); return; }
+    try {
+        const batch = db.batch();
+        items.forEach(it => {
+            batch.set(materialsCollection.doc(), { name: it.name, unitType: it.unitType, quantity: it.quantity, notes: "بهارات اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "spices_extra" });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} بهار`);
+        document.getElementById('spicesExtraModal').classList.remove('active');
+        clearSelection('spices');
+        renderSpicesExtraFiltered('');
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function addSelectedRoasted() {
+    const items = [];
+    document.querySelectorAll('#roastedListContainer .roasted-checkbox:checked').forEach(cb => {
+        const name = cb.dataset.name;
+        const idx = parseInt(cb.dataset.index);
+        const unit = document.querySelector(`.roasted-unit[data-index="${idx}"]`)?.value || 'kg';
+        let qty = 1;
+        if (unit === 'half') qty = 0.5;
+        else if (unit === 'quarter') qty = 0.25;
+        else if (unit === 'oke') qty = 0.2;
+        else qty = parseFloat(document.querySelector(`.roasted-qty[data-idx="${idx}"]`)?.value) || 1;
+        items.push({ name, quantity: qty, unitType: unit });
+    });
+    if (items.length === 0) { showToast("🔥 اختر منتجاً", true); return; }
+    try {
+        const batch = db.batch();
+        items.forEach(it => {
+            batch.set(materialsCollection.doc(), { name: it.name, unitType: it.unitType, quantity: it.quantity, notes: "محمصة", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "roasted" });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} منتج`);
+        document.getElementById('roastedModal').classList.remove('active');
+        clearSelection('roasted');
+        renderRoastedFiltered('');
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function addSelectedHerbs() {
+    const items = [];
+    document.querySelectorAll('#herbsListContainer .herbs-checkbox:checked').forEach(cb => {
+        const name = cb.dataset.name;
+        const idx = parseInt(cb.dataset.index);
+        const unit = document.querySelector(`.herbs-unit[data-index="${idx}"]`)?.value || 'kg';
+        let qty = 1;
+        if (unit === 'half') qty = 0.5;
+        else if (unit === 'quarter') qty = 0.25;
+        else if (unit === 'oke') qty = 0.2;
+        else qty = parseFloat(document.querySelector(`.herbs-qty[data-idx="${idx}"]`)?.value) || 1;
+        items.push({ name, quantity: qty, unitType: unit });
+    });
+    if (items.length === 0) { showToast("🌱 اختر عشبة", true); return; }
+    try {
+        const batch = db.batch();
+        items.forEach(it => {
+            batch.set(materialsCollection.doc(), { name: it.name, unitType: it.unitType, quantity: it.quantity, notes: "أعشاب", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "herbs" });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} عشبة`);
+        document.getElementById('herbsModal').classList.remove('active');
+        clearSelection('herbs');
+        renderHerbsFiltered('');
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function addSelectedExtra() {
+    const items = [];
+    document.querySelectorAll('#extraListContainer .extra-checkbox:checked').forEach(cb => {
+        const name = cb.dataset.name;
+        const idx = parseInt(cb.dataset.index);
+        const unit = document.querySelector(`.extra-unit[data-index="${idx}"]`)?.value || 'kg';
+        let qty = 1;
+        if (unit === 'half') qty = 0.5;
+        else if (unit === 'quarter') qty = 0.25;
+        else if (unit === 'oke') qty = 0.2;
+        else qty = parseFloat(document.querySelector(`.extra-qty[data-idx="${idx}"]`)?.value) || 1;
+        items.push({ name, quantity: qty, unitType: unit });
+    });
+    if (items.length === 0) { showToast("📦 اختر مادة", true); return; }
+    try {
+        const batch = db.batch();
+        items.forEach(it => {
+            batch.set(materialsCollection.doc(), { name: it.name, unitType: it.unitType, quantity: it.quantity, notes: "مواد اضافية", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${items.length} مادة`);
+        document.getElementById('extraModal').classList.remove('active');
+        clearSelection('extra');
+        renderExtraFiltered('');
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function addSelectedBags() {
+    const selected = [];
+    document.querySelectorAll('#bagsListContainer .bag-checkbox:checked').forEach(cb => selected.push(cb.dataset.name));
+    if (selected.length === 0) { showToast("📦 اختر نوع كيس", true); return; }
+    try {
+        const batch = db.batch();
+        selected.forEach(b => {
+            batch.set(materialsCollection.doc(), { name: `كيس تعبئة - ${b}`, unitType: 'bag', quantity: 1, notes: "أكياس", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "extra" });
+        });
+        await batch.commit();
+        showToast(`✓ تم إضافة ${selected.length} نوع كيس`);
+        document.getElementById('bagsModal').classList.remove('active');
+        clearSelection('bags');
+        renderBags();
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function addTawsaya() {
+    let name = document.getElementById('tawsayaName')?.value.trim();
+    if (!name) { showToast("✏️ اسم المنتج مطلوب", true); return; }
+    let type = document.querySelector('#tawsayaTypeGroup .unit-btn.active')?.getAttribute('data-type');
+    let qty = 1;
+    if (type === 'kg') qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    else if (type === 'half') qty = 0.5;
+    else qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    if (isNaN(qty) || qty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+    try {
+        await materialsCollection.add({ name, unitType: 'kg', quantity: qty, notes: "توصيات", createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "tawsaya" });
+        showToast(`✓ تمت إضافة "${name}"`);
+        document.getElementById('tawsayaName').value = "";
+        document.getElementById('tawsayaCustomQty').value = "1";
+        document.getElementById('tawsayaModal').classList.remove('active');
+    } catch(e) { showToast("❌ فشل الإضافة", true); }
+}
+
+async function saveEdit() {
+    if (!currentEditId) return;
+    let newUnit = document.getElementById('editUnitSelect')?.value || 'kg';
+    let newQty = 1;
+    if (newUnit === 'half') newQty = 0.5;
+    else if (newUnit === 'quarter') newQty = 0.25;
+    else if (newUnit === 'oke') newQty = 0.2;
+    else newQty = parseFloat(document.getElementById('editQuantityValue')?.value);
+    if (isNaN(newQty) || newQty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
+    try {
+        await materialsCollection.doc(currentEditId).update({ quantity: newQty, unitType: newUnit });
+        showToast("✓ تم تحديث الكمية");
+        document.getElementById('editModal').classList.remove('active');
+        currentEditId = null;
+    } catch(e) { showToast("❌ فشل التحديث", true); }
+}
+
+async function addNewMaterialDirect() {
+    let name = document.getElementById('newMaterialName')?.value.trim();
+    if (!name) { showToast("✏️ اكتب اسم المادة", true); return; }
+    let unit = document.getElementById('newUnitSelect')?.value || 'kg';
+    let quantity = 1;
+    if (unit === 'half') quantity = 0.5;
+    else if (unit === 'quarter') quantity = 0.25;
+    else if (unit === 'oke') quantity = 0.2;
+    else quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
+    if (isNaN(quantity) || quantity <= 0) {
+        quantity = 0;
+        showToast("⚠️ تمت الإضافة بدون كمية (مادة ناقصة)", false);
+    }
+    try {
+        await materialsCollection.add({ name, unitType: unit, quantity: quantity, createdAt: firebase.firestore.FieldValue.serverTimestamp(), priority: "main" });
+        showToast(`✓ تمت إضافة "${name}"`);
+        document.getElementById('newItemModal').classList.remove('active');
+        document.getElementById('newMaterialName').value = "";
+        document.getElementById('newQuantityValue').value = "1";
+    } catch(e) { showToast("❌ خطأ في الاتصال", true); }
+}
+
+// ==================== عرض المواد ====================
+function renderAllMaterials(materials) {
+    const container = document.getElementById('materialsContainer');
+    if (!container) return;
+    
+    const groups = {
+        main: materials.filter(m => m.priority === 'main'),
+        spices_extra: materials.filter(m => m.priority === 'spices_extra'),
+        roasted: materials.filter(m => m.priority === 'roasted'),
+        herbs: materials.filter(m => m.priority === 'herbs'),
+        extra: materials.filter(m => m.priority === 'extra'),
+        tawsaya: materials.filter(m => m.priority === 'tawsaya')
+    };
+    
+    const titles = {
+        main: '<i class="fas fa-star-of-life"></i> أساسيات',
+        spices_extra: '<i class="fas fa-leaf"></i> بهارات اضافية',
+        roasted: '<i class="fas fa-fire"></i> المحمصة',
+        herbs: '<i class="fas fa-seedling"></i> الأعشاب',
+        extra: '<i class="fas fa-plus-circle"></i> مواد اضافية',
+        tawsaya: '<i class="fas fa-gift"></i> توصيات'
+    };
+    
+    let html = '';
+    for (const [key, items] of Object.entries(groups)) {
+        html += `<div class="priority-section"><div class="section-title">${titles[key]}</div>`;
+        if (items.length === 0) {
+            html += `<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد</div>`;
+        } else {
+            html += `<div class="materials-grid">${items.map(m => renderMaterialCard(m, key)).join('')}</div>`;
+        }
+        html += `</div>`;
+    }
+    
+    container.innerHTML = html;
+    
+    document.querySelectorAll('.delete-material').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute('data-id');
+            const material = allMaterials.find(m => m.id === id);
+            if (confirm(`⚠️ هل أنت متأكد من حذف "${material?.name}"؟`)) {
+                materialsCollection.doc(id).delete().then(() => showToast("✅ تم الحذف")).catch(e => showToast("❌ فشل الحذف", true));
+            }
+        };
+    });
+    
+    document.querySelectorAll('.edit-material').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute('data-id');
+            const material = allMaterials.find(m => m.id === id);
+            if (material) {
+                currentEditId = id;
+                document.getElementById('editMaterialName').value = material.name;
+                document.getElementById('editQuantityValue').value = material.quantity;
+                document.getElementById('editUnitSelect').value = material.unitType || 'kg';
+                document.getElementById('editModal').classList.add('active');
+            }
+        };
+    });
+    
+    setupLongPress();
+    calculateAIMetrics();
+}
+
+function renderMaterialCard(m, section) {
+    const lowStock = (m.quantity === 0 || (m.quantity < 1 && section !== 'tawsaya')) ? 'low-stock-warning' : '';
+    return `<div class="material-card ${lowStock}" data-id="${m.id}" data-section="${section}">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-box"></i> <span>${escapeHtml(m.name)}</span></div>
+            <div class="card-actions">
+                <button class="edit-material" data-id="${m.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-material" data-id="${m.id}"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+        <div class="qty-badge">${formatDisplay(m)}</div>
+    </div>`;
+}
+
+// ==================== المزامنة ====================
+function startListener() {
+    const query = materialsCollection.orderBy('createdAt', 'desc');
+    if (unsubscribe) unsubscribe();
+    unsubscribe = query.onSnapshot((snapshot) => {
+        allMaterials = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            allMaterials.push({ id: doc.id, name: data.name, unitType: data.unitType || 'kg', quantity: data.quantity || 0, notes: data.notes || "", createdAt: data.createdAt, priority: data.priority || "main" });
+        });
+        
+        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+        document.getElementById('syncDot').className = 'sync-dot';
+        document.getElementById('syncItemsCount').innerHTML = `<i class="fas fa-database"></i> ${allMaterials.length} عنصر`;
+        document.getElementById('syncLastTime').innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
+        
+        renderAllMaterials(allMaterials);
+        
+        const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appContainer');
+        if (splash && app && splash.style.display !== 'none') {
+            splash.classList.add('hidden');
+            setTimeout(() => { splash.style.display = 'none'; app.style.display = 'block'; }, 500);
+        }
+    }, (error) => {
+        console.error(error);
+        document.getElementById('syncStatusText').innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
+        document.getElementById('syncDot').className = 'sync-dot offline';
+    });
+}
+
+// ==================== ربط الأحداث ====================
+function bindEvents() {
+    document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
+    document.getElementById('syncBtn').onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 جاري المزامنة..."); };
+    document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
+    document.getElementById('backupBtn').onclick = () => {
+        if (allMaterials.length === 0) { showToast("📭 لا توجد بيانات", true); return; }
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(allMaterials, null, 2)]));
+        a.download = `backup_${new Date().toISOString().slice(0, 19)}.json`;
+        a.click();
+        showToast("💾 تم نسخ البيانات");
+    };
+    document.getElementById('restoreBtn').onclick = () => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = async (e) => {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    let backup = JSON.parse(ev.target.result);
+                    if (confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) {
+                        let batch = db.batch();
+                        allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
+                        await batch.commit();
+                        for (let it of backup) await materialsCollection.add(it);
+                        showToast("✓ تم الاستعادة");
+                        if (unsubscribe) unsubscribe();
+                        startListener();
+                    }
+                } catch(e) { showToast("❌ ملف غير صالح", true); }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    };
+    document.getElementById('clearAllBtn').onclick = async () => {
+        if (allMaterials.length === 0) { showToast("📭 القائمة فارغة", true); return; }
+        if (confirm("⚠️ حذف جميع المواد نهائياً؟")) {
+            let batch = db.batch();
+            allMaterials.forEach(m => batch.delete(materialsCollection.doc(m.id)));
+            await batch.commit();
+            showToast("✓ تم مسح القائمة");
+        }
+    };
+    
+    document.getElementById('importantProductsBtn').onclick = () => { renderImportantFiltered(''); document.getElementById('importantModal').classList.add('active'); };
+    document.getElementById('spicesExtraBtn').onclick = () => { renderSpicesExtraFiltered(''); document.getElementById('spicesExtraModal').classList.add('active'); };
+    document.getElementById('roastedBtn').onclick = () => { renderRoastedFiltered(''); document.getElementById('roastedModal').classList.add('active'); };
+    document.getElementById('herbsBtn').onclick = () => { renderHerbsFiltered(''); document.getElementById('herbsModal').classList.add('active'); };
+    document.getElementById('extraBtn').onclick = () => { renderExtraFiltered(''); document.getElementById('extraModal').classList.add('active'); };
+    document.getElementById('bagsManagerBtn').onclick = () => { renderBags(); document.getElementById('bagsModal').classList.add('active'); };
+    document.getElementById('tawsayaQuickBtn').onclick = () => document.getElementById('tawsayaModal').classList.add('active');
+    
+    document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
+    document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
+    document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
+    document.getElementById('saveRoastedBtn').onclick = addSelectedRoasted;
+    document.getElementById('saveHerbsBtn').onclick = addSelectedHerbs;
+    document.getElementById('saveExtraBtn').onclick = addSelectedExtra;
+    document.getElementById('saveBagsBtn').onclick = addSelectedBags;
+    document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
+    document.getElementById('saveEditBtn').onclick = saveEdit;
+    document.getElementById('confirmMoveBtn').onclick = moveMaterialToSection;
+    
+    const debounce = (fn, delay) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), delay); }; };
+    document.getElementById('importantSearchInput').oninput = debounce((e) => renderImportantFiltered(e.target.value), 300);
+    document.getElementById('spicesExtraSearchInput').oninput = debounce((e) => renderSpicesExtraFiltered(e.target.value), 300);
+    document.getElementById('roastedSearchInput').oninput = debounce((e) => renderRoastedFiltered(e.target.value), 300);
+    document.getElementById('herbsSearchInput').oninput = debounce((e) => renderHerbsFiltered(e.target.value), 300);
+    document.getElementById('extraSearchInput').oninput = debounce((e) => renderExtraFiltered(e.target.value), 300);
+}
+
+// ==================== التهيئة ====================
+document.addEventListener('DOMContentLoaded', () => {
+    bindEvents();
+    startListener();
+    
+    // إغلاق المودالات
+    window.closeAllModals = () => {
+        ['newItemModal','importantModal','spicesExtraModal','roastedModal','herbsModal','extraModal','bagsModal','tawsayaModal','editModal','moveItemModal','systemMessageModal'].forEach(id => {
+            document.getElementById(id)?.classList.remove('active');
+        });
+    };
+    
+    ['closeNewModalBtn','closeImportantModalBtn','closeSpicesExtraModalBtn','closeRoastedModalBtn','closeHerbsModalBtn','closeExtraModalBtn','closeBagsModalBtn','closeTawsayaModalBtn','closeEditModalBtn','closeSystemMessageBtn','cancelMoveBtn'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', window.closeAllModals);
+    });
+    
+    // تثبيت التطبيق
+    document.getElementById('installBtn')?.addEventListener('click', () => {
+        if (window.deferredPrompt) {
+            window.deferredPrompt.prompt();
+            window.deferredPrompt.userChoice.then(() => { window.deferredPrompt = null; });
+        } else {
+            showToast("📱 التطبيق مثبت مسبقاً أو غير مدعوم", false);
+        }
+    });
+    
+    // أزرار نوع التوصية
+    document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('tawsayaCustomQtyGroup').style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+        });
+    });
+    
+    // أزرار الأوزان
+    document.querySelectorAll('.weight-preset').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('tawsayaCustomQty').value = this.dataset.value;
+        });
+    });
+});
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/material-manager/service-worker.js').catch(err => console.error('SW failed:', err));
+    });
+}
+</script>
 </body>
     </html>
