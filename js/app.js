@@ -2,8 +2,7 @@ let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
 let autoSyncInterval = null;
-let draggedItemId = null;
-let draggedItemOriginalSection = null;
+let longPressTimer = null;
 
 // ==================== القوائم الكاملة ====================
 const importantItemsList = [
@@ -83,11 +82,7 @@ function calculateAIMetrics() {
     allMaterials.forEach(material => {
         let quantity = material.quantity || 0;
         totalQuantity += quantity;
-        
-        // جميع المواد التي تم إضافتها تعتبر ناقصة حتى يتم تعديلها لكمية أكبر
-        if (quantity < 1) {
-            lowStockCount++;
-        }
+        if (quantity < 1) lowStockCount++;
     });
     
     const avgQuantity = totalCount > 0 ? (totalQuantity / totalCount).toFixed(2) : 0;
@@ -112,68 +107,85 @@ function calculateAIMetrics() {
         } else {
             insightText = `✅ المخزون جيد. إجمالي ${totalQuantity.toFixed(2)} كجم من المواد.`;
         }
-        
         if (totalCount > 0) {
             const materialNames = allMaterials.map(m => m.name);
             const uniqueNames = [...new Set(materialNames)];
             insightText += ` يتضمن المخزون ${uniqueNames.length} نوعاً مختلفاً.`;
         }
-        
         insights.innerHTML = `<i class="fas fa-robot"></i><span>${insightText}</span>`;
     }
 }
 
-// ==================== سحب وإفلات مباشر بدون نافذة ====================
-function setupDragAndDrop() {
+// ==================== الضغطة المطولة لنقل المواد ====================
+function openMoveModal(materialId, materialName, currentSection) {
+    currentEditId = materialId;
+    const nameInput = document.getElementById('moveItemName');
+    const sectionSelect = document.getElementById('moveTargetSection');
+    if (nameInput) nameInput.value = materialName;
+    if (sectionSelect) sectionSelect.value = currentSection;
+    const modal = document.getElementById('moveItemModal');
+    if (modal) modal.classList.add('active');
+}
+
+async function moveMaterialToSection() {
+    if (!currentEditId) return;
+    const targetSection = document.getElementById('moveTargetSection').value;
+    try {
+        await materialsCollection.doc(currentEditId).update({ priority: targetSection });
+        showToast(`✓ تم نقل المادة بنجاح`);
+        const modal = document.getElementById('moveItemModal');
+        if (modal) modal.classList.remove('active');
+        currentEditId = null;
+        if (unsubscribe) unsubscribe();
+        startListener();
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل نقل المادة", true);
+    }
+}
+
+function setupLongPress() {
     const cards = document.querySelectorAll('.material-card');
     
     cards.forEach(card => {
-        card.setAttribute('draggable', 'true');
-        
-        card.addEventListener('dragstart', (e) => {
-            draggedItemId = card.getAttribute('data-id');
-            draggedItemOriginalSection = card.getAttribute('data-section');
-            e.dataTransfer.setData('text/plain', draggedItemId);
-            card.style.opacity = '0.5';
+        // اللمس على الشاشات التي تعمل باللمس
+        card.addEventListener('touchstart', (e) => {
+            longPressTimer = setTimeout(() => {
+                const id = card.getAttribute('data-id');
+                const nameSpan = card.querySelector('.card-title span');
+                const name = nameSpan ? nameSpan.innerText : '';
+                const section = card.getAttribute('data-section');
+                if (id) openMoveModal(id, name, section);
+            }, 800);
         });
         
-        card.addEventListener('dragend', (e) => {
-            card.style.opacity = '';
-            draggedItemId = null;
-            draggedItemOriginalSection = null;
+        card.addEventListener('touchend', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
         });
         
-        card.addEventListener('dragover', (e) => {
+        card.addEventListener('touchmove', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
+        });
+        
+        // الفأرة على سطح المكتب
+        card.addEventListener('mousedown', (e) => {
+            // منع ظهور القائمة الافتراضية عند الضغط المطول
             e.preventDefault();
-            card.style.border = '2px dashed var(--primary-500)';
-            card.style.background = 'var(--primary-50)';
+            longPressTimer = setTimeout(() => {
+                const id = card.getAttribute('data-id');
+                const nameSpan = card.querySelector('.card-title span');
+                const name = nameSpan ? nameSpan.innerText : '';
+                const section = card.getAttribute('data-section');
+                if (id) openMoveModal(id, name, section);
+            }, 800);
         });
         
-        card.addEventListener('dragleave', (e) => {
-            card.style.border = '';
-            card.style.background = '';
+        card.addEventListener('mouseup', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
         });
         
-        card.addEventListener('drop', async (e) => {
-            e.preventDefault();
-            card.style.border = '';
-            card.style.background = '';
-            
-            const targetId = card.getAttribute('data-id');
-            const targetSection = card.getAttribute('data-section');
-            
-            if (draggedItemId && draggedItemId !== targetId) {
-                try {
-                    await materialsCollection.doc(draggedItemId).update({ priority: targetSection });
-                    showToast(`✓ تم نقل المادة إلى ${getSectionName(targetSection)}`);
-                    
-                    if (unsubscribe) unsubscribe();
-                    startListener();
-                } catch(err) {
-                    console.error(err);
-                    showToast("❌ فشل النقل", true);
-                }
-            }
+        card.addEventListener('mouseleave', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
         });
     });
 }
@@ -881,14 +893,14 @@ function renderAllMaterials(materials) {
     });
     
     setTimeout(() => {
-        setupDragAndDrop();
+        setupLongPress();
     }, 100);
     
     calculateAIMetrics();
 }
 
 function renderMaterialCard(m, section) {
-    return `<div class="material-card" data-id="${m.id}" data-section="${section}" draggable="true">
+    return `<div class="material-card" data-id="${m.id}" data-section="${section}">
         <div class="card-header">
             <div class="card-title"><i class="fas fa-box"></i> <span>${escapeHtml(m.name)}</span></div>
             <div class="card-actions">
@@ -1076,6 +1088,7 @@ function bindEvents() {
     document.getElementById('saveBagsBtn').onclick = addSelectedBags;
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
+    document.getElementById('confirmMoveBtn').onclick = moveMaterialToSection;
     
     document.getElementById('editUnitSelect').addEventListener('change', function() { updateEditFieldByUnit(this.value); });
     
@@ -1107,4 +1120,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered'))
             .catch(err => console.error('❌ SW failed', err));
     });
-                                             }
+                                                                           }
