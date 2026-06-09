@@ -127,9 +127,10 @@ function calculateAIMetrics() {
     
     const analysis = window.aiEngine.analyzeInventory(allMaterials);
     
+    // تحديث الإحصائيات المعروضة
     document.getElementById('totalMaterialsCount').innerText = analysis.totalMaterials;
     document.getElementById('totalQuantityValue').innerText = analysis.totalQuantity.toFixed(1);
-    document.getElementById('lowStockCount').innerText = analysis.lowStock.length;
+    document.getElementById('lowStockCount').innerHTML = `${analysis.lowStockCount}<span class="ai-stat-unit" style="font-size:0.625rem"> مادة</span>`;
     document.getElementById('avgQuantityValue').innerText = analysis.avgQuantity;
     
     const insightsContainer = document.getElementById('aiInsights');
@@ -137,32 +138,42 @@ function calculateAIMetrics() {
         let insightsHtml = `<i class="fas fa-robot"></i><div style="flex:1">`;
         
         analysis.insights.forEach(insight => {
-            insightsHtml += `<div class="insight-item" style="margin-bottom: 8px;">${insight}</div>`;
+            insightsHtml += `<div class="insight-item" style="margin-bottom: 8px; padding: 4px 0;">${insight}</div>`;
         });
         
+        // إضافة التوصيات الذكية
         if (analysis.smartRecommendations && analysis.smartRecommendations.length > 0) {
-            analysis.smartRecommendations.slice(0, 1).forEach(rec => {
-                insightsHtml += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-light)">
-                    <strong>${rec.title}</strong>
-                    <ul style="margin: 8px 0 0 20px; padding-right: 0;">${rec.items.map(item => `<li>${item}</li>`).join('')}</ul>
-                </div>`;
+            insightsHtml += `<div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border-light)">`;
+            analysis.smartRecommendations.slice(0, 2).forEach(rec => {
+                insightsHtml += `
+                    <div style="margin-bottom: 8px;">
+                        <strong style="display: block; margin-bottom: 6px;">${rec.title}</strong>
+                        <ul style="margin: 0 20px 0 0; padding-right: 0;">
+                            ${rec.items.map(item => `<li style="margin-bottom: 4px;">${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
             });
+            insightsHtml += `</div>`;
         }
         
         insightsHtml += `</div>`;
         insightsContainer.innerHTML = insightsHtml;
     }
     
-    // تنبيه للمواد الناقصة
-    if (analysis.criticalStock.length > 0 && analysis.lowStock.length > 0) {
+    // تنبيه للمواد الناقصة (مرة واحدة كل 5 دقائق)
+    const lastAlertTime = localStorage.getItem('lastLowStockAlert');
+    const now = Date.now();
+    
+    if (analysis.criticalStock.length > 0 && (!lastAlertTime || (now - parseInt(lastAlertTime)) > 300000)) {
         const criticalNames = analysis.criticalStock.slice(0, 3).map(c => c.name).join('، ');
         if (criticalNames) {
-            showSystemMessage('تنبيه ذكي', `⚠️ المواد التالية ناقصة أو فارغة: ${criticalNames}. يرجى التكرم بإعادة تعبئتها.`, 'warning');
+            showSystemMessage('تنبيه المخزون', `⚠️ المواد التالية ناقصة أو فارغة: ${criticalNames}. يرجى التكرم بإعادة تعبئتها.`, 'warning');
+            localStorage.setItem('lastLowStockAlert', now.toString());
         }
     }
-}
-
-// ==================== عرض الأقسام ====================
+        }
+// ==================== عرض الأقسام والمواد ====================
 function renderSections(materials) {
     const container = document.getElementById('sectionsContainer');
     if (!container) return;
@@ -200,8 +211,6 @@ function renderSections(materials) {
             const category = btn.getAttribute('data-category');
             if (category && category !== 'tawsaya') {
                 openPresetModal(category);
-            } else if (category === 'tawsaya') {
-                document.getElementById('tawsayaModal').classList.add('active');
             }
         });
     });
@@ -234,8 +243,8 @@ function renderSections(materials) {
     });
     
     // تهيئة السحب والإفلات
-    if (typeof initDragAndDrop === 'function') {
-        setTimeout(() => initDragAndDrop(), 100);
+    if (typeof window.initDragAndDrop === 'function') {
+        setTimeout(() => window.initDragAndDrop(), 100);
     }
     
     calculateAIMetrics();
@@ -412,8 +421,7 @@ async function addSelectedPresetItems() {
     } catch(e) {
         showToast("❌ فشل الإضافة", true);
     }
-}
-
+        }
 // ==================== دوال Firebase ====================
 async function addNewMaterialDirect() {
     let name = document.getElementById('newMaterialName')?.value.trim();
@@ -425,15 +433,14 @@ async function addNewMaterialDirect() {
     
     if (isNaN(quantity) || quantity < 0) quantity = 0;
     
+    // معالجة الوحدات الخاصة
+    if (unit === 'half') quantity = 0.5;
+    else if (unit === 'quarter') quantity = 0.25;
+    else if (unit === 'oke') quantity = 0.2;
+    
     // إذا كانت الكمية 0، المادة تعتبر ناقصة (ما عدا التوصيات)
     if (quantity === 0 && section !== 'tawsaya') {
         showToast(`⚠️ تمت إضافة "${name}" بدون كمية (مادة ناقصة)`, false);
-    } else if (unit === 'half') {
-        quantity = 0.5;
-    } else if (unit === 'quarter') {
-        quantity = 0.25;
-    } else if (unit === 'oke') {
-        quantity = 0.2;
     }
     
     try {
@@ -507,6 +514,10 @@ async function saveEdit() {
         showToast("✓ تم تحديث الكمية");
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
+        
+        // تحديث العرض
+        if (unsubscribe) unsubscribe();
+        startListener();
     } catch(e) {
         showToast("❌ فشل التحديث", true);
     }
