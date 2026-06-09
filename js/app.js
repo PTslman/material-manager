@@ -1,7 +1,10 @@
+
 let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
 let autoSyncInterval = null;
+let dragSourceId = null;
+let dragSourceSection = null;
 
 // ==================== القوائم الكاملة ====================
 const importantItemsList = [
@@ -72,6 +75,206 @@ function formatDisplay(mat) {
     return `${mat.quantity} kg`;
 }
 
+// ==================== الذكاء الاصطناعي - تحليل المخزون ====================
+function calculateAIMetrics() {
+    const totalCount = allMaterials.length;
+    let totalQuantity = 0;
+    let lowStockCount = 0;
+    
+    allMaterials.forEach(material => {
+        let quantity = material.quantity || 0;
+        totalQuantity += quantity;
+        
+        if (material.unitType === 'kg' && quantity < 0.5) {
+            lowStockCount++;
+        } else if (material.unitType === 'half' && quantity < 0.5) {
+            lowStockCount++;
+        } else if (material.unitType === 'quarter' && quantity < 0.25) {
+            lowStockCount++;
+        } else if (material.unitType === 'oke' && quantity < 0.2) {
+            lowStockCount++;
+        }
+    });
+    
+    const avgQuantity = totalCount > 0 ? (totalQuantity / totalCount).toFixed(2) : 0;
+    
+    const totalEl = document.getElementById('totalMaterialsCount');
+    const totalQtyEl = document.getElementById('totalQuantityValue');
+    const lowStockEl = document.getElementById('lowStockCount');
+    const avgQtyEl = document.getElementById('avgQuantityValue');
+    
+    if (totalEl) totalEl.innerText = totalCount;
+    if (totalQtyEl) totalQtyEl.innerText = totalQuantity.toFixed(2);
+    if (lowStockEl) lowStockEl.innerText = lowStockCount;
+    if (avgQtyEl) avgQtyEl.innerText = avgQuantity;
+    
+    const insights = document.getElementById('aiInsights');
+    if (insights) {
+        let insightText = '';
+        if (totalCount === 0) {
+            insightText = '📊 لا توجد مواد في المخزون. أضف مواد جديدة للبدء.';
+        } else if (lowStockCount > 0) {
+            insightText = `⚠️ تنبيه: يوجد ${lowStockCount} مادة ناقصة تحتاج إلى إعادة تزويد.`;
+        } else if (totalQuantity > 100) {
+            insightText = `📈 المخزون ممتاز! إجمالي المواد ${totalQuantity.toFixed(2)} كجم.`;
+        } else if (totalQuantity > 50) {
+            insightText = `✅ المخزون جيد. إجمالي المواد ${totalQuantity.toFixed(2)} كجم.`;
+        } else if (totalQuantity > 0) {
+            insightText = `📦 المخزون متوسط. ينصح بمراجعة المواد الناقصة.`;
+        } else {
+            insightText = `📊 المخزون فارغ. أضف مواد جديدة.`;
+        }
+        
+        if (totalCount > 0) {
+            const materialNames = allMaterials.map(m => m.name);
+            const uniqueNames = [...new Set(materialNames)];
+            insightText += ` يتضمن المخزون ${uniqueNames.length} نوعاً مختلفاً من المواد.`;
+        }
+        
+        insights.innerHTML = `<i class="fas fa-robot"></i><span>${insightText}</span>`;
+    }
+}
+
+// ==================== نقل المواد بين الأقسام ====================
+function openMoveModal(materialId, materialName, currentSection) {
+    currentEditId = materialId;
+    const nameInput = document.getElementById('moveItemName');
+    const sectionSelect = document.getElementById('moveTargetSection');
+    if (nameInput) nameInput.value = materialName;
+    if (sectionSelect) sectionSelect.value = currentSection;
+    const modal = document.getElementById('moveItemModal');
+    if (modal) modal.classList.add('active');
+}
+
+async function moveMaterialToSection() {
+    if (!currentEditId) return;
+    
+    const targetSection = document.getElementById('moveTargetSection').value;
+    
+    try {
+        await materialsCollection.doc(currentEditId).update({ priority: targetSection });
+        showToast(`✓ تم نقل المادة بنجاح`);
+        const modal = document.getElementById('moveItemModal');
+        if (modal) modal.classList.remove('active');
+        currentEditId = null;
+        
+        if (unsubscribe) unsubscribe();
+        startListener();
+    } catch(e) {
+        console.error(e);
+        showToast("❌ فشل نقل المادة", true);
+    }
+}
+
+// ==================== دعم السحب والإفلات ====================
+function setupDragAndDrop() {
+    const cards = document.querySelectorAll('.material-card');
+    
+    cards.forEach(card => {
+        card.setAttribute('draggable', 'true');
+        
+        card.addEventListener('dragstart', (e) => {
+            dragSourceId = card.getAttribute('data-id');
+            dragSourceSection = card.getAttribute('data-section');
+            e.dataTransfer.setData('text/plain', dragSourceId);
+            card.classList.add('dragging');
+        });
+        
+        card.addEventListener('dragend', (e) => {
+            card.classList.remove('dragging');
+            dragSourceId = null;
+            dragSourceSection = null;
+        });
+        
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            card.classList.add('drag-over');
+        });
+        
+        card.addEventListener('dragleave', (e) => {
+            card.classList.remove('drag-over');
+        });
+        
+        card.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
+            
+            const targetId = card.getAttribute('data-id');
+            const targetSection = card.getAttribute('data-section');
+            
+            if (dragSourceId && dragSourceId !== targetId) {
+                try {
+                    await materialsCollection.doc(dragSourceId).update({ priority: targetSection });
+                    showToast(`✓ تم نقل المادة إلى ${getSectionName(targetSection)}`);
+                    
+                    if (unsubscribe) unsubscribe();
+                    startListener();
+                } catch(err) {
+                    console.error(err);
+                    showToast("❌ فشل النقل", true);
+                }
+            }
+        });
+    });
+}
+
+function getSectionName(section) {
+    const sections = {
+        'main': 'أساسيات',
+        'spices_extra': 'بهارات اضافية',
+        'roasted': 'المحمصة',
+        'herbs': 'الأعشاب',
+        'extra': 'مواد اضافية',
+        'tawsaya': 'توصيات'
+    };
+    return sections[section] || section;
+}
+
+// ==================== الضغطة المطولة ====================
+let longPressTimer = null;
+
+function setupLongPress() {
+    const cards = document.querySelectorAll('.material-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('touchstart', (e) => {
+            longPressTimer = setTimeout(() => {
+                const id = card.getAttribute('data-id');
+                const nameSpan = card.querySelector('.card-title span');
+                const name = nameSpan ? nameSpan.innerText : '';
+                const section = card.getAttribute('data-section');
+                if (id) openMoveModal(id, name, section);
+            }, 800);
+        });
+        
+        card.addEventListener('touchend', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
+        });
+        
+        card.addEventListener('touchmove', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
+        });
+        
+        card.addEventListener('mousedown', (e) => {
+            longPressTimer = setTimeout(() => {
+                const id = card.getAttribute('data-id');
+                const nameSpan = card.querySelector('.card-title span');
+                const name = nameSpan ? nameSpan.innerText : '';
+                const section = card.getAttribute('data-section');
+                if (id) openMoveModal(id, name, section);
+            }, 800);
+        });
+        
+        card.addEventListener('mouseup', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
+        });
+        
+        card.addEventListener('mousemove', () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
+        });
+    });
+}
+
 // ==================== إدارة حالة التحديدات ====================
 const selectionState = {
     important: new Map(),
@@ -114,7 +317,12 @@ function renderImportantFiltered(filter = '') {
             </div>
             <div class="quantity-modern">
                 <select class="qty-select important-unit" data-index="${origIdx}">
-                    <option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option>
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
                 </select>
                 <div class="qty-controls" data-type="important" data-index="${origIdx}">
                     <button class="qty-dec-btn" data-idx="${origIdx}" data-type="important">-</button>
@@ -151,7 +359,12 @@ function renderSpicesExtraFiltered(filter = '') {
             </div>
             <div class="quantity-modern">
                 <select class="qty-select spices-unit" data-index="${origIdx}">
-                    <option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option>
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
                 </select>
                 <div class="qty-controls" data-type="spices" data-index="${origIdx}">
                     <button class="qty-dec-btn" data-idx="${origIdx}" data-type="spices">-</button>
@@ -188,7 +401,12 @@ function renderRoastedFiltered(filter = '') {
             </div>
             <div class="quantity-modern">
                 <select class="qty-select roasted-unit" data-index="${origIdx}">
-                    <option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option>
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
                 </select>
                 <div class="qty-controls" data-type="roasted" data-index="${origIdx}">
                     <button class="qty-dec-btn" data-idx="${origIdx}" data-type="roasted">-</button>
@@ -225,7 +443,12 @@ function renderHerbsFiltered(filter = '') {
             </div>
             <div class="quantity-modern">
                 <select class="qty-select herbs-unit" data-index="${origIdx}">
-                    <option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option>
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
                 </select>
                 <div class="qty-controls" data-type="herbs" data-index="${origIdx}">
                     <button class="qty-dec-btn" data-idx="${origIdx}" data-type="herbs">-</button>
@@ -262,7 +485,12 @@ function renderExtraFiltered(filter = '') {
             </div>
             <div class="quantity-modern">
                 <select class="qty-select extra-unit" data-index="${origIdx}">
-                    <option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option>
+                    <option value="kg">كيلو (kg)</option>
+                    <option value="half">نصف كيلو</option>
+                    <option value="quarter">ربع كيلو</option>
+                    <option value="oke">لوقية</option>
+                    <option value="box">علبة</option>
+                    <option value="piece">عدد</option>
                 </select>
                 <div class="qty-controls" data-type="extra" data-index="${origIdx}">
                     <button class="qty-dec-btn" data-idx="${origIdx}" data-type="extra">-</button>
@@ -345,8 +573,8 @@ function attachItemEvents(type) {
                 const inc = controls.querySelector('.qty-inc-btn');
                 const inp = controls.querySelector(`.${type}-qty`);
                 if (dec && inc && inp) {
-                    dec.onclick = () => { let v = parseInt(inp.value) || 1; v = Math.max(1, v - 1); inp.value = v; };
-                    inc.onclick = () => { let v = parseInt(inp.value) || 1; v = v + 1; inp.value = v; };
+                    dec.onclick = () => { let v = parseInt(inp.value)||1; v = Math.max(1, v-1); inp.value = v; };
+                    inc.onclick = () => { let v = parseInt(inp.value)||1; v = v+1; inp.value = v; };
                 }
             }
         };
@@ -383,7 +611,7 @@ async function addSelectedImportant() {
                 name: it.name,
                 unitType: it.unitType,
                 quantity: it.quantity,
-                notes: "بهارات هامة",
+                notes: "أساسيات",
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 priority: "main"
             });
@@ -597,13 +825,17 @@ async function addTawsaya() {
     if (!name) { showToast("✏️ اسم المنتج", true); return; }
     let type = document.querySelector('#tawsayaTypeGroup .unit-btn.active')?.getAttribute('data-type');
     let qty = 1;
-    if (type === 'kg') qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
-    else if (type === 'half') qty = 0.5;
-    else qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    if (type === 'kg') {
+        qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    } else if (type === 'half') {
+        qty = 0.5;
+    } else {
+        qty = parseFloat(document.getElementById('tawsayaCustomQty')?.value) || 1;
+    }
     if (isNaN(qty) || qty <= 0) { showToast("🔢 كمية صحيحة", true); return; }
     try {
         await materialsCollection.add({
-            name, unitType: 'kg', quantity: qty, notes: "توصاية",
+            name, unitType: 'kg', quantity: qty, notes: "توصيات",
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             priority: "tawsaya"
         });
@@ -658,72 +890,54 @@ async function addNewMaterialDirect() {
     } catch(e) { showToast("❌ خطأ في الاتصال", true); }
 }
 
-// ==================== المزامنة ====================
-function startListener() {
-    const query = materialsCollection.orderBy('createdAt', 'desc');
-    if (unsubscribe) unsubscribe();
-    unsubscribe = query.onSnapshot((snapshot) => {
-        const list = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            list.push({
-                id: doc.id, name: data.name, unitType: data.unitType || 'kg',
-                quantity: data.quantity || 0, notes: data.notes || "",
-                createdAt: data.createdAt, priority: data.priority || "main"
-            });
-        });
-        allMaterials = list;
-        const statusText = document.getElementById('syncStatusText');
-        const syncDot = document.getElementById('syncDot');
-        const itemsCount = document.getElementById('syncItemsCount');
-        const syncTime = document.getElementById('syncLastTime');
-        if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
-        if (syncDot) syncDot.className = 'sync-dot';
-        if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
-        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
-        renderAllMaterials(allMaterials);
-        const splash = document.getElementById('splashScreen');
-        const app = document.getElementById('appContainer');
-        if (splash && app && splash.style.display !== 'none') {
-            splash.classList.add('hidden');
-            setTimeout(() => { splash.style.display = 'none'; app.style.display = 'block'; }, 500);
-        }
-    }, (error) => {
-        console.error(error);
-        const statusText = document.getElementById('syncStatusText');
-        const syncDot = document.getElementById('syncDot');
-        if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-        if (syncDot) syncDot.className = 'sync-dot offline';
-    });
-}
-
-function startAutoSync() {
-    if (autoSyncInterval) clearInterval(autoSyncInterval);
-    autoSyncInterval = setInterval(() => {
-        if (unsubscribe) unsubscribe();
-        startListener();
-    }, 30000);
-}
-
 // ==================== عرض المواد الرئيسية ====================
 function renderAllMaterials(materials) {
     const container = document.getElementById('materialsContainer');
     if (!container) return;
+    
     const main = materials.filter(m => m.priority === 'main');
     const spicesExtra = materials.filter(m => m.priority === 'spices_extra');
     const roasted = materials.filter(m => m.priority === 'roasted');
     const herbs = materials.filter(m => m.priority === 'herbs');
     const extra = materials.filter(m => m.priority === 'extra');
     const taws = materials.filter(m => m.priority === 'tawsaya');
+    
     let html = `
-        <div class="priority-section"><div class="section-title"><i class="fas fa-star-of-life"></i> بهارات هامة</div>${main.length === 0 ? '<div class="empty-state">✨ لا توجد مواد هامة</div>' : `<div class="materials-grid">${main.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-leaf"></i> بهارات اضافية</div>${spicesExtra.length === 0 ? '<div class="empty-state">🌿 لا توجد بهارات اضافية</div>' : `<div class="materials-grid">${spicesExtra.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-fire"></i> المحمصة</div>${roasted.length === 0 ? '<div class="empty-state">🔥 لا توجد مواد في المحمصة</div>' : `<div class="materials-grid">${roasted.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-seedling"></i> الأعشاب</div>${herbs.length === 0 ? '<div class="empty-state">🌱 لا توجد أعشاب</div>' : `<div class="materials-grid">${herbs.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-plus-circle"></i> مواد اضافية</div>${extra.length === 0 ? '<div class="empty-state">📦 لا توجد مواد اضافية</div>' : `<div class="materials-grid">${extra.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
-        <div class="priority-section"><div class="section-title"><i class="fas fa-gift"></i> التوصاية</div>${taws.length === 0 ? '<div class="empty-state">🎁 لا توجد توصايات</div>' : `<div class="materials-grid">${taws.map(m => renderMaterialCard(m)).join('')}</div>`}</div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-star-of-life"></i> أساسيات</div>
+            ${main.length === 0 ? '<div class="empty-state">✨ لا توجد مواد</div>' : `<div class="materials-grid" data-section="main">${main.map(m => renderMaterialCard(m, 'main')).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-leaf"></i> بهارات اضافية</div>
+            ${spicesExtra.length === 0 ? '<div class="empty-state">🌿 لا توجد بهارات اضافية</div>' : `<div class="materials-grid" data-section="spices_extra">${spicesExtra.map(m => renderMaterialCard(m, 'spices_extra')).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-fire"></i> المحمصة</div>
+            ${roasted.length === 0 ? '<div class="empty-state">🔥 لا توجد مواد في المحمصة</div>' : `<div class="materials-grid" data-section="roasted">${roasted.map(m => renderMaterialCard(m, 'roasted')).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-seedling"></i> الأعشاب</div>
+            ${herbs.length === 0 ? '<div class="empty-state">🌱 لا توجد أعشاب</div>' : `<div class="materials-grid" data-section="herbs">${herbs.map(m => renderMaterialCard(m, 'herbs')).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-plus-circle"></i> مواد اضافية</div>
+            ${extra.length === 0 ? '<div class="empty-state">📦 لا توجد مواد اضافية</div>' : `<div class="materials-grid" data-section="extra">${extra.map(m => renderMaterialCard(m, 'extra')).join('')}</div>`}
+        </div>
+        <div class="priority-section">
+            <div class="section-title"><i class="fas fa-gift"></i> توصيات</div>
+            ${taws.length === 0 ? '<div class="empty-state">🎁 لا توجد توصيات</div>' : `<div class="materials-grid" data-section="tawsaya">${taws.map(m => renderMaterialCard(m, 'tawsaya')).join('')}</div>`}
+        </div>
     `;
+    
     container.innerHTML = html;
+    
+    document.querySelectorAll('.material-card').forEach(card => {
+        const material = materials.find(m => m.id === card.dataset.id);
+        if (material) {
+            card.dataset.section = material.priority;
+        }
+    });
+    
     document.querySelectorAll('.delete-material').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -734,6 +948,7 @@ function renderAllMaterials(materials) {
             }
         };
     });
+    
     document.querySelectorAll('.edit-material').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -749,10 +964,26 @@ function renderAllMaterials(materials) {
             }
         };
     });
+    
+    setTimeout(() => {
+        setupDragAndDrop();
+        setupLongPress();
+    }, 100);
+    
+    calculateAIMetrics();
 }
 
-function renderMaterialCard(m) {
-    return `<div class="material-card"><div class="card-header"><div class="card-title"><i class="fas fa-box"></i> ${escapeHtml(m.name)}</div><div class="card-actions"><button class="edit-material" data-id="${m.id}"><i class="fas fa-edit"></i></button><button class="delete-material" data-id="${m.id}"><i class="fas fa-trash-alt"></i></button></div></div><div class="qty-badge">${formatDisplay(m)}</div></div>`;
+function renderMaterialCard(m, section) {
+    return `<div class="material-card" data-id="${m.id}" data-section="${section}" draggable="true">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-box"></i> <span>${escapeHtml(m.name)}</span></div>
+            <div class="card-actions">
+                <button class="edit-material" data-id="${m.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-material" data-id="${m.id}"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+        <div class="qty-badge">${formatDisplay(m)}</div>
+    </div>`;
 }
 
 function updateEditFieldByUnit(unit) {
@@ -808,10 +1039,60 @@ function initNewItemModal() {
     const dec = document.getElementById('newQtyDec');
     const inc = document.getElementById('newQtyInc');
     if (dec && inc && qtyInput) {
-        dec.onclick = () => { let v = parseInt(qtyInput.value) || 1; v = Math.max(1, v - 1); qtyInput.value = v; };
-        inc.onclick = () => { let v = parseInt(qtyInput.value) || 1; v = v + 1; qtyInput.value = v; };
-        qtyInput.onchange = () => { let v = parseInt(qtyInput.value); if (isNaN(v) || v < 1) qtyInput.value = 1; };
+        dec.onclick = () => { let v = parseFloat(qtyInput.value) || 1; v = Math.max(0.25, v - 0.25); qtyInput.value = v; };
+        inc.onclick = () => { let v = parseFloat(qtyInput.value) || 1; v = v + 0.25; qtyInput.value = v; };
+        qtyInput.onchange = () => { let v = parseFloat(qtyInput.value); if (isNaN(v) || v < 0.25) qtyInput.value = 1; };
     }
+}
+
+// ==================== المزامنة ====================
+function startListener() {
+    const query = materialsCollection.orderBy('createdAt', 'desc');
+    if (unsubscribe) unsubscribe();
+    unsubscribe = query.onSnapshot((snapshot) => {
+        const list = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            list.push({
+                id: doc.id, name: data.name, unitType: data.unitType || 'kg',
+                quantity: data.quantity || 0, notes: data.notes || "",
+                createdAt: data.createdAt, priority: data.priority || "main"
+            });
+        });
+        allMaterials = list;
+        
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        const itemsCount = document.getElementById('syncItemsCount');
+        const syncTime = document.getElementById('syncLastTime');
+        if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+        if (syncDot) syncDot.className = 'sync-dot';
+        if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${list.length} عنصر`;
+        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
+        
+        renderAllMaterials(allMaterials);
+        
+        const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appContainer');
+        if (splash && app && splash.style.display !== 'none') {
+            splash.classList.add('hidden');
+            setTimeout(() => { splash.style.display = 'none'; app.style.display = 'block'; }, 500);
+        }
+    }, (error) => {
+        console.error(error);
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
+        if (syncDot) syncDot.className = 'sync-dot offline';
+    });
+}
+
+function startAutoSync() {
+    if (autoSyncInterval) clearInterval(autoSyncInterval);
+    autoSyncInterval = setInterval(() => {
+        if (unsubscribe) unsubscribe();
+        startListener();
+    }, 30000);
 }
 
 // ==================== ربط الأحداث ====================
@@ -863,6 +1144,7 @@ function bindEvents() {
             showToast("✓ تم مسح القائمة");
         }
     };
+    
     document.getElementById('importantProductsBtn').onclick = () => { renderImportantFiltered(''); document.getElementById('importantModal').classList.add('active'); document.getElementById('importantSearchInput').focus(); };
     document.getElementById('spicesExtraBtn').onclick = () => { renderSpicesExtraFiltered(''); document.getElementById('spicesExtraModal').classList.add('active'); document.getElementById('spicesExtraSearchInput').focus(); };
     document.getElementById('roastedBtn').onclick = () => { renderRoastedFiltered(''); document.getElementById('roastedModal').classList.add('active'); document.getElementById('roastedSearchInput').focus(); };
@@ -870,6 +1152,7 @@ function bindEvents() {
     document.getElementById('extraBtn').onclick = () => { renderExtraFiltered(''); document.getElementById('extraModal').classList.add('active'); document.getElementById('extraSearchInput').focus(); };
     document.getElementById('bagsManagerBtn').onclick = () => { renderBags(); document.getElementById('bagsModal').classList.add('active'); document.getElementById('bagsSearchInput').focus(); };
     document.getElementById('tawsayaQuickBtn').onclick = () => document.getElementById('tawsayaModal').classList.add('active');
+    
     document.getElementById('saveNewItemBtn').onclick = addNewMaterialDirect;
     document.getElementById('saveImportantBtn').onclick = addSelectedImportant;
     document.getElementById('saveSpicesExtraBtn').onclick = addSelectedSpicesExtra;
@@ -879,7 +1162,10 @@ function bindEvents() {
     document.getElementById('saveBagsBtn').onclick = addSelectedBags;
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
+    document.getElementById('confirmMoveBtn').onclick = moveMaterialToSection;
+    
     document.getElementById('editUnitSelect').addEventListener('change', function() { updateEditFieldByUnit(this.value); });
+    
     const debounce = (fn, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => fn.apply(this, args), delay); }; };
     document.getElementById('importantSearchInput').oninput = debounce((e) => renderImportantFiltered(e.target.value), 300);
     document.getElementById('spicesExtraSearchInput').oninput = debounce((e) => renderSpicesExtraFiltered(e.target.value), 300);
@@ -908,4 +1194,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered'))
             .catch(err => console.error('❌ SW failed', err));
     });
-                                                                           }
+                     }
