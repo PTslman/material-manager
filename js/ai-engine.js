@@ -72,44 +72,47 @@ class AIEngine {
 
         let totalQuantity = 0;
         let validMaterialsCount = 0;
+        let lowStockMaterials = [];
 
         for (const material of materials) {
-            // استثناء التوصيات من تحليل النواقص
+            // استثناء التوصيات من تحليل المخزون الرئيسي
             if (material.priority === 'tawsaya') continue;
             
             const quantity = this.convertToKg(material.quantity, material.unitType);
             totalQuantity += quantity;
             
-            // التحقق من صحة الكمية
-            const isValidQuantity = material.quantity && material.quantity > 0;
+            // التحقق من صحة الكمية - المادة ناقصة إذا كانت الكمية 0 أو غير موجودة
+            const isLowStock = (!material.quantity || material.quantity === 0);
+            const isVeryLow = (quantity > 0 && quantity < 0.5);
+            const isLow = (quantity >= 0.5 && quantity < 1);
             
-            if (!isValidQuantity || quantity === 0) {
-                analysis.lowStock.push({ 
+            if (isLowStock) {
+                lowStockMaterials.push({ 
                     name: material.name, 
                     quantity: 0, 
-                    status: 'فارغ تماماً',
+                    status: 'فارغة',
                     urgency: 'عالية'
                 });
                 analysis.criticalStock.push({ 
                     name: material.name, 
-                    reason: 'مادة مفقودة بالكامل - تحتاج إعادة تعبئة فورية' 
+                    reason: 'مادة مفقودة - تحتاج إعادة تعبئة فورية' 
                 });
-            } else if (quantity < 0.5) {
-                analysis.lowStock.push({ 
+            } else if (isVeryLow) {
+                lowStockMaterials.push({ 
                     name: material.name, 
                     quantity: quantity, 
-                    status: 'حرج جداً',
+                    status: 'حرجة جداً',
                     urgency: 'عالية'
                 });
                 analysis.criticalStock.push({ 
                     name: material.name, 
                     reason: `أقل من نصف كيلو (${quantity.toFixed(2)} كجم)` 
                 });
-            } else if (quantity < 1) {
-                analysis.lowStock.push({ 
+            } else if (isLow) {
+                lowStockMaterials.push({ 
                     name: material.name, 
                     quantity: quantity, 
-                    status: 'منخفض',
+                    status: 'منخفضة',
                     urgency: 'متوسطة'
                 });
             } else if (quantity > 10) {
@@ -122,29 +125,34 @@ class AIEngine {
                     name: material.name, 
                     quantity: quantity, 
                     risk: 'خطر تلف مرتفع',
-                    suggestedAction: 'تخفيض الكمية أو مشاركتها مع فروع أخرى' 
+                    suggestedAction: 'تخفيض الكمية أو مشاركتها' 
                 });
             }
             
             validMaterialsCount++;
             
-            // توقع موعد النفاد
-            const consumptionRate = this.getConsumptionRate(material.name);
-            const daysUntilEmpty = consumptionRate > 0 && quantity > 0 ? Math.floor(quantity / consumptionRate) : Infinity;
-            
-            if (daysUntilEmpty < 7 && daysUntilEmpty > 0) {
-                analysis.predictions.push({
-                    name: material.name,
-                    daysUntilEmpty: daysUntilEmpty,
-                    recommendedRestock: Math.ceil(consumptionRate * 14),
-                    reason: `سوف تنفد خلال ${daysUntilEmpty} يوم`
-                });
+            // توقع موعد النفاد للمواد المنخفضة
+            if (quantity > 0 && quantity < 2) {
+                const consumptionRate = this.getConsumptionRate(material.name);
+                const daysUntilEmpty = consumptionRate > 0 ? Math.floor(quantity / consumptionRate) : 30;
+                
+                if (daysUntilEmpty < 14) {
+                    analysis.predictions.push({
+                        name: material.name,
+                        daysUntilEmpty: daysUntilEmpty,
+                        recommendedRestock: Math.ceil(consumptionRate * 14),
+                        reason: `متوقع النفاد خلال ${daysUntilEmpty} يوم`
+                    });
+                }
             }
         }
 
         analysis.totalQuantity = totalQuantity;
         analysis.totalMaterials = validMaterialsCount;
+        analysis.lowStockCount = lowStockMaterials.length;
         analysis.avgQuantity = validMaterialsCount > 0 ? (totalQuantity / validMaterialsCount).toFixed(1) : 0;
+        analysis.lowStock = lowStockMaterials;
+        
         analysis.insights = this.generateInsights(analysis);
         analysis.smartRecommendations = this.generateSmartRecommendations(analysis);
         
@@ -172,13 +180,22 @@ class AIEngine {
             });
         }
 
+        if (analysis.predictions.length > 0) {
+            recommendations.push({
+                type: 'predict',
+                title: '📅 توقعات النفاد',
+                items: analysis.predictions.slice(0, 3).map(p => `${p.name}: ${p.reason}`),
+                priority: 3
+            });
+        }
+
         const seasonal = this.seasonalFactors;
         if (seasonal.multiplier > 1) {
             recommendations.push({
                 type: 'seasonal',
                 title: `🌟 توصية موسمية: ${seasonal.reason}`,
                 items: ['خزّن كمية إضافية 30-50%', 'جهّز عروض خاصة للموسم'],
-                priority: 3
+                priority: 4
             });
         }
 
@@ -192,13 +209,19 @@ class AIEngine {
             insights.push('✨ ابدأ بإضافة المواد إلى المخزون');
             insights.push('💡 اضغط على "إضافة مادة جديدة" أو استخدم الأقسام الجاهزة');
         } else {
-            const lowStockPercentage = ((analysis.lowStock.length / analysis.totalMaterials) * 100).toFixed(1);
-            
-            if (analysis.lowStock.length === 0) {
+            if (analysis.lowStockCount === 0) {
                 insights.push('🎉 ممتاز! المخزون متوازن ولا توجد مواد ناقصة');
             } else {
-                insights.push(`📊 نسبة النواقص: ${lowStockPercentage}%`);
-                insights.push(`🔔 لديك ${analysis.lowStock.length} مادة بحاجة لإعادة تعبئة`);
+                const percentage = ((analysis.lowStockCount / analysis.totalMaterials) * 100).toFixed(1);
+                insights.push(`📊 نسبة المواد الناقصة: ${percentage}% (${analysis.lowStockCount} من ${analysis.totalMaterials} مادة)`);
+                
+                // عرض أسماء المواد الناقصة
+                if (analysis.lowStockCount <= 5) {
+                    const lowStockNames = analysis.lowStock.map(m => m.name).join('، ');
+                    insights.push(`🔔 المواد الناقصة: ${lowStockNames}`);
+                } else {
+                    insights.push(`🔔 لديك ${analysis.lowStockCount} مادة ناقصة بحاجة لإعادة تعبئة`);
+                }
             }
 
             if (analysis.wasteRisks.length > 0) {
@@ -206,13 +229,14 @@ class AIEngine {
             }
         }
         
+        // نصائح مفيدة متجددة
         const tips = [
-            '💡 نصيحة: رتّب المواد حسب تاريخ الصلاحية',
-            '📦 نصيحة: المواد الأكثر استهلاكاً ضعها في مكان سهل الوصول',
-            '🔄 لا تنسَ تحديث الكميات عند كل صرف',
+            '💡 نصيحة: المواد الناقصة تظهر بخلفية برتقالية فاتحة',
+            '📦 نصيحة: يمكنك سحب أي مادة وإفلاتها في قسم آخر لنقلها',
+            '🔄 نصيحة: اضغط مطولاً على أي مادة لسحبها (للشاشات اللمسية)',
             '📱 يمكنك استخدام التطبيق دون اتصال بالإنترنت',
             '⭐ المواد الأساسية تحقق أعلى مبيعات - حافظ على توفرها',
-            '📊 راجع تقارير المخزون أسبوعياً لتحسين إدارة المخزون'
+            '📊 راجع المخزون أسبوعياً لتجنب النواقص المفاجئة'
         ];
         insights.push(tips[Math.floor(Math.random() * tips.length)]);
         
@@ -228,6 +252,12 @@ class AIEngine {
             details: details,
             timestamp: Date.now()
         });
+        
+        // الاحتفاظ بآخر 100 حدث فقط
+        if (this.learningData.consumptionPatterns[material].length > 100) {
+            this.learningData.consumptionPatterns[material] = this.learningData.consumptionPatterns[material].slice(-100);
+        }
+        
         this.saveLearningData();
     }
 }
