@@ -1,10 +1,9 @@
-
 let allMaterials = [];
 let unsubscribe = null;
 let currentEditId = null;
 let autoSyncInterval = null;
-let dragSourceId = null;
-let dragSourceSection = null;
+let draggedItemId = null;
+let draggedItemOriginalSection = null;
 
 // ==================== القوائم الكاملة ====================
 const importantItemsList = [
@@ -85,13 +84,8 @@ function calculateAIMetrics() {
         let quantity = material.quantity || 0;
         totalQuantity += quantity;
         
-        if (material.unitType === 'kg' && quantity < 0.5) {
-            lowStockCount++;
-        } else if (material.unitType === 'half' && quantity < 0.5) {
-            lowStockCount++;
-        } else if (material.unitType === 'quarter' && quantity < 0.25) {
-            lowStockCount++;
-        } else if (material.unitType === 'oke' && quantity < 0.2) {
+        // جميع المواد التي تم إضافتها تعتبر ناقصة حتى يتم تعديلها لكمية أكبر
+        if (quantity < 1) {
             lowStockCount++;
         }
     });
@@ -114,59 +108,22 @@ function calculateAIMetrics() {
         if (totalCount === 0) {
             insightText = '📊 لا توجد مواد في المخزون. أضف مواد جديدة للبدء.';
         } else if (lowStockCount > 0) {
-            insightText = `⚠️ تنبيه: يوجد ${lowStockCount} مادة ناقصة تحتاج إلى إعادة تزويد.`;
-        } else if (totalQuantity > 100) {
-            insightText = `📈 المخزون ممتاز! إجمالي المواد ${totalQuantity.toFixed(2)} كجم.`;
-        } else if (totalQuantity > 50) {
-            insightText = `✅ المخزون جيد. إجمالي المواد ${totalQuantity.toFixed(2)} كجم.`;
-        } else if (totalQuantity > 0) {
-            insightText = `📦 المخزون متوسط. ينصح بمراجعة المواد الناقصة.`;
+            insightText = `⚠️ تنبيه: ${lowStockCount} مادة تحتاج إلى مراجعة الكمية.`;
         } else {
-            insightText = `📊 المخزون فارغ. أضف مواد جديدة.`;
+            insightText = `✅ المخزون جيد. إجمالي ${totalQuantity.toFixed(2)} كجم من المواد.`;
         }
         
         if (totalCount > 0) {
             const materialNames = allMaterials.map(m => m.name);
             const uniqueNames = [...new Set(materialNames)];
-            insightText += ` يتضمن المخزون ${uniqueNames.length} نوعاً مختلفاً من المواد.`;
+            insightText += ` يتضمن المخزون ${uniqueNames.length} نوعاً مختلفاً.`;
         }
         
         insights.innerHTML = `<i class="fas fa-robot"></i><span>${insightText}</span>`;
     }
 }
 
-// ==================== نقل المواد بين الأقسام ====================
-function openMoveModal(materialId, materialName, currentSection) {
-    currentEditId = materialId;
-    const nameInput = document.getElementById('moveItemName');
-    const sectionSelect = document.getElementById('moveTargetSection');
-    if (nameInput) nameInput.value = materialName;
-    if (sectionSelect) sectionSelect.value = currentSection;
-    const modal = document.getElementById('moveItemModal');
-    if (modal) modal.classList.add('active');
-}
-
-async function moveMaterialToSection() {
-    if (!currentEditId) return;
-    
-    const targetSection = document.getElementById('moveTargetSection').value;
-    
-    try {
-        await materialsCollection.doc(currentEditId).update({ priority: targetSection });
-        showToast(`✓ تم نقل المادة بنجاح`);
-        const modal = document.getElementById('moveItemModal');
-        if (modal) modal.classList.remove('active');
-        currentEditId = null;
-        
-        if (unsubscribe) unsubscribe();
-        startListener();
-    } catch(e) {
-        console.error(e);
-        showToast("❌ فشل نقل المادة", true);
-    }
-}
-
-// ==================== دعم السحب والإفلات ====================
+// ==================== سحب وإفلات مباشر بدون نافذة ====================
 function setupDragAndDrop() {
     const cards = document.querySelectorAll('.material-card');
     
@@ -174,37 +131,40 @@ function setupDragAndDrop() {
         card.setAttribute('draggable', 'true');
         
         card.addEventListener('dragstart', (e) => {
-            dragSourceId = card.getAttribute('data-id');
-            dragSourceSection = card.getAttribute('data-section');
-            e.dataTransfer.setData('text/plain', dragSourceId);
-            card.classList.add('dragging');
+            draggedItemId = card.getAttribute('data-id');
+            draggedItemOriginalSection = card.getAttribute('data-section');
+            e.dataTransfer.setData('text/plain', draggedItemId);
+            card.style.opacity = '0.5';
         });
         
         card.addEventListener('dragend', (e) => {
-            card.classList.remove('dragging');
-            dragSourceId = null;
-            dragSourceSection = null;
+            card.style.opacity = '';
+            draggedItemId = null;
+            draggedItemOriginalSection = null;
         });
         
         card.addEventListener('dragover', (e) => {
             e.preventDefault();
-            card.classList.add('drag-over');
+            card.style.border = '2px dashed var(--primary-500)';
+            card.style.background = 'var(--primary-50)';
         });
         
         card.addEventListener('dragleave', (e) => {
-            card.classList.remove('drag-over');
+            card.style.border = '';
+            card.style.background = '';
         });
         
         card.addEventListener('drop', async (e) => {
             e.preventDefault();
-            card.classList.remove('drag-over');
+            card.style.border = '';
+            card.style.background = '';
             
             const targetId = card.getAttribute('data-id');
             const targetSection = card.getAttribute('data-section');
             
-            if (dragSourceId && dragSourceId !== targetId) {
+            if (draggedItemId && draggedItemId !== targetId) {
                 try {
-                    await materialsCollection.doc(dragSourceId).update({ priority: targetSection });
+                    await materialsCollection.doc(draggedItemId).update({ priority: targetSection });
                     showToast(`✓ تم نقل المادة إلى ${getSectionName(targetSection)}`);
                     
                     if (unsubscribe) unsubscribe();
@@ -228,51 +188,6 @@ function getSectionName(section) {
         'tawsaya': 'توصيات'
     };
     return sections[section] || section;
-}
-
-// ==================== الضغطة المطولة ====================
-let longPressTimer = null;
-
-function setupLongPress() {
-    const cards = document.querySelectorAll('.material-card');
-    
-    cards.forEach(card => {
-        card.addEventListener('touchstart', (e) => {
-            longPressTimer = setTimeout(() => {
-                const id = card.getAttribute('data-id');
-                const nameSpan = card.querySelector('.card-title span');
-                const name = nameSpan ? nameSpan.innerText : '';
-                const section = card.getAttribute('data-section');
-                if (id) openMoveModal(id, name, section);
-            }, 800);
-        });
-        
-        card.addEventListener('touchend', () => {
-            if (longPressTimer) clearTimeout(longPressTimer);
-        });
-        
-        card.addEventListener('touchmove', () => {
-            if (longPressTimer) clearTimeout(longPressTimer);
-        });
-        
-        card.addEventListener('mousedown', (e) => {
-            longPressTimer = setTimeout(() => {
-                const id = card.getAttribute('data-id');
-                const nameSpan = card.querySelector('.card-title span');
-                const name = nameSpan ? nameSpan.innerText : '';
-                const section = card.getAttribute('data-section');
-                if (id) openMoveModal(id, name, section);
-            }, 800);
-        });
-        
-        card.addEventListener('mouseup', () => {
-            if (longPressTimer) clearTimeout(longPressTimer);
-        });
-        
-        card.addEventListener('mousemove', () => {
-            if (longPressTimer) clearTimeout(longPressTimer);
-        });
-    });
 }
 
 // ==================== إدارة حالة التحديدات ====================
@@ -967,7 +882,6 @@ function renderAllMaterials(materials) {
     
     setTimeout(() => {
         setupDragAndDrop();
-        setupLongPress();
     }, 100);
     
     calculateAIMetrics();
@@ -1162,7 +1076,6 @@ function bindEvents() {
     document.getElementById('saveBagsBtn').onclick = addSelectedBags;
     document.getElementById('saveTawsayaBtn').onclick = addTawsaya;
     document.getElementById('saveEditBtn').onclick = saveEdit;
-    document.getElementById('confirmMoveBtn').onclick = moveMaterialToSection;
     
     document.getElementById('editUnitSelect').addEventListener('change', function() { updateEditFieldByUnit(this.value); });
     
@@ -1194,4 +1107,4 @@ if ('serviceWorker' in navigator) {
             .then(reg => console.log('✅ SW registered'))
             .catch(err => console.error('❌ SW failed', err));
     });
-                     }
+                                             }
