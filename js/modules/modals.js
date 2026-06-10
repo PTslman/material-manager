@@ -75,3 +75,9 @@ function closeAllModals() {
     const modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
     modals.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); });
 }
+// تصدير الدوال للاستخدام العام
+window.setupLongPress = setupLongPress;
+window.openMoveModal = openMoveModal;
+window.executeMove = executeMove;
+window.closeMoveModal = closeMoveModal;
+window.closeAllModals = closeAllModals;
