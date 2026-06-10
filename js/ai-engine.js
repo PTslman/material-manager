@@ -1,4 +1,5 @@
 // ==================== محرك الذكاء الاصطناعي ====================
+
 class AIEngine {
     constructor() {
         this.learningData = this.loadLearningData();
@@ -7,7 +8,12 @@ class AIEngine {
 
     loadLearningData() {
         const saved = localStorage.getItem('ai_learning_data');
-        return saved ? JSON.parse(saved) : { consumptionPatterns: {}, popularCombinations: {}, restockFrequency: {}, wastePredictions: {} };
+        return saved ? JSON.parse(saved) : {
+            consumptionPatterns: {},
+            popularCombinations: {},
+            restockFrequency: {},
+            wastePredictions: {}
+        };
     }
 
     saveLearningData() {
@@ -24,21 +30,54 @@ class AIEngine {
 
     convertToKg(quantity, unit) {
         if (!quantity || quantity === 0) return 0;
-        const conversions = { 'kg': 1, 'half': 0.5, 'quarter': 0.25, 'oke': 0.128, 'box': 0.5, 'piece': 0.1, 'bag': 0.05 };
+        const conversions = {
+            'kg': 1,
+            'half': 0.5,
+            'quarter': 0.25,
+            'oke': 0.128,
+            'box': 0.5,
+            'piece': 0.1,
+            'bag': 0.05
+        };
         return quantity * (conversions[unit] || 1);
     }
 
     getConsumptionRate(materialName) {
-        const rates = { 'ملح': 0.5, 'فلفل اسود ناعم': 0.3, 'كمون ناعم': 0.4, 'كركم': 0.2, 'زنجبيل ناعم': 0.15, 'قرفة ناعمة': 0.2, 'هيل ناعم': 0.1 };
+        const rates = {
+            'ملح': 0.5,
+            'فلفل اسود ناعم': 0.3,
+            'كمون ناعم': 0.4,
+            'كركم': 0.2,
+            'زنجبيل ناعم': 0.15,
+            'قرفة ناعمة': 0.2,
+            'هيل ناعم': 0.1,
+            'كزبرة ناعمة': 0.25,
+            'شطة حدة وسط': 0.1,
+            'توم ناعم': 0.2,
+            'بصل ناعم': 0.2
+        };
         return rates[materialName] || 0.1;
     }
 
     analyzeInventory(materials) {
-        const analysis = { lowStock: [], criticalStock: [], excessStock: [], recommendations: [], predictions: [], insights: [], smartAlerts: [], wasteRisks: [] };
-        let totalQuantity = 0, validMaterialsCount = 0, lowStockMaterials = [];
+        const analysis = {
+            lowStock: [],
+            criticalStock: [],
+            excessStock: [],
+            recommendations: [],
+            predictions: [],
+            insights: [],
+            smartAlerts: [],
+            wasteRisks: []
+        };
+
+        let totalQuantity = 0;
+        let validMaterialsCount = 0;
+        let lowStockMaterials = [];
 
         for (const material of materials) {
             if (material.priority === 'tawsaya') continue;
+            
             const quantity = this.convertToKg(material.quantity, material.unitType);
             totalQuantity += quantity;
             
@@ -54,6 +93,7 @@ class AIEngine {
                 analysis.excessStock.push({ name: material.name, quantity: quantity, reason: 'كمية كبيرة جداً' });
                 analysis.wasteRisks.push({ name: material.name, quantity: quantity, risk: 'خطر تلف مرتفع', suggestedAction: 'تخفيض الكمية' });
             }
+            
             validMaterialsCount++;
         }
 
@@ -64,26 +104,47 @@ class AIEngine {
         analysis.lowStock = lowStockMaterials;
         analysis.insights = this.generateInsights(analysis);
         analysis.smartRecommendations = this.generateSmartRecommendations(analysis);
+        
         return analysis;
     }
 
     generateSmartRecommendations(analysis) {
         const recommendations = [];
+        
         if (analysis.criticalStock.length > 0) {
-            recommendations.push({ type: 'urgent', title: '⚠️ مواد تحتاج شراء فوري', items: analysis.criticalStock.slice(0, 3).map(c => `${c.name} (${c.reason})`), priority: 1 });
+            recommendations.push({
+                type: 'urgent',
+                title: '⚠️ مواد تحتاج شراء فوري',
+                items: analysis.criticalStock.slice(0, 3).map(c => `${c.name} (${c.reason})`),
+                priority: 1
+            });
         }
+
         if (analysis.excessStock.length > 0) {
-            recommendations.push({ type: 'reduce', title: '📉 مواد بكميات زائدة', items: analysis.excessStock.slice(0, 3).map(e => `${e.name} (${e.quantity.toFixed(1)} كجم)`), priority: 2 });
+            recommendations.push({
+                type: 'reduce',
+                title: '📉 مواد بكميات زائدة',
+                items: analysis.excessStock.slice(0, 3).map(e => `${e.name} (${e.quantity.toFixed(1)} كجم)`),
+                priority: 2
+            });
         }
+
         const seasonal = this.seasonalFactors;
         if (seasonal.multiplier > 1) {
-            recommendations.push({ type: 'seasonal', title: `🌟 توصية موسمية: ${seasonal.reason}`, items: ['خزّن كمية إضافية 30-50%', 'جهّز عروض خاصة للموسم'], priority: 3 });
+            recommendations.push({
+                type: 'seasonal',
+                title: `🌟 توصية موسمية: ${seasonal.reason}`,
+                items: ['خزّن كمية إضافية 30-50%', 'جهّز عروض خاصة للموسم'],
+                priority: 3
+            });
         }
+
         return recommendations;
     }
 
     generateInsights(analysis) {
         const insights = [];
+        
         if (analysis.totalMaterials === 0) {
             insights.push('✨ ابدأ بإضافة المواد إلى المخزون');
             insights.push('💡 اضغط على "إضافة مادة جديدة" أو استخدم الأقسام الجاهزة');
@@ -93,23 +154,45 @@ class AIEngine {
             } else {
                 const percentage = ((analysis.lowStockCount / analysis.totalMaterials) * 100).toFixed(1);
                 insights.push(`📊 نسبة المواد الناقصة: ${percentage}% (${analysis.lowStockCount} من ${analysis.totalMaterials} مادة)`);
+                
                 if (analysis.lowStockCount <= 5) {
                     insights.push(`🔔 المواد الناقصة: ${analysis.lowStock.map(m => m.name).join('، ')}`);
                 } else {
                     insights.push(`🔔 لديك ${analysis.lowStockCount} مادة ناقصة بحاجة لإعادة تعبئة`);
                 }
             }
-            if (analysis.wasteRisks.length > 0) insights.push(`⚠️ ${analysis.wasteRisks[0].suggestedAction}`);
+
+            if (analysis.wasteRisks.length > 0) {
+                insights.push(`⚠️ ${analysis.wasteRisks[0].suggestedAction}`);
+            }
         }
-        const tips = ['💡 المواد الناقصة تظهر بخلفية برتقالية', '📦 يمكنك سحب أي مادة وإفلاتها في قسم آخر', '🔄 اضغط مطولاً على أي مادة لسحبها'];
+        
+        const tips = [
+            '💡 المواد الناقصة تظهر بخلفية برتقالية',
+            '📦 اضغط مطولاً على أي مادة لنقلها إلى قسم آخر',
+            '🔄 يمكنك نقل المواد بين جميع الأقسام',
+            '📱 التطبيق يعمل دون اتصال بالإنترنت',
+            '⭐ المواد الأساسية تحقق أعلى مبيعات'
+        ];
         insights.push(tips[Math.floor(Math.random() * tips.length)]);
+        
         return insights;
     }
 
     learnFromAction(action, material, details) {
-        if (!this.learningData.consumptionPatterns[material]) this.learningData.consumptionPatterns[material] = [];
-        this.learningData.consumptionPatterns[material].push({ action, details, timestamp: Date.now() });
-        if (this.learningData.consumptionPatterns[material].length > 100) this.learningData.consumptionPatterns[material] = this.learningData.consumptionPatterns[material].slice(-100);
+        if (!this.learningData.consumptionPatterns[material]) {
+            this.learningData.consumptionPatterns[material] = [];
+        }
+        this.learningData.consumptionPatterns[material].push({
+            action: action,
+            details: details,
+            timestamp: Date.now()
+        });
+        
+        if (this.learningData.consumptionPatterns[material].length > 100) {
+            this.learningData.consumptionPatterns[material] = this.learningData.consumptionPatterns[material].slice(-100);
+        }
+        
         this.saveLearningData();
     }
 }
