@@ -36,13 +36,12 @@
 
 <div id="appContainer" class="app-main" style="display: none;">
     
-    <!-- Hero Section -->
     <div class="hero">
         <h1>مدير المواد والمخزون</h1>
         <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية</div>
     </div>
     
-    <!-- شريط البحث ضمن المواد الموجودة -->
+    <!-- شريط البحث -->
     <div class="search-bar-container">
         <div class="search-input-wrapper">
             <i class="fas fa-search search-icon"></i>
@@ -63,15 +62,12 @@
         </div>
     </div>
     
-    <!-- زر إضافة مادة جديد (أسفل البحث) -->
     <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
     
-    <!-- شريط المزامنة -->
     <div class="sync-bar">
         <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
     </div>
     
-    <!-- شريط الأدوات - تصميم جديد واضح -->
     <div class="toolbar-modern">
         <div class="toolbar-group">
             <button id="themeToggle" class="tool-btn" title="الوضع الليلي">
@@ -97,7 +93,6 @@
         </div>
     </div>
     
-    <!-- الأقسام (كروت سريعة) -->
     <div class="categories-container">
         <button class="category-card" data-category="main">
             <div class="category-icon"><i class="fas fa-star"></i></div>
@@ -136,10 +131,8 @@
         </button>
     </div>
     
-    <!-- حاوية الأقسام والعرض -->
     <div id="sectionsContainer"></div>
     
-    <!-- إحصائيات الذكاء الاصطناعي -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
             <i class="fas fa-brain"></i>
@@ -185,7 +178,6 @@
     </div>
 </div>
 
-<!-- شريط الحالة -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -193,8 +185,6 @@
     </div>
     <span id="syncItemsCount"><i class="fas fa-database"></i> 0</span>
 </div>
-
-<!-- ==================== MODALS ==================== -->
 
 <!-- New Item Modal -->
 <div id="newItemModal" class="modal">
@@ -242,6 +232,19 @@
         <div class="modal-buttons">
             <button id="saveNewItemBtn" class="btn-save">إضافة</button>
             <button id="closeNewModalBtn" class="btn-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Preset Modal -->
+<div id="presetModal" class="modal">
+    <div class="modal-content">
+        <h3 id="presetModalTitle"><i class="fas fa-list"></i> إضافة مواد جاهزة</h3>
+        <input type="text" id="presetSearchInput" class="search-input" placeholder="بحث...">
+        <div id="presetListContainer" class="modern-card-list"></div>
+        <div class="modal-buttons">
+            <button id="savePresetBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closePresetModalBtn" class="btn-cancel">إلغاء</button>
         </div>
     </div>
 </div>
@@ -311,7 +314,6 @@
     </div>
 </div>
 
-<!-- ==================== SCRIPTS ==================== -->
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
@@ -320,7 +322,6 @@
 <script src="js/app.js"></script>
 
 <script>
-// إخفاء شاشة البداية بعد التحميل
 setTimeout(function() {
     const splash = document.getElementById('splashScreen');
     const app = document.getElementById('appContainer');
@@ -334,4 +335,4 @@ setTimeout(function() {
 }, 2000);
 </script>
 </body>
-        </html>
+            </html>
