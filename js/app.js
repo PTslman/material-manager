@@ -2,6 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("🚀 App initializing...");
+    console.log("📁 Firebase collection: spices_final_v12");
     
     // ترتيب التهيئة مهم جداً
     if (typeof renderCategories === 'function') {
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (typeof startListener === 'function') {
         startListener();
-        console.log("✅ Listener started");
+        console.log("✅ Firestore listener started");
     } else {
         console.error("❌ startListener is not defined");
     }
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("✅ PWA initialized");
     }
     
-    // جعل المتغيرات عامة للوصول إليها من المودالات
+    // جعل المتغيرات عامة للوصول إليها
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
 });
