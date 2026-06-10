@@ -4,6 +4,8 @@ let unsubscribe = null;
 let currentEditId = null;
 let currentSearchTerm = '';
 let currentSearchFilter = 'all';
+let currentPresetCategory = 'main';
+let longPressTimer = null;
 
 // ==================== القوائم الجاهزة ====================
 const importantItemsList = [
@@ -45,14 +47,8 @@ const extraItemsList = [
 
 const bagTypesList = ["شفاف 10×12", "شفاف 20×12", "شفاف 10×20", "شفاف 25×17", "شفاف 20×30", "شفاف 35×25", "صيدلية", "أسود 30", "أسود 35", "أسود 40", "أسود 45"];
 
-// ==================== حالة التحديدات للقوائم الجاهزة ====================
 let presetSelections = {
-    main: {},
-    spices_extra: {},
-    roasted: {},
-    herbs: {},
-    extra: {},
-    bags: {}
+    main: {}, spices_extra: {}, roasted: {}, herbs: {}, extra: {}, bags: {}
 };
 
 // ==================== دوال مساعدة ====================
@@ -62,25 +58,24 @@ function showToast(msg, isErr = false) {
     
     let toast = document.createElement('div');
     toast.className = 'toast';
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${isErr ? '#ef4444' : '#10b981'};
-        color: white;
-        padding: 10px 20px;
-        border-radius: 9999px;
-        font-size: 13px;
-        z-index: 10000;
-        white-space: nowrap;
-        font-weight: 500;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-        direction: rtl;
-    `;
     toast.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2500);
+}
+
+function showSystemMessage(title, message, type = 'info') {
+    const modal = document.getElementById('systemMessageModal');
+    const titleEl = document.getElementById('systemMessageTitle');
+    const textEl = document.getElementById('systemMessageText');
+    if (titleEl) titleEl.innerText = title;
+    if (textEl) textEl.innerText = message;
+    const icon = modal?.querySelector('.fa-info-circle');
+    if (icon) {
+        if (type === 'error') icon.style.color = '#ef4444';
+        else if (type === 'warning') icon.style.color = '#f59e0b';
+        else icon.style.color = '#10b981';
+    }
+    if (modal) modal.classList.add('active');
 }
 
 function escapeHtml(str) {
@@ -122,17 +117,12 @@ function filterMaterials() {
     }
     
     let filtered = [...allMaterials];
-    
     if (currentSearchTerm) {
-        filtered = filtered.filter(m => 
-            m.name.toLowerCase().includes(currentSearchTerm.toLowerCase())
-        );
+        filtered = filtered.filter(m => m.name.toLowerCase().includes(currentSearchTerm.toLowerCase()));
     }
-    
     if (currentSearchFilter !== 'all') {
         filtered = filtered.filter(m => m.priority === currentSearchFilter);
     }
-    
     renderSections(filtered, true);
 }
 
@@ -147,23 +137,17 @@ function updateCategoryCounts() {
     }
 }
 
-// ==================== تحليل الذكاء الاصطناعي ====================
+// ==================== الذكاء الاصطناعي ====================
 function calculateAIMetrics() {
     if (!window.aiEngine) return;
-    
     try {
         const analysis = window.aiEngine.analyzeInventory(allMaterials);
         const stats = analysis.statistics;
         
-        const totalEl = document.getElementById('totalMaterialsCount');
-        const totalQtyEl = document.getElementById('totalQuantityValue');
-        const lowStockEl = document.getElementById('lowStockCount');
-        const avgQtyEl = document.getElementById('avgQuantityValue');
-        
-        if (totalEl) totalEl.innerText = stats.totalMaterials;
-        if (totalQtyEl) totalQtyEl.innerText = stats.totalQuantity.toFixed(2);
-        if (lowStockEl) lowStockEl.innerHTML = `${stats.lowStockCount}<span class="ai-stat-unit" style="font-size:0.625rem"> مادة</span>`;
-        if (avgQtyEl) avgQtyEl.innerText = stats.avgQuantity;
+        document.getElementById('totalMaterialsCount').innerText = stats.totalMaterials;
+        document.getElementById('totalQuantityValue').innerText = stats.totalQuantity.toFixed(2);
+        document.getElementById('lowStockCount').innerHTML = `${stats.lowStockCount}<span class="ai-stat-unit" style="font-size:0.625rem"> مادة</span>`;
+        document.getElementById('avgQuantityValue').innerText = stats.avgQuantity;
         
         const insightsDiv = document.getElementById('aiInsights');
         if (insightsDiv && analysis.insights) {
@@ -174,12 +158,10 @@ function calculateAIMetrics() {
             html += `</div>`;
             insightsDiv.innerHTML = html;
         }
-    } catch(e) {
-        console.error("AI Error:", e);
-    }
+    } catch(e) { console.error("AI Error:", e); }
 }
 
-// ==================== عرض المواد والأقسام ====================
+// ==================== عرض المواد ====================
 function renderSections(materials, isFiltered = false) {
     const container = document.getElementById('sectionsContainer');
     if (!container) return;
@@ -198,7 +180,7 @@ function renderSections(materials, isFiltered = false) {
                         <i class="fas fa-plus"></i> إضافة جاهزة
                     </button>
                 </div>
-                <div class="materials-grid" data-section="${section}">
+                <div class="materials-grid">
                     ${sectionMaterials.length === 0 ? 
                         `<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>اضغط مطولاً على أي مادة لنقلها إلى هنا</small></div>` : 
                         sectionMaterials.map(m => renderMaterialCard(m)).join('')
@@ -210,7 +192,6 @@ function renderSections(materials, isFiltered = false) {
     
     container.innerHTML = html;
     
-    // ربط أحداث التعديل والحذف
     document.querySelectorAll('.edit-material').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -237,7 +218,6 @@ function renderSections(materials, isFiltered = false) {
         };
     });
     
-    // ربط أحداث إضافة القوائم الجاهزة
     document.querySelectorAll('.add-preset-btn').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -245,12 +225,11 @@ function renderSections(materials, isFiltered = false) {
             if (category && category !== 'tawsaya') {
                 openPresetModal(category);
             } else if (category === 'tawsaya') {
-                showToast("📝 التوصيات تضاف من القائمة المخصصة", false);
+                showSystemMessage('إضافة توصيات', '📝 يمكنك إضافة التوصيات من القائمة المخصصة', 'info');
             }
         };
     });
     
-    // ربط أحداث الضغطة المطولة للنقل
     document.querySelectorAll('.material-card').forEach(card => {
         setupLongPress(card);
     });
@@ -262,7 +241,6 @@ function renderSections(materials, isFiltered = false) {
 function renderMaterialCard(m) {
     const isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
     const lowStockClass = isLowStock ? 'low-stock' : '';
-    
     let quantityDisplay = formatDisplay(m);
     if (isLowStock && m.priority !== 'tawsaya') quantityDisplay = '⚠️ ناقصة';
     
@@ -280,11 +258,8 @@ function renderMaterialCard(m) {
     `;
 }
 
-// ==================== الضغطة المطولة لنقل المواد ====================
-let longPressTimer = null;
-
+// ==================== الضغطة المطولة ====================
 function setupLongPress(card) {
-    // إزالة المستمعين السابقين
     card.removeEventListener('touchstart', onTouchStart);
     card.removeEventListener('touchend', onTouchEnd);
     card.removeEventListener('touchmove', onTouchMove);
@@ -292,7 +267,6 @@ function setupLongPress(card) {
     card.removeEventListener('mouseup', onMouseUp);
     card.removeEventListener('mouseleave', onMouseLeave);
     
-    // إضافة مستمعين جدد
     card.addEventListener('touchstart', onTouchStart);
     card.addEventListener('touchend', onTouchEnd);
     card.addEventListener('touchmove', onTouchMove);
@@ -375,7 +349,7 @@ function closeMoveModal() {
     window.moveData = null;
 }
 
-// ==================== القوائم الجاهزة (Preset Items) ====================
+// ==================== القوائم الجاهزة ====================
 function openPresetModal(category) {
     currentPresetCategory = category;
     const titles = {
@@ -450,7 +424,6 @@ function renderPresetList(category, filter) {
             `;
         });
         
-        // ربط أحداث الكمية
         container.querySelectorAll('.qty-dec-btn').forEach(btn => {
             btn.onclick = () => {
                 const idx = parseInt(btn.dataset.idx);
@@ -467,7 +440,6 @@ function renderPresetList(category, filter) {
         });
     }
     
-    // ربط أحداث复选框
     container.querySelectorAll('.preset-checkbox').forEach(cb => {
         cb.addEventListener('change', (e) => {
             if (!presetSelections[category]) presetSelections[category] = {};
@@ -531,11 +503,9 @@ async function addSelectedPresetItems() {
             });
         });
         await batch.commit();
-        
         showToast(`✓ تم إضافة ${itemsToAdd.length} مادة بنجاح`);
         document.getElementById('presetModal').classList.remove('active');
         presetSelections[category] = {};
-        
         if (unsubscribe) unsubscribe();
         startListener();
     } catch(e) {
@@ -644,10 +614,12 @@ function startListener() {
         const statusText = document.getElementById('syncStatusText');
         const syncDot = document.getElementById('syncDot');
         const itemsCount = document.getElementById('syncItemsCount');
+        const syncTime = document.getElementById('syncLastTime');
         
         if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
         if (syncDot) syncDot.className = 'sync-dot';
         if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${allMaterials.length}`;
+        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
         
         filterMaterials();
         
@@ -716,22 +688,18 @@ function restoreData() {
 
 // ==================== ربط الأحداث ====================
 function bindEvents() {
-    // الأزرار الرئيسية
     document.getElementById('mainAddBtn').onclick = () => document.getElementById('newItemModal').classList.add('active');
     document.getElementById('syncBtn').onclick = () => { if (unsubscribe) unsubscribe(); startListener(); showToast("🔄 جاري المزامنة..."); };
     document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
     document.getElementById('backupBtn').onclick = backupData;
     document.getElementById('restoreBtn').onclick = restoreData;
     document.getElementById('clearAllBtn').onclick = clearAllMaterials;
-    
-    // أزرار المودالات
     document.getElementById('saveNewItemBtn').onclick = addNewMaterial;
     document.getElementById('saveEditBtn').onclick = saveEdit;
     document.getElementById('savePresetBtn').onclick = addSelectedPresetItems;
     document.getElementById('confirmMoveBtn').onclick = executeMove;
     document.getElementById('cancelMoveBtn').onclick = closeMoveModal;
     
-    // البحث
     const searchInput = document.getElementById('globalSearchInput');
     const clearBtn = document.getElementById('clearSearchBtn');
     const filterChips = document.querySelectorAll('.filter-chip');
@@ -766,7 +734,6 @@ function bindEvents() {
         });
     }
     
-    // إغلاق المودالات
     window.closeAllModals = () => {
         const modals = ['newItemModal', 'editModal', 'moveItemModal', 'presetModal', 'systemMessageModal'];
         modals.forEach(id => {
@@ -783,35 +750,10 @@ function bindEvents() {
 }
 
 // ==================== التهيئة ====================
-let currentPresetCategory = 'main';
-let presetModalReady = false;
-
-// إضافة عناصر الـ Modal للقوائم الجاهزة إذا لم تكن موجودة
-function ensurePresetModal() {
-    if (document.getElementById('presetModal')) return;
-    
-    const modalHtml = `
-        <div id="presetModal" class="modal">
-            <div class="modal-content">
-                <h3 id="presetModalTitle"><i class="fas fa-list"></i> إضافة مواد جاهزة</h3>
-                <input type="text" id="presetSearchInput" class="search-input" placeholder="بحث...">
-                <div id="presetListContainer" class="modern-card-list"></div>
-                <div class="modal-buttons">
-                    <button id="savePresetBtn" class="btn-save">إضافة المحددة</button>
-                    <button id="closePresetModalBtn" class="btn-cancel">إلغاء</button>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    ensurePresetModal();
     bindEvents();
     startListener();
     
-    // أزرار +/- في نافذة الإضافة
     const dec = document.getElementById('newQtyDec');
     const inc = document.getElementById('newQtyInc');
     const qty = document.getElementById('newQuantityValue');
@@ -820,7 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inc.onclick = () => { let v = parseFloat(qty.value) || 1; v = v + 0.25; qty.value = v; };
     }
     
-    // تحديث حقل الكمية في التعديل حسب الوحدة
     const editUnit = document.getElementById('editUnitSelect');
     if (editUnit) {
         editUnit.addEventListener('change', function() {
@@ -832,7 +773,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // تثبيت PWA
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -853,3 +793,5 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
+console.log("✅ App initialized successfully");
