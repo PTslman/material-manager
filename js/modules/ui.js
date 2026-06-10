@@ -1,3 +1,5 @@
+// ==================== واجهة المستخدم ====================
+
 function renderCategories() {
     var container = document.getElementById('categoriesContainer');
     if (!container) return;
@@ -21,6 +23,7 @@ function renderCategories() {
             '<div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>';
     }
 }
+
 function renderSections(materials) {
     var container = document.getElementById('sectionsContainer');
     if (!container) return;
@@ -46,6 +49,7 @@ function renderSections(materials) {
     bindCardButtons();
     setTimeout(function() { if (typeof setupLongPressForAllCards === 'function') setupLongPressForAllCards(); }, 100);
 }
+
 function renderMaterialCard(m) {
     var isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
     var lowStockClass = isLowStock ? 'low-stock' : '';
@@ -57,34 +61,49 @@ function renderMaterialCard(m) {
         '<button class="delete-material" data-id="' + m.id + '" title="حذف المادة"><i class="fas fa-trash-alt"></i></button></div></div>' +
         '<div class="qty-badge">' + quantityDisplay + '</div></div>';
 }
+
 function bindCardButtons() {
+    // أزرار التعديل
     var editBtns = document.querySelectorAll('.edit-material');
     for (var i = 0; i < editBtns.length; i++) {
-        editBtns[i].onclick = function(e) {
-            e.stopPropagation();
-            var id = this.getAttribute('data-id');
-            var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
-            if (material) {
-                window.currentEditId = id;
-                document.getElementById('editMaterialName').value = material.name;
-                document.getElementById('editQuantityValue').value = material.quantity;
-                document.getElementById('editUnitSelect').value = material.unitType || 'kg';
-                document.getElementById('editModal').classList.add('active');
-            }
-        };
+        editBtns[i].removeEventListener('click', editClickHandler);
+        editBtns[i].addEventListener('click', editClickHandler);
     }
+    
+    function editClickHandler(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = this.getAttribute('data-id');
+        var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
+        if (material) {
+            window.currentEditId = id;
+            document.getElementById('editMaterialName').value = material.name;
+            document.getElementById('editQuantityValue').value = material.quantity;
+            document.getElementById('editUnitSelect').value = material.unitType || 'kg';
+            document.getElementById('editModal').classList.add('active');
+        }
+    }
+    
+    // أزرار الحذف
     var delBtns = document.querySelectorAll('.delete-material');
     for (var i = 0; i < delBtns.length; i++) {
-        delBtns[i].onclick = function(e) {
-            e.stopPropagation();
-            var id = this.getAttribute('data-id');
-            var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
-            if (confirm('⚠️ هل أنت متأكد من حذف "' + (material?.name || 'هذه المادة') + '"؟')) {
-                materialsCollection.doc(id).delete().then(function() { showToast('✅ تم الحذف'); }).catch(function(e) { showToast('❌ فشل الحذف', true); });
-            }
-        };
+        delBtns[i].removeEventListener('click', deleteClickHandler);
+        delBtns[i].addEventListener('click', deleteClickHandler);
+    }
+    
+    function deleteClickHandler(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = this.getAttribute('data-id');
+        var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
+        if (confirm('⚠️ هل أنت متأكد من حذف "' + (material?.name || 'هذه المادة') + '"؟')) {
+            materialsCollection.doc(id).delete()
+                .then(function() { showToast('✅ تم الحذف'); })
+                .catch(function(e) { showToast('❌ فشل الحذف', true); });
+        }
     }
 }
+
 function updateCategoryCounts() {
     var counts = { main: 0, spices_extra: 0, roasted: 0, herbs: 0, extra: 0, bags: 0, tawsaya: 0 };
     for (var i = 0; i < window.allMaterials.length; i++) {
@@ -96,6 +115,7 @@ function updateCategoryCounts() {
         if (el) el.innerText = counts[key];
     }
 }
+
 function calculateAIMetrics() {
     if (!window.aiEngine) return;
     try {
@@ -122,6 +142,7 @@ function calculateAIMetrics() {
         }
     } catch(e) { console.error('AI Error:', e); }
 }
+
 window.renderCategories = renderCategories;
 window.renderSections = renderSections;
 window.renderMaterialCard = renderMaterialCard;
