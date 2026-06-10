@@ -109,20 +109,25 @@ self.addEventListener('fetch', function(event) {
         })
     );
   } else {
-    // استراتيجية: Network First ثم Cache
-    event.respondWith(
-      fetch(event.request)
-        .then(function(networkResponse) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, responseClone);
-          });
-          return networkResponse;
-        })
-        .catch(function() {
-          return caches.match(event.request);
-        })
-    );
+    // لطلبات Firebase - استراتيجية Network First
+    if (requestUrl.hostname.includes('firebase') || requestUrl.hostname.includes('googleapis')) {
+      event.respondWith(
+        fetch(event.request)
+          .catch(function() {
+            return new Response(JSON.stringify({ error: 'offline' }), {
+              status: 503,
+              headers: new Headers({ 'Content-Type': 'application/json' })
+            });
+          })
+      );
+    } else {
+      event.respondWith(
+        fetch(event.request)
+          .catch(function() {
+            return caches.match(event.request);
+          })
+      );
+    }
   }
 });
 
@@ -133,67 +138,13 @@ self.addEventListener('message', function(event) {
   }
 });
 
-// مزامنة الخلفية (Background Sync)
-self.addEventListener('sync', function(event) {
-  console.log('[Service Worker] Background sync:', event.tag);
-  
-  if (event.tag === 'sync-materials') {
-    event.waitUntil(
-      (async function() {
-        try {
-          const cache = await caches.open(CACHE_NAME);
-          const pendingRequests = await cache.match('/pending-operations');
-          
-          if (pendingRequests) {
-            const operations = await pendingRequests.json();
-            for (const op of operations) {
-              await fetch(op.url, {
-                method: op.method,
-                headers: op.headers,
-                body: JSON.stringify(op.body)
-              });
-            }
-            await cache.delete('/pending-operations');
-            
-            const clients = await self.clients.matchAll();
-            clients.forEach(function(client) {
-              client.postMessage({
-                type: 'SYNC_COMPLETE',
-                message: 'تمت مزامنة جميع العمليات المعلقة'
-              });
-            });
-          }
-        } catch(error) {
-          console.error('[Service Worker] Sync failed:', error);
-        }
-      })()
-    );
-  }
-});
-
 // إشعارات Push
 self.addEventListener('push', function(event) {
-  console.log('[Service Worker] Push notification received');
-  
   const options = {
     body: event.data ? event.data.text() : 'تحديث جديد في مدير المواد',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'open',
-        title: 'فتح التطبيق'
-      },
-      {
-        action: 'dismiss',
-        title: 'تجاهل'
-      }
-    ],
     dir: 'rtl',
     lang: 'ar'
   };
@@ -207,20 +158,13 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   
-  if (event.action === 'open') {
-    event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then(function(clientList) {
-          if (clientList.length > 0) {
-            return clientList[0].focus();
-          }
-          return clients.openWindow('/');
-        })
-    );
-  }
-});
-
-// تسجيل الأخطاء
-self.addEventListener('error', function(event) {
-  console.error('[Service Worker] Error:', event.message, event.filename, event.lineno);
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(function(clientList) {
+        if (clientList.length > 0) {
+          return clientList[0].focus();
+        }
+        return clients.openWindow('/');
+      })
+  );
 });
