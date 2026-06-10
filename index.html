@@ -14,7 +14,7 @@
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
+   link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
     <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
     <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
     <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
@@ -41,84 +41,82 @@
         <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i> مزامنة فورية + سحابي آمن</div>
     </div>
     
-    <!-- شريط البحث -->
-    <div class="search-bar-container">
-        <div class="search-input-wrapper">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="globalSearchInput" class="global-search-input" placeholder="بحث في المواد الموجودة...">
-            <button id="clearSearchBtn" class="clear-search-btn" style="display: none;">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="search-filters" id="searchFilters" style="display: none;">
-            <button class="filter-chip active" data-filter="all">الكل</button>
-            <button class="filter-chip" data-filter="main">أساسيات</button>
-            <button class="filter-chip" data-filter="spices_extra">بهارات اضافية</button>
-            <button class="filter-chip" data-filter="roasted">المحمصة</button>
-            <button class="filter-chip" data-filter="herbs">الأعشاب</button>
-            <button class="filter-chip" data-filter="extra">مواد اضافية</button>
-            <button class="filter-chip" data-filter="bags">أكياس</button>
-            <button class="filter-chip" data-filter="tawsaya">توصيات</button>
-        </div>
-    </div>
-    
+    <!-- زر إضافة مادة جديدة فقط -->
     <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</button>
     
     <div class="sync-bar">
         <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i> مزامنة البيانات</button>
     </div>
     
+    <!-- شريط الأدوات المحسن -->
     <div class="toolbar-modern">
         <div class="toolbar-group">
-            <button id="themeToggle" class="tool-btn"><i class="fas fa-moon"></i><span>ليلي</span></button>
-            <button id="backupBtn" class="tool-btn"><i class="fas fa-download"></i><span>نسخ</span></button>
-            <button id="restoreBtn" class="tool-btn"><i class="fas fa-upload"></i><span>استعادة</span></button>
-            <button id="installBtn" class="tool-btn install-btn" style="display: none;"><i class="fas fa-download"></i><span>تثبيت</span></button>
-            <button id="clearAllBtn" class="tool-btn danger-btn"><i class="fas fa-trash-alt"></i><span>مسح</span></button>
+            <button id="themeToggle" class="tool-btn" title="الوضع الليلي">
+                <i class="fas fa-moon"></i>
+                <span>الوضع الليلي</span>
+            </button>
+            <button id="backupBtn" class="tool-btn" title="نسخ احتياطي">
+                <i class="fas fa-download"></i>
+                <span>نسخ احتياطي</span>
+            </button>
+            <button id="restoreBtn" class="tool-btn" title="استعادة">
+                <i class="fas fa-upload"></i>
+                <span>استعادة</span>
+            </button>
+            <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
+                <i class="fas fa-download"></i>
+                <span>تثبيت</span>
+            </button>
+            <button id="clearAllBtn" class="tool-btn danger-btn" title="مسح الكل">
+                <i class="fas fa-trash-alt"></i>
+                <span>مسح الكل</span>
+            </button>
         </div>
     </div>
     
-    <!-- كروت الأقسام -->
+    <!-- كروت الأقسام لفتح القوائم الجاهزة -->
     <div class="categories-container">
         <button class="category-card" data-category="main">
             <div class="category-icon"><i class="fas fa-star"></i></div>
             <div class="category-info"><h3 class="category-title">أساسيات</h3></div>
-            <div class="category-count" id="count-main">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
         <button class="category-card" data-category="spices_extra">
             <div class="category-icon"><i class="fas fa-leaf"></i></div>
             <div class="category-info"><h3 class="category-title">بهارات اضافية</h3></div>
-            <div class="category-count" id="count-spices_extra">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
         <button class="category-card" data-category="roasted">
             <div class="category-icon"><i class="fas fa-fire"></i></div>
             <div class="category-info"><h3 class="category-title">المحمصة</h3></div>
-            <div class="category-count" id="count-roasted">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
         <button class="category-card" data-category="herbs">
             <div class="category-icon"><i class="fas fa-seedling"></i></div>
             <div class="category-info"><h3 class="category-title">الأعشاب</h3></div>
-            <div class="category-count" id="count-herbs">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
         <button class="category-card" data-category="extra">
             <div class="category-icon"><i class="fas fa-plus-circle"></i></div>
             <div class="category-info"><h3 class="category-title">مواد اضافية</h3></div>
-            <div class="category-count" id="count-extra">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
         <button class="category-card" data-category="bags">
             <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
             <div class="category-info"><h3 class="category-title">أكياس تعبئة</h3></div>
-            <div class="category-count" id="count-bags">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
         <button class="category-card" data-category="tawsaya">
             <div class="category-icon"><i class="fas fa-gift"></i></div>
             <div class="category-info"><h3 class="category-title">توصيات</h3></div>
-            <div class="category-count" id="count-tawsaya">0</div>
+            <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
         </button>
     </div>
     
+    <!-- حاوية الأقسام لعرض المواد -->
     <div id="sectionsContainer"></div>
     
+    <!-- إحصائيات الذكاء الاصطناعي -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
             <i class="fas fa-brain"></i>
@@ -131,6 +129,7 @@
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">إجمالي المواد</span>
                     <span class="ai-stat-value" id="totalMaterialsCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
                 </div>
             </div>
             <div class="ai-stat-card">
@@ -146,6 +145,7 @@
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">مواد ناقصة</span>
                     <span class="ai-stat-value" id="lowStockCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
                 </div>
             </div>
             <div class="ai-stat-card success">
@@ -169,8 +169,8 @@
         <div id="syncDot" class="sync-dot"></div>
         <span id="syncStatusText">جاري التحميل...</span>
     </div>
-    <span id="syncItemsCount"><i class="fas fa-database"></i> 0</span>
-    <span id="syncLastTime"><i class="far fa-clock"></i> --:--:--</span>
+    <span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span>
+    <span id="syncLastTime" class="sync-time"><i class="far fa-clock"></i> --:--:--</span>
 </div>
 
 <!-- ==================== MODALS ==================== -->
@@ -197,6 +197,7 @@
                     <option value="herbs">الأعشاب</option>
                     <option value="extra">مواد اضافية</option>
                     <option value="bags">أكياس تعبئة</option>
+                    <option value="tawsaya">توصيات</option>
                 </select>
             </div>
         </div>
@@ -217,6 +218,7 @@
                     <button type="button" class="qty-inc-btn" id="newQtyInc">+</button>
                 </div>
             </div>
+            <div class="field-hint">⚠️ إذا تركت الكمية 0، ستعتبر المادة <strong>ناقصة</strong></div>
         </div>
         <div class="modal-buttons">
             <button id="saveNewItemBtn" class="btn-save">إضافة</button>
@@ -229,7 +231,7 @@
 <div id="presetModal" class="modal">
     <div class="modal-content">
         <h3 id="presetModalTitle"><i class="fas fa-list"></i> إضافة مواد جاهزة</h3>
-        <input type="text" id="presetSearchInput" class="search-input" placeholder="بحث...">
+        <input type="text" id="presetSearchInput" class="search-input" placeholder="بحث في القائمة...">
         <div id="presetListContainer" class="modern-card-list"></div>
         <div class="modal-buttons">
             <button id="savePresetBtn" class="btn-save">إضافة المحددة</button>
@@ -346,6 +348,22 @@ if ('serviceWorker' in navigator) {
             .catch(function(err) { console.error('❌ SW failed:', err); });
     });
 }
+
+// إغلاق المودالات
+window.closeAllModals = function() {
+    const modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
+    modals.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+    });
+};
+
+// ربط أزرار الإغلاق
+document.getElementById('closeNewModalBtn')?.addEventListener('click', window.closeAllModals);
+document.getElementById('closePresetModalBtn')?.addEventListener('click', window.closeAllModals);
+document.getElementById('closeEditModalBtn')?.addEventListener('click', window.closeAllModals);
+document.getElementById('cancelMoveBtn')?.addEventListener('click', window.closeAllModals);
+document.getElementById('closeSystemMessageBtn')?.addEventListener('click', window.closeAllModals);
 </script>
 </body>
-    </html>
+</html>
