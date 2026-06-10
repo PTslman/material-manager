@@ -139,3 +139,12 @@ async function restoreData() {
     };
     input.click();
       }
+// تصدير الدوال للاستخدام العام
+window.allMaterials = allMaterials;
+window.startListener = startListener;
+window.addNewMaterial = addNewMaterial;
+window.saveEdit = saveEdit;
+window.clearAllMaterials = clearAllMaterials;
+window.backupData = backupData;
+window.restoreData = restoreData;
+window.unsubscribe = function() { if (unsubscribe) unsubscribe(); };
