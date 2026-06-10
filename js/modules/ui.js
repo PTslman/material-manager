@@ -1,8 +1,7 @@
 function renderCategories() {
-    const container = document.getElementById('categoriesContainer');
+    var container = document.getElementById('categoriesContainer');
     if (!container) return;
-    
-    const categories = [
+    var categories = [
         { id: 'main', icon: 'fas fa-star', title: 'أساسيات', color: '#f59e0b' },
         { id: 'spices_extra', icon: 'fas fa-leaf', title: 'بهارات اضافية', color: '#10b981' },
         { id: 'roasted', icon: 'fas fa-fire', title: 'المحمصة', color: '#ef4444' },
@@ -11,137 +10,121 @@ function renderCategories() {
         { id: 'bags', icon: 'fas fa-shopping-bag', title: 'أكياس تعبئة', color: '#ec4899' },
         { id: 'tawsaya', icon: 'fas fa-gift', title: 'توصيات', color: '#06b6d4' }
     ];
-    
     container.innerHTML = '';
-    categories.forEach(cat => {
-        container.innerHTML += `
-            <button class="category-card" data-category="${cat.id}" style="border-right: 3px solid ${cat.color};">
-                <div class="category-icon" style="background: linear-gradient(135deg, ${cat.color}15, ${cat.color}25);">
-                    <i class="${cat.icon}" style="color: ${cat.color};"></i>
-                </div>
-                <div class="category-info">
-                    <h3 class="category-title">${cat.title}</h3>
-                </div>
-                <div class="category-count" id="count-${cat.id}">0</div>
-                <div class="category-arrow"><i class="fas fa-chevron-left"></i></div>
-            </button>
-        `;
-    });
-}
-
-function renderSections(materials) {
-    const container = document.getElementById('sectionsContainer');
-    if (!container) return;
-    
-    const sections = ['main', 'spices_extra', 'roasted', 'herbs', 'extra', 'bags', 'tawsaya'];
-    let html = '';
-    
-    for (const section of sections) {
-        const sectionMaterials = materials.filter(m => m.priority === section);
-        
-        html += `
-            <div class="priority-section" data-section="${section}">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="${getSectionIcon(section)}"></i>
-                        <span>${getSectionTitle(section)}</span>
-                    </div>
-                    <div class="section-count">${sectionMaterials.length}</div>
-                </div>
-                <div class="materials-grid" data-section-grid="${section}">
-                    ${sectionMaterials.length === 0 ? 
-                        `<div class="empty-state">
-                            <i class="fas fa-box-open"></i>
-                            <br>لا توجد مواد
-                            <br><small>اضغط على القسم لإضافة مواد جاهزة</small>
-                        </div>` : 
-                        sectionMaterials.map(m => renderMaterialCard(m)).join('')
-                    }
-                </div>
-            </div>
-        `;
+    for (var i = 0; i < categories.length; i++) {
+        var cat = categories[i];
+        container.innerHTML += '<button class="category-card" data-category="' + cat.id + '" style="border-right: 3px solid ' + cat.color + ';">' +
+            '<div class="category-icon" style="background: linear-gradient(135deg, ' + cat.color + '15, ' + cat.color + '25);">' +
+            '<i class="' + cat.icon + '" style="color: ' + cat.color + ';"></i></div>' +
+            '<div class="category-info"><h3 class="category-title">' + cat.title + '</h3></div>' +
+            '<div class="category-count" id="count-' + cat.id + '">0</div>' +
+            '<div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>';
     }
-    
+}
+function renderSections(materials) {
+    var container = document.getElementById('sectionsContainer');
+    if (!container) return;
+    var sections = ['main', 'spices_extra', 'roasted', 'herbs', 'extra', 'bags', 'tawsaya'];
+    var html = '';
+    for (var i = 0; i < sections.length; i++) {
+        var section = sections[i];
+        var sectionMaterials = materials.filter(function(m) { return m.priority === section; });
+        html += '<div class="priority-section" data-section="' + section + '">' +
+            '<div class="section-header"><div class="section-title"><i class="' + getSectionIcon(section) + '"></i><span>' + getSectionTitle(section) + '</span></div>' +
+            '<div class="section-count">' + sectionMaterials.length + '</div></div>' +
+            '<div class="materials-grid">';
+        if (sectionMaterials.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>اضغط على القسم لإضافة مواد جاهزة</small></div>';
+        } else {
+            for (var j = 0; j < sectionMaterials.length; j++) {
+                html += renderMaterialCard(sectionMaterials[j]);
+            }
+        }
+        html += '</div></div>';
+    }
     container.innerHTML = html;
+    bindCardButtons();
+    setTimeout(function() { if (typeof setupLongPressForAllCards === 'function') setupLongPressForAllCards(); }, 100);
 }
-
-function getSectionIcon(section) {
-    const icons = {
-        'main': 'fas fa-star',
-        'spices_extra': 'fas fa-leaf',
-        'roasted': 'fas fa-fire',
-        'herbs': 'fas fa-seedling',
-        'extra': 'fas fa-plus-circle',
-        'bags': 'fas fa-shopping-bag',
-        'tawsaya': 'fas fa-gift'
-    };
-    return icons[section] || 'fas fa-box';
-}
-
 function renderMaterialCard(m) {
-    const isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
-    const lowStockClass = isLowStock ? 'low-stock' : '';
-    let quantityDisplay = formatDisplay(m);
+    var isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
+    var lowStockClass = isLowStock ? 'low-stock' : '';
+    var quantityDisplay = formatDisplay(m);
     if (isLowStock && m.priority !== 'tawsaya') quantityDisplay = '⚠️ ناقصة';
-    
-    return `
-        <div class="material-card ${lowStockClass}" data-id="${m.id}" data-name="${escapeHtml(m.name)}" data-section="${m.priority}">
-            <div class="card-header">
-                <div class="card-title">
-                    <i class="fas fa-box"></i>
-                    <span>${escapeHtml(m.name)}</span>
-                </div>
-                <div class="card-actions">
-                    <button class="edit-material" data-id="${m.id}" title="تعديل الكمية">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="delete-material" data-id="${m.id}" title="حذف المادة">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="qty-badge">${quantityDisplay}</div>
-        </div>
-    `;
+    return '<div class="material-card ' + lowStockClass + '" data-id="' + m.id + '" data-name="' + escapeHtml(m.name) + '" data-section="' + m.priority + '">' +
+        '<div class="card-header"><div class="card-title"><i class="fas fa-box"></i><span>' + escapeHtml(m.name) + '</span></div>' +
+        '<div class="card-actions"><button class="edit-material" data-id="' + m.id + '" title="تعديل الكمية"><i class="fas fa-edit"></i></button>' +
+        '<button class="delete-material" data-id="' + m.id + '" title="حذف المادة"><i class="fas fa-trash-alt"></i></button></div></div>' +
+        '<div class="qty-badge">' + quantityDisplay + '</div></div>';
 }
-
+function bindCardButtons() {
+    var editBtns = document.querySelectorAll('.edit-material');
+    for (var i = 0; i < editBtns.length; i++) {
+        editBtns[i].onclick = function(e) {
+            e.stopPropagation();
+            var id = this.getAttribute('data-id');
+            var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
+            if (material) {
+                window.currentEditId = id;
+                document.getElementById('editMaterialName').value = material.name;
+                document.getElementById('editQuantityValue').value = material.quantity;
+                document.getElementById('editUnitSelect').value = material.unitType || 'kg';
+                document.getElementById('editModal').classList.add('active');
+            }
+        };
+    }
+    var delBtns = document.querySelectorAll('.delete-material');
+    for (var i = 0; i < delBtns.length; i++) {
+        delBtns[i].onclick = function(e) {
+            e.stopPropagation();
+            var id = this.getAttribute('data-id');
+            var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
+            if (confirm('⚠️ هل أنت متأكد من حذف "' + (material?.name || 'هذه المادة') + '"؟')) {
+                materialsCollection.doc(id).delete().then(function() { showToast('✅ تم الحذف'); }).catch(function(e) { showToast('❌ فشل الحذف', true); });
+            }
+        };
+    }
+}
 function updateCategoryCounts() {
-    const counts = { main: 0, spices_extra: 0, roasted: 0, herbs: 0, extra: 0, bags: 0, tawsaya: 0 };
-    for (const m of window.allMaterials || []) {
+    var counts = { main: 0, spices_extra: 0, roasted: 0, herbs: 0, extra: 0, bags: 0, tawsaya: 0 };
+    for (var i = 0; i < window.allMaterials.length; i++) {
+        var m = window.allMaterials[i];
         counts[m.priority] = (counts[m.priority] || 0) + 1;
     }
-    for (const [key, value] of Object.entries(counts)) {
-        const el = document.getElementById(`count-${key}`);
-        if (el) el.innerText = value;
+    for (var key in counts) {
+        var el = document.getElementById('count-' + key);
+        if (el) el.innerText = counts[key];
     }
 }
-
 function calculateAIMetrics() {
     if (!window.aiEngine) return;
     try {
-        const analysis = window.aiEngine.analyzeInventory(window.allMaterials || []);
-        const stats = analysis.statistics;
-        
-        const totalEl = document.getElementById('totalMaterialsCount');
-        const totalQtyEl = document.getElementById('totalQuantityValue');
-        const lowStockEl = document.getElementById('lowStockCount');
-        const avgQtyEl = document.getElementById('avgQuantityValue');
-        
+        var analysis = window.aiEngine.analyzeInventory(window.allMaterials || []);
+        var stats = analysis.statistics;
+        var totalEl = document.getElementById('totalMaterialsCount');
+        var totalQtyEl = document.getElementById('totalQuantityValue');
+        var lowStockEl = document.getElementById('lowStockCount');
+        var avgQtyEl = document.getElementById('avgQuantityValue');
         if (totalEl) totalEl.innerText = stats.totalMaterials;
         if (totalQtyEl) totalQtyEl.innerText = stats.totalQuantity.toFixed(2);
-        if (lowStockEl) lowStockEl.innerHTML = `${stats.lowStockCount}<span class="ai-stat-unit"> مادة</span>`;
+        if (lowStockEl) lowStockEl.innerHTML = stats.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
         if (avgQtyEl) avgQtyEl.innerText = stats.avgQuantity;
-        
-        const insightsDiv = document.getElementById('aiInsights');
+        var insightsDiv = document.getElementById('aiInsights');
         if (insightsDiv && analysis.insights) {
-            const insightsContent = insightsDiv.querySelector('.insights-content');
+            var insightsContent = insightsDiv.querySelector('.insights-content');
             if (insightsContent) {
-                let html = '';
-                analysis.insights.forEach(insight => {
-                    html += `<div style="margin-bottom: 6px;">${insight}</div>`;
-                });
+                var html = '';
+                for (var i = 0; i < analysis.insights.length; i++) {
+                    html += '<div style="margin-bottom: 6px;">' + analysis.insights[i] + '</div>';
+                }
                 insightsContent.innerHTML = html;
             }
         }
-    } catch(e) { console.error("AI Error:", e); }
+    } catch(e) { console.error('AI Error:', e); }
 }
+window.renderCategories = renderCategories;
+window.renderSections = renderSections;
+window.renderMaterialCard = renderMaterialCard;
+window.bindCardButtons = bindCardButtons;
+window.updateCategoryCounts = updateCategoryCounts;
+window.calculateAIMetrics = calculateAIMetrics;
