@@ -143,3 +143,9 @@ async function addSelectedPresetItems() {
         startListener();
     } catch(e) { showToast("❌ فشل الإضافة", true); }
       }
+// في نهاية ملف presets.js أضف:
+window.openPresetModal = openPresetModal;
+window.currentPresetCategory = currentPresetCategory;
+window.presetSelections = presetSelections;
+window.renderPresetList = renderPresetList;
+window.addSelectedPresetItems = addSelectedPresetItems;
