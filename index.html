@@ -292,6 +292,39 @@
     </div>
 </div>
 
+<!-- Move Item Modal -->
+<div id="moveItemModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
+        <div class="modern-field">
+            <label>المادة المراد نقلها</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-tag"></i></div>
+                <input id="moveItemName" readonly>
+            </div>
+        </div>
+        <div class="modern-field">
+            <label>نقل إلى القسم</label>
+            <div class="field-container">
+                <div class="field-icon"><i class="fas fa-folder-open"></i></div>
+                <select id="moveTargetSection">
+                    <option value="main">أساسيات</option>
+                    <option value="spices_extra">بهارات اضافية</option>
+                    <option value="roasted">المحمصة</option>
+                    <option value="herbs">الأعشاب</option>
+                    <option value="extra">مواد اضافية</option>
+                    <option value="bags">أكياس تعبئة</option>
+                    <option value="tawsaya">توصيات</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button id="confirmMoveBtn" class="btn-save"><i class="fas fa-check"></i> نقل</button>
+            <button id="cancelMoveBtn" class="btn-cancel"><i class="fas fa-times"></i> إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <!-- System Message Modal -->
 <div id="systemMessageModal" class="modal">
     <div class="modal-content" style="text-align:center">
@@ -307,7 +340,7 @@
 
 <script src="js/firebase-config.js"></script>
 <script src="js/ai-engine.js"></script>
-<script src="js/drag-drop.js"></script>
+<script src="js/long-press.js"></script>
 <script src="js/app.js"></script>
 
 <script>
@@ -316,6 +349,14 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/material-manager/service-worker.js').catch(err => console.error('SW failed:', err));
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        if (typeof window.initLongPressSystem === 'function') {
+            window.initLongPressSystem();
+        }
+    }, 500);
+});
 </script>
 </body>
-    </html>
+</html>
