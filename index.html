@@ -5,99 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#10b981">
     <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
-    <title>مدير المواد الذكي | نظام إدارة المخزون</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مدير المواد">
     
+    <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
+    
+    <script>
+        // تحديد المسار الأساسي للمشروع على GitHub Pages
+        (function() {
+            var basePath = '/material-manager';
+            var pathname = window.location.pathname;
+            
+            // إذا كان المستخدم في المسار الخطأ، أعد التوجيه
+            if (pathname === '/' || pathname === '/index.html') {
+                window.location.href = basePath + '/';
+                return;
+            }
+            
+            // إذا كان المسار لا يبدأ بـ /material-manager/ وكان في github.io
+            if (window.location.hostname.includes('github.io') && !pathname.startsWith(basePath)) {
+                window.location.href = basePath + pathname;
+                return;
+            }
+        })();
+    </script>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="icons/icon-152x152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="icons/icon-384x384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <!-- PWA -->
+    <link rel="manifest" href="/material-manager/manifest.json">
+    <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
+    <meta name="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
+<!-- ==================== شاشة البداية ==================== -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
-        <div class="splash-logo"><i class="fas fa-boxes"></i></div>
+        <div class="splash-logo">
+            <i class="fas fa-boxes"></i>
+        </div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
         <div class="splash-version">نسخة احترافية v9.0</div>
-        <div class="splash-loader"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div></div>
+        <div class="splash-loader">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+        </div>
     </div>
 </div>
 
+<!-- ==================== التطبيق الرئيسي ==================== -->
 <div id="appContainer" class="app-main" style="display: none;">
     
+    <!-- Hero Section -->
     <div class="hero">
         <div class="hero-content">
             <h1>مدير المواد والمخزون</h1>
-            <div class="badge-cloud"><i class="fas fa-cloud-upload-alt"></i><span>مزامنة فورية + سحابي آمن</span></div>
+            <div class="badge-cloud">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>مزامنة فورية + سحابي آمن</span>
+            </div>
         </div>
     </div>
     
-    <button id="mainAddBtn" class="main-add-btn"><i class="fas fa-plus-circle"></i><span>إضافة مادة جديدة</span></button>
+    <!-- زر إضافة مادة جديدة -->
+    <button id="mainAddBtn" class="main-add-btn">
+        <i class="fas fa-plus-circle"></i>
+        <span>إضافة مادة جديدة</span>
+    </button>
     
+    <!-- شريط المزامنة -->
     <div class="sync-bar">
-        <button id="syncBtn" class="sync-main-btn"><i class="fas fa-sync-alt"></i><span>مزامنة البيانات</span></button>
+        <button id="syncBtn" class="sync-main-btn">
+            <i class="fas fa-sync-alt"></i>
+            <span>مزامنة البيانات</span>
+        </button>
     </div>
     
+    <!-- شريط الأدوات -->
     <div class="toolbar-modern">
         <div class="toolbar-group">
-            <button id="themeToggle" class="tool-btn"><i class="fas fa-moon"></i><span>الوضع الليلي</span></button>
-            <button id="backupBtn" class="tool-btn"><i class="fas fa-download"></i><span>نسخ احتياطي</span></button>
-            <button id="restoreBtn" class="tool-btn"><i class="fas fa-upload"></i><span>استعادة</span></button>
-            <button id="installBtn" class="tool-btn install-btn" style="display: none;"><i class="fas fa-download"></i><span>تثبيت</span></button>
-            <button id="clearAllBtn" class="tool-btn danger-btn"><i class="fas fa-trash-alt"></i><span>مسح الكل</span></button>
+            <button id="themeToggle" class="tool-btn" title="الوضع الليلي">
+                <i class="fas fa-moon"></i>
+                <span>الوضع الليلي</span>
+            </button>
+            <button id="backupBtn" class="tool-btn" title="نسخ احتياطي">
+                <i class="fas fa-download"></i>
+                <span>نسخ احتياطي</span>
+            </button>
+            <button id="restoreBtn" class="tool-btn" title="استعادة">
+                <i class="fas fa-upload"></i>
+                <span>استعادة</span>
+            </button>
+            <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
+                <i class="fas fa-download"></i>
+                <span>تثبيت</span>
+            </button>
+            <button id="clearAllBtn" class="tool-btn danger-btn" title="مسح الكل">
+                <i class="fas fa-trash-alt"></i>
+                <span>مسح الكل</span>
+            </button>
         </div>
     </div>
     
-    <div class="categories-container" id="categoriesContainer"></div>
+    <!-- كروت الأقسام -->
+    <div class="categories-container" id="categoriesContainer">
+        <!-- سيتم تعبئتها بواسطة JavaScript -->
+    </div>
     
+    <!-- حاوية الأقسام والمواد -->
     <div id="sectionsContainer"></div>
     
+    <!-- إحصائيات الذكاء الاصطناعي -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
-            <div class="ai-stats-icon"><i class="fas fa-brain"></i></div>
+            <div class="ai-stats-icon">
+                <i class="fas fa-brain"></i>
+            </div>
             <h3>التحليل الذكي للمخزون</h3>
             <div class="ai-badge">AI</div>
         </div>
+        
         <div class="ai-stats-grid">
             <div class="ai-stat-card">
-                <div class="ai-stat-icon"><i class="fas fa-cubes"></i></div>
+                <div class="ai-stat-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">إجمالي المواد</span>
                     <span class="ai-stat-value" id="totalMaterialsCount">0</span>
                     <span class="ai-stat-unit">مادة</span>
                 </div>
             </div>
+            
             <div class="ai-stat-card">
-                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="ai-stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">الحجم الكلي</span>
                     <span class="ai-stat-value" id="totalQuantityValue">0</span>
                     <span class="ai-stat-unit">kg</span>
                 </div>
             </div>
+            
             <div class="ai-stat-card warning">
-                <div class="ai-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="ai-stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">مواد ناقصة</span>
                     <span class="ai-stat-value" id="lowStockCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
                 </div>
             </div>
+            
             <div class="ai-stat-card success">
-                <div class="ai-stat-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="ai-stat-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">متوسط الكمية</span>
                     <span class="ai-stat-value" id="avgQuantityValue">0</span>
@@ -105,105 +193,297 @@
                 </div>
             </div>
         </div>
+        
         <div class="ai-insights" id="aiInsights">
             <i class="fas fa-robot"></i>
-            <div class="insights-content"><span>جاري تحليل البيانات...</span></div>
+            <div class="insights-content">
+                <span>جاري تحليل البيانات...</span>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- ==================== شريط الحالة ==================== -->
 <div id="syncStatusBar" class="sync-status-bar">
-    <div class="sync-indicator"><div id="syncDot" class="sync-dot"></div><span id="syncStatusText">جاري التحميل...</span></div>
-    <div class="sync-stats"><span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span><span id="syncLastTime"><i class="far fa-clock"></i> --:--:--</span></div>
+    <div class="sync-indicator">
+        <div id="syncDot" class="sync-dot"></div>
+        <span id="syncStatusText">جاري التحميل...</span>
+    </div>
+    <div class="sync-stats">
+        <span id="syncItemsCount"><i class="fas fa-database"></i> 0 عنصر</span>
+        <span id="syncLastTime"><i class="far fa-clock"></i> --:--:--</span>
+    </div>
 </div>
 
-<!-- New Item Modal -->
+<!-- ==================== المودالات ==================== -->
+
+<!-- مودال إضافة مادة جديدة -->
 <div id="newItemModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
-        <div class="modal-header"><h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3><button class="modal-close" id="closeNewModalBtn">&times;</button></div>
-        <div class="modal-body">
-            <div class="modern-field"><label>اسم المادة</label><div class="field-container"><div class="field-icon"><i class="fas fa-tag"></i></div><input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون..."></div></div>
-            <div class="modern-field"><label>القسم</label><div class="field-container"><div class="field-icon"><i class="fas fa-folder"></i></div><select id="newMaterialSection"><option value="main">⭐ أساسيات</option><option value="spices_extra">🌿 بهارات اضافية</option><option value="roasted">🔥 المحمصة</option><option value="herbs">🌱 الأعشاب</option><option value="extra">📦 مواد اضافية</option><option value="bags">🛍️ أكياس تعبئة</option><option value="tawsaya">🎁 توصيات</option></select></div></div>
-            <div class="modern-field"><label>الكمية</label><div class="quantity-field-container"><select id="newUnitSelect" class="unit-select-input"><option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option></select><div class="qty-picker"><button type="button" class="qty-dec-btn" id="newQtyDec">-</button><input type="number" id="newQuantityValue" class="qty-input" step="0.25" min="0" value="1"><button type="button" class="qty-inc-btn" id="newQtyInc">+</button></div></div><div class="field-hint"><i class="fas fa-info-circle"></i><span>إذا تركت الكمية 0، ستعتبر المادة <strong>ناقصة</strong></span></div></div>
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
+            <button class="modal-close" id="closeNewModalBtn">&times;</button>
         </div>
-        <div class="modal-footer"><button id="saveNewItemBtn" class="btn-save">إضافة</button><button id="closeNewModalBtn2" class="btn-cancel">إلغاء</button></div>
+        
+        <div class="modal-body">
+            <div class="modern-field">
+                <label>اسم المادة</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-tag"></i></div>
+                    <input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون...">
+                </div>
+            </div>
+            
+            <div class="modern-field">
+                <label>القسم</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-folder"></i></div>
+                    <select id="newMaterialSection">
+                        <option value="main">⭐ أساسيات</option>
+                        <option value="spices_extra">🌿 بهارات اضافية</option>
+                        <option value="roasted">🔥 المحمصة</option>
+                        <option value="herbs">🌱 الأعشاب</option>
+                        <option value="extra">📦 مواد اضافية</option>
+                        <option value="bags">🛍️ أكياس تعبئة</option>
+                        <option value="tawsaya">🎁 توصيات</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modern-field">
+                <label>الكمية</label>
+                <div class="quantity-field-container">
+                    <select id="newUnitSelect" class="unit-select-input">
+                        <option value="kg">كيلو (kg)</option>
+                        <option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option>
+                        <option value="oke">لوقية</option>
+                        <option value="box">علبة</option>
+                        <option value="piece">عدد</option>
+                    </select>
+                    <div class="qty-picker">
+                        <button type="button" class="qty-dec-btn" id="newQtyDec">-</button>
+                        <input type="number" id="newQuantityValue" class="qty-input" step="0.25" min="0" value="1">
+                        <button type="button" class="qty-inc-btn" id="newQtyInc">+</button>
+                    </div>
+                </div>
+                <div class="field-hint">
+                    <i class="fas fa-info-circle"></i>
+                    <span>إذا تركت الكمية 0، ستعتبر المادة <strong>ناقصة</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="saveNewItemBtn" class="btn-save">إضافة</button>
+            <button id="closeNewModalBtn2" class="btn-cancel">إلغاء</button>
+        </div>
     </div>
 </div>
 
-<!-- Preset Modal -->
+<!-- مودال القوائم الجاهزة -->
 <div id="presetModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
-        <div class="modal-header"><h3 id="presetModalTitle"><i class="fas fa-list"></i> إضافة مواد جاهزة</h3><button class="modal-close" id="closePresetModalBtn">&times;</button></div>
-        <div class="modal-body"><div class="search-wrapper"><i class="fas fa-search search-icon-preset"></i><input type="text" id="presetSearchInput" class="search-input" placeholder="بحث في القائمة..."></div><div id="presetListContainer" class="modern-card-list"></div></div>
-        <div class="modal-footer"><button id="savePresetBtn" class="btn-save">إضافة المحددة</button><button id="closePresetModalBtn2" class="btn-cancel">إلغاء</button></div>
+        <div class="modal-header">
+            <h3 id="presetModalTitle"><i class="fas fa-list"></i> إضافة مواد جاهزة</h3>
+            <button class="modal-close" id="closePresetModalBtn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon-preset"></i>
+                <input type="text" id="presetSearchInput" class="search-input" placeholder="بحث في القائمة...">
+            </div>
+            <div id="presetListContainer" class="modern-card-list"></div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="savePresetBtn" class="btn-save">إضافة المحددة</button>
+            <button id="closePresetModalBtn2" class="btn-cancel">إلغاء</button>
+        </div>
     </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- مودال تعديل الكمية -->
 <div id="editModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
-        <div class="modal-header"><h3><i class="fas fa-edit"></i> تعديل الكمية</h3><button class="modal-close" id="closeEditModalBtn">&times;</button></div>
-        <div class="modal-body">
-            <div class="modern-field"><label>المادة</label><div class="field-container"><div class="field-icon"><i class="fas fa-tag"></i></div><input id="editMaterialName" readonly></div></div>
-            <div class="modern-field"><label>الكمية الجديدة</label><div class="edit-quantity-field"><select id="editUnitSelect" class="unit-select-input"><option value="kg">كيلو (kg)</option><option value="half">نصف كيلو</option><option value="quarter">ربع كيلو</option><option value="oke">لوقية</option><option value="box">علبة</option><option value="piece">عدد</option></select><div class="field-container"><div class="field-icon"><i class="fas fa-weight-hanging"></i></div><input type="number" id="editQuantityValue" step="0.25"></div></div></div>
+        <div class="modal-header">
+            <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
+            <button class="modal-close" id="closeEditModalBtn">&times;</button>
         </div>
-        <div class="modal-footer"><button id="saveEditBtn" class="btn-save">تحديث</button><button id="closeEditModalBtn2" class="btn-cancel">إلغاء</button></div>
+        
+        <div class="modal-body">
+            <div class="modern-field">
+                <label>المادة</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-tag"></i></div>
+                    <input id="editMaterialName" readonly>
+                </div>
+            </div>
+            
+            <div class="modern-field">
+                <label>الكمية الجديدة</label>
+                <div class="edit-quantity-field">
+                    <select id="editUnitSelect" class="unit-select-input">
+                        <option value="kg">كيلو (kg)</option>
+                        <option value="half">نصف كيلو</option>
+                        <option value="quarter">ربع كيلو</option>
+                        <option value="oke">لوقية</option>
+                        <option value="box">علبة</option>
+                        <option value="piece">عدد</option>
+                    </select>
+                    <div class="field-container">
+                        <div class="field-icon"><i class="fas fa-weight-hanging"></i></div>
+                        <input type="number" id="editQuantityValue" step="0.25">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="saveEditBtn" class="btn-save">تحديث</button>
+            <button id="closeEditModalBtn2" class="btn-cancel">إلغاء</button>
+        </div>
     </div>
 </div>
 
-<!-- Move Item Modal -->
+<!-- مودال نقل المادة -->
 <div id="moveItemModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
-        <div class="modal-header"><h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3><button class="modal-close" id="cancelMoveBtn">&times;</button></div>
-        <div class="modal-body">
-            <div class="modern-field"><label>المادة المراد نقلها</label><div class="field-container"><div class="field-icon"><i class="fas fa-tag"></i></div><input id="moveItemName" readonly></div></div>
-            <div class="modern-field"><label>نقل إلى القسم</label><div class="field-container"><div class="field-icon"><i class="fas fa-folder-open"></i></div><select id="moveTargetSection"><optgroup label="الأقسام الرئيسية"><option value="main">⭐ أساسيات</option><option value="spices_extra">🌿 بهارات اضافية</option><option value="roasted">🔥 المحمصة</option><option value="herbs">🌱 الأعشاب</option><option value="extra">📦 مواد اضافية</option><option value="bags">🛍️ أكياس تعبئة</option></optgroup><optgroup label="أخرى"><option value="tawsaya">🎁 توصيات</option></optgroup></select></div></div>
+        <div class="modal-header">
+            <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
+            <button class="modal-close" id="cancelMoveBtn">&times;</button>
         </div>
-        <div class="modal-footer"><button id="confirmMoveBtn" class="btn-save"><i class="fas fa-check"></i> نقل</button><button id="cancelMoveBtn2" class="btn-cancel"><i class="fas fa-times"></i> إلغاء</button></div>
+        
+        <div class="modal-body">
+            <div class="modern-field">
+                <label>المادة المراد نقلها</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-tag"></i></div>
+                    <input id="moveItemName" readonly>
+                </div>
+            </div>
+            
+            <div class="modern-field">
+                <label>نقل إلى القسم</label>
+                <div class="field-container">
+                    <div class="field-icon"><i class="fas fa-folder-open"></i></div>
+                    <select id="moveTargetSection">
+                        <optgroup label="الأقسام الرئيسية">
+                            <option value="main">⭐ أساسيات</option>
+                            <option value="spices_extra">🌿 بهارات اضافية</option>
+                            <option value="roasted">🔥 المحمصة</option>
+                            <option value="herbs">🌱 الأعشاب</option>
+                            <option value="extra">📦 مواد اضافية</option>
+                            <option value="bags">🛍️ أكياس تعبئة</option>
+                        </optgroup>
+                        <optgroup label="أخرى">
+                            <option value="tawsaya">🎁 توصيات</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="confirmMoveBtn" class="btn-save"><i class="fas fa-check"></i> نقل</button>
+            <button id="cancelMoveBtn2" class="btn-cancel"><i class="fas fa-times"></i> إلغاء</button>
+        </div>
     </div>
 </div>
 
-<!-- System Message Modal -->
+<!-- مودال رسائل النظام -->
 <div id="systemMessageModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content modal-message">
-        <div class="modal-icon"><i class="fas fa-info-circle"></i></div>
+        <div class="modal-icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
         <h3 id="systemMessageTitle">رسالة</h3>
         <p id="systemMessageText"></p>
         <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
     </div>
 </div>
 
+<!-- ==================== SCRIPTS ==================== -->
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
-<script src="js/firebase-config.js"></script>
-<script src="js/ai-engine.js"></script>
-<script src="js/modules/utils.js"></script>
-<script src="js/modules/ui.js"></script>
-<script src="js/modules/materials.js"></script>
-<script src="js/modules/presets.js"></script>
-<script src="js/modules/modals.js"></script>
-<script src="js/modules/events.js"></script>
-<script src="js/app.js"></script>
+<script src="/material-manager/js/firebase-config.js"></script>
+<script src="/material-manager/js/ai-engine.js"></script>
+<script src="/material-manager/js/modules/utils.js"></script>
+<script src="/material-manager/js/modules/ui.js"></script>
+<script src="/material-manager/js/modules/materials.js"></script>
+<script src="/material-manager/js/modules/presets.js"></script>
+<script src="/material-manager/js/modules/modals.js"></script>
+<script src="/material-manager/js/modules/events.js"></script>
+<script src="/material-manager/js/app.js"></script>
 
 <script>
+// إخفاء شاشة البداية عند تحميل التطبيق
 setTimeout(function() {
     var splash = document.getElementById('splashScreen');
     var app = document.getElementById('appContainer');
     if (splash && app) {
         splash.classList.add('hidden');
-        setTimeout(function() { splash.style.display = 'none'; app.style.display = 'block'; }, 500);
+        setTimeout(function() {
+            splash.style.display = 'none';
+            app.style.display = 'block';
+        }, 500);
     }
 }, 2000);
+
+// تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('service-worker.js').catch(function(err) { console.error('SW failed:', err); });
+        navigator.serviceWorker.register('/material-manager/sw.js')
+            .then(function(reg) {
+                console.log('✅ Service Worker registered:', reg);
+            })
+            .catch(function(err) {
+                console.error('❌ Service Worker failed:', err);
+            });
     });
+}
+
+// إغلاق المودالات
+window.closeAllModals = function() {
+    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
+    for (var i = 0; i < modals.length; i++) {
+        var el = document.getElementById(modals[i]);
+        if (el) el.classList.remove('active');
+    }
+};
+
+// ربط أزرار الإغلاق
+var closeButtons = ['closeNewModalBtn', 'closeNewModalBtn2', 'closePresetModalBtn', 'closePresetModalBtn2', 
+                    'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 'closeSystemMessageBtn'];
+for (var i = 0; i < closeButtons.length; i++) {
+    var btn = document.getElementById(closeButtons[i]);
+    if (btn) {
+        btn.addEventListener('click', window.closeAllModals);
+    }
+}
+
+// أزرار +/- في نافذة الإضافة
+var dec = document.getElementById('newQtyDec');
+var inc = document.getElementById('newQtyInc');
+var qty = document.getElementById('newQuantityValue');
+if (dec && inc && qty) {
+    dec.onclick = function() {
+        var v = parseFloat(qty.value) || 1;
+        v = Math.max(0.25, v - 0.25);
+        qty.value = v;
+    };
+    inc.onclick = function() {
+        var v = parseFloat(qty.value) || 1;
+        v = v + 0.25;
+        qty.value = v;
+    };
 }
 </script>
 </body>
