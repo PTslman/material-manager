@@ -1,140 +1,69 @@
-// ==================== محرك الذكاء الاصطناعي - الإصدار المبسط ====================
-// هذا الإصدار يعمل بدون أي أخطاء
+// ==================== محرك الذكاء الاصطناعي ====================
 
 class AIEngine {
     constructor() {
-        console.log("✅ AI Engine constructor called");
-        this.learningData = this.loadLearningData();
-    }
-
-    loadLearningData() {
-        try {
-            const saved = localStorage.getItem('ai_learning_data');
-            return saved ? JSON.parse(saved) : {};
-        } catch(e) {
-            return {};
-        }
-    }
-
-    saveLearningData() {
-        try {
-            localStorage.setItem('ai_learning_data', JSON.stringify(this.learningData));
-        } catch(e) {}
+        console.log("AI Engine Initialized");
     }
 
     convertToKg(quantity, unit) {
         if (!quantity) return 0;
-        const conversions = {
-            'kg': 1, 'half': 0.5, 'quarter': 0.25,
-            'oke': 0.128, 'box': 0.5, 'piece': 0.1, 'bag': 0.05
-        };
-        return quantity * (conversions[unit] || 1);
+        const conv = { 'kg':1, 'half':0.5, 'quarter':0.25, 'oke':0.128, 'box':0.5, 'piece':0.1, 'bag':0.05 };
+        return quantity * (conv[unit] || 1);
     }
 
-    // ==================== التحليل الرئيسي ====================
     analyzeInventory(materials) {
-        console.log("AI: تحليل المخزون, عدد المواد:", materials.length);
-        
         let totalQuantity = 0;
         let lowStockCount = 0;
         let lowStockTotal = 0;
         let normalCount = 0;
         let tawsayaCount = 0;
-        let tawsayaTotal = 0;
-        let lowStockList = [];
         let criticalList = [];
+        let lowStockList = [];
 
-        for (const material of materials) {
-            const isTawsaya = material.priority === 'tawsaya';
-            const qty = this.convertToKg(material.quantity, material.unitType);
+        for (const m of materials) {
+            const isTawsaya = m.priority === 'tawsaya';
+            const qty = this.convertToKg(m.quantity, m.unitType);
             
             if (!isTawsaya) {
-                // المواد العادية - كلها تعتبر ناقصة
                 normalCount++;
                 totalQuantity += qty;
                 lowStockCount++;
                 lowStockTotal += qty;
-                
-                lowStockList.push({
-                    name: material.name,
-                    quantity: material.quantity,
-                    unit: material.unitType,
-                    quantityInKg: qty
-                });
-                
-                if (qty === 0) {
-                    criticalList.push({
-                        name: material.name,
-                        reason: 'مفقودة بالكامل'
-                    });
-                }
+                lowStockList.push({ name: m.name, quantity: m.quantity, unit: m.unitType, qtyKg: qty });
+                if (qty === 0) criticalList.push({ name: m.name, reason: 'مفقودة' });
             } else {
-                // التوصيات - لا تعتبر ناقصة
                 tawsayaCount++;
-                tawsayaTotal += qty;
             }
         }
 
-        const result = {
-            lowStock: lowStockList,
-            criticalStock: criticalList,
-            excessStock: [],
-            recommendations: [],
-            predictions: [],
-            insights: [],
-            wasteRisks: [],
+        return {
             statistics: {
                 totalMaterials: normalCount,
                 totalQuantity: totalQuantity,
                 lowStockCount: lowStockCount,
                 lowStockTotalQuantity: lowStockTotal,
                 avgQuantity: normalCount > 0 ? (totalQuantity / normalCount).toFixed(2) : 0,
-                tawsayaCount: tawsayaCount,
-                tawsayaTotalQuantity: tawsayaTotal
+                tawsayaCount: tawsayaCount
             },
-            smartRecommendations: []
+            lowStock: lowStockList,
+            criticalStock: criticalList,
+            insights: this.getInsights(normalCount, lowStockCount, lowStockTotal, criticalList.length, tawsayaCount)
         };
+    }
 
-        // إضافة الرؤى
-        if (normalCount === 0) {
-            result.insights = [
-                '✨ لا توجد مواد في المخزون',
-                '💡 أضف مواد جديدة للبدء'
-            ];
+    getInsights(total, lowCount, lowTotal, criticalCount, tawsayaCount) {
+        const insights = [];
+        if (total === 0) {
+            insights.push('✨ لا توجد مواد، أضف مواد جديدة');
+            insights.push('💡 كل مادة تضاف تعتبر ناقصة بمقدار كميتها');
         } else {
-            result.insights = [
-                `📊 عدد المواد: ${normalCount} مادة`,
-                `⚠️ المواد الناقصة: ${lowStockCount} مادة (${lowStockTotal.toFixed(2)} كجم)`,
-                `🎁 التوصيات: ${tawsayaCount} مادة (منفصلة)`
-            ];
-            
-            if (criticalList.length > 0) {
-                result.insights.push(`⚠️ ${criticalList.length} مواد مفقودة بالكامل`);
-            }
+            insights.push(`📊 عدد المواد: ${total}`);
+            insights.push(`⚠️ المواد الناقصة: ${lowCount} (${lowTotal.toFixed(2)} كجم)`);
+            if (criticalCount > 0) insights.push(`🔴 ${criticalCount} مواد مفقودة بالكامل`);
+            if (tawsayaCount > 0) insights.push(`🎁 التوصيات: ${tawsayaCount} مادة (منفصلة)`);
         }
-
-        console.log("AI: التحليل كامل", result.statistics);
-        return result;
-    }
-
-    generateInsights(analysis) {
-        return analysis.insights || [];
-    }
-
-    generateSmartRecommendations(analysis) {
-        return [];
-    }
-
-    learnFromAction(action, material, details) {
-        console.log("AI: تعلم من تفاعل", action, material);
-        if (!this.learningData[material]) {
-            this.learningData[material] = [];
-        }
-        this.learningData[material].push({ action, details, time: Date.now() });
-        this.saveLearningData();
+        return insights;
     }
 }
 
-// إنشاء النسخة العالمية
 window.aiEngine = new AIEngine();
-console.log("✅ AI Engine Loaded Successfully");
