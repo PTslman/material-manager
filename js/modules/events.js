@@ -12,14 +12,23 @@ function bindEvents() {
         };
     }
     
-    // زر المزامنة
+    // زر المزامنة - إعادة تحميل البيانات من Firebase
     const syncBtn = document.getElementById('syncBtn');
     if (syncBtn) {
         syncBtn.onclick = function() {
-            console.log("Sync button clicked");
-            if (typeof unsubscribe === 'function') unsubscribe();
-            if (typeof startListener === 'function') startListener();
-            showToast("🔄 جاري المزامنة...");
+            console.log("Sync button clicked - Reloading data from Firebase");
+            showToast("🔄 جاري المزامنة مع السحابة...");
+            
+            // إلغاء الاشتراك الحالي وإعادة البدء
+            if (typeof unsubscribe === 'function' && unsubscribe) {
+                unsubscribe();
+            }
+            if (typeof startListener === 'function') {
+                startListener();
+            } else {
+                console.error("startListener is not defined");
+                showToast("❌ خطأ في المزامنة", true);
+            }
         };
     }
     
@@ -29,7 +38,15 @@ function bindEvents() {
         themeToggle.onclick = function() {
             console.log("Theme toggle clicked");
             document.body.classList.toggle('dark');
+            // حفظ التفضيل
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
         };
+        
+        // استعادة التفضيل
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+        }
     }
     
     // زر النسخ الاحتياطي
@@ -37,7 +54,12 @@ function bindEvents() {
     if (backupBtn) {
         backupBtn.onclick = function() {
             console.log("Backup button clicked");
-            if (typeof backupData === 'function') backupData();
+            if (typeof backupData === 'function') {
+                backupData();
+            } else {
+                console.error("backupData is not defined");
+                showToast("❌ خطأ في النسخ الاحتياطي", true);
+            }
         };
     }
     
@@ -46,7 +68,12 @@ function bindEvents() {
     if (restoreBtn) {
         restoreBtn.onclick = function() {
             console.log("Restore button clicked");
-            if (typeof restoreData === 'function') restoreData();
+            if (typeof restoreData === 'function') {
+                restoreData();
+            } else {
+                console.error("restoreData is not defined");
+                showToast("❌ خطأ في الاستعادة", true);
+            }
         };
     }
     
@@ -55,7 +82,12 @@ function bindEvents() {
     if (clearAllBtn) {
         clearAllBtn.onclick = function() {
             console.log("Clear all button clicked");
-            if (typeof clearAllMaterials === 'function') clearAllMaterials();
+            if (typeof clearAllMaterials === 'function') {
+                clearAllMaterials();
+            } else {
+                console.error("clearAllMaterials is not defined");
+                showToast("❌ خطأ في مسح البيانات", true);
+            }
         };
     }
     
@@ -64,7 +96,12 @@ function bindEvents() {
     if (saveNewItemBtn) {
         saveNewItemBtn.onclick = function() {
             console.log("Save new item button clicked");
-            if (typeof addNewMaterial === 'function') addNewMaterial();
+            if (typeof addNewMaterial === 'function') {
+                addNewMaterial();
+            } else {
+                console.error("addNewMaterial is not defined");
+                showToast("❌ خطأ في إضافة المادة", true);
+            }
         };
     }
     
@@ -73,7 +110,12 @@ function bindEvents() {
     if (saveEditBtn) {
         saveEditBtn.onclick = function() {
             console.log("Save edit button clicked");
-            if (typeof saveEdit === 'function') saveEdit();
+            if (typeof saveEdit === 'function') {
+                saveEdit();
+            } else {
+                console.error("saveEdit is not defined");
+                showToast("❌ خطأ في تحديث الكمية", true);
+            }
         };
     }
     
@@ -82,7 +124,12 @@ function bindEvents() {
     if (savePresetBtn) {
         savePresetBtn.onclick = function() {
             console.log("Save preset button clicked");
-            if (typeof addSelectedPresetItems === 'function') addSelectedPresetItems();
+            if (typeof addSelectedPresetItems === 'function') {
+                addSelectedPresetItems();
+            } else {
+                console.error("addSelectedPresetItems is not defined");
+                showToast("❌ خطأ في إضافة القوائم الجاهزة", true);
+            }
         };
     }
     
@@ -91,7 +138,12 @@ function bindEvents() {
     if (confirmMoveBtn) {
         confirmMoveBtn.onclick = function() {
             console.log("Confirm move button clicked");
-            if (typeof executeMove === 'function') executeMove();
+            if (typeof executeMove === 'function') {
+                executeMove();
+            } else {
+                console.error("executeMove is not defined");
+                showToast("❌ خطأ في نقل المادة", true);
+            }
         };
     }
     
@@ -104,17 +156,16 @@ function bindEvents() {
             console.log("Category card clicked:", category);
             
             if (category === 'tawsaya') {
-                // فتح نافذة إضافة توصية
                 const modal = document.getElementById('newItemModal');
                 const sectionSelect = document.getElementById('newMaterialSection');
                 if (sectionSelect) sectionSelect.value = 'tawsaya';
                 if (modal) modal.classList.add('active');
             } else {
-                // فتح نافذة القوائم الجاهزة
                 if (typeof openPresetModal === 'function') {
                     openPresetModal(category);
                 } else {
                     console.error("openPresetModal is not defined");
+                    showToast("❌ خطأ في فتح القائمة", true);
                 }
             }
         };
@@ -125,7 +176,7 @@ function bindEvents() {
     if (presetSearch) {
         presetSearch.oninput = function(e) {
             if (typeof renderPresetList === 'function') {
-                renderPresetList(currentPresetCategory, e.target.value);
+                renderPresetList(window.currentPresetCategory || 'main', e.target.value);
             }
         };
     }
@@ -143,15 +194,11 @@ function bindEvents() {
         const btn = document.getElementById(btnId);
         if (btn) {
             btn.onclick = function() {
-                if (typeof closeAllModals === 'function') {
-                    closeAllModals();
-                } else {
-                    const modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
-                    modals.forEach(function(id) {
-                        const el = document.getElementById(id);
-                        if (el) el.classList.remove('active');
-                    });
-                }
+                const modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
+                modals.forEach(function(id) {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                });
             };
         }
     });
@@ -188,16 +235,6 @@ function bindEvents() {
     console.log("✅ All events bound successfully");
 }
 
-// دالة إغلاق جميع المودالات
-function closeAllModals() {
-    console.log("Closing all modals");
-    const modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
-    modals.forEach(function(id) {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('active');
-    });
-}
-
 // تهيئة PWA
 function initPWA() {
     let deferredPrompt;
@@ -225,3 +262,7 @@ function initPWA() {
         };
     }
 }
+
+// تصدير الدوال
+window.bindEvents = bindEvents;
+window.initPWA = initPWA;
