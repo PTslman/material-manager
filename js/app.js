@@ -22,10 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
     
-    // تحميل الأسعار من Firebase عند بدء التشغيل
-    if (typeof syncPricesOnStartup === 'function') {
-        syncPricesOnStartup().then(function() {
-            console.log('✅ تم تحميل الأسعار من السحابة');
+    // تحميل الأسعار مسبقاً من Firebase
+    if (window.aiEngine && typeof window.aiEngine.preloadPrices === 'function') {
+        window.aiEngine.preloadPrices().then(function() {
+            console.log('✅ تم تحميل الأسعار من Firebase إلى AI Engine');
             if (typeof calculateAIMetrics === 'function') {
                 setTimeout(function() {
                     calculateAIMetrics();
@@ -63,4 +63,3 @@ window.startListener = startListener;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
 window.initDragAndDrop = initDragAndDrop;
-window.syncPricesOnStartup = syncPricesOnStartup;
