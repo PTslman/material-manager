@@ -4,26 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#10b981">
-    <meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
+    meta name="description" content="نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="مدير المواد">
     
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
+    <!-- تعطيل الـ console.log في الإنتاج -->
     <script>
-        // تحديد المسار الأساسي للمشروع على GitHub Pages
+        if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+            console.log = function() {};
+            console.error = function() {};
+            console.warn = function() {};
+        }
+    </script>
+    
+    <!-- تحديد المسار الأساسي -->
+    <script>
         (function() {
             var basePath = '/material-manager';
             var pathname = window.location.pathname;
-            
-            // إذا كان المستخدم في المسار الخطأ، أعد التوجيه
             if (pathname === '/' || pathname === '/index.html') {
                 window.location.href = basePath + '/';
                 return;
             }
-            
-            // إذا كان المسار لا يبدأ بـ /material-manager/ وكان في github.io
             if (window.location.hostname.includes('github.io') && !pathname.startsWith(basePath)) {
                 window.location.href = basePath + pathname;
                 return;
@@ -42,7 +47,6 @@
     <!-- PWA -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
-    <meta name="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     
     <!-- Icons -->
     <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
@@ -67,7 +71,7 @@
         </div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
-        <div class="splash-version">نسخة احترافية v9.0</div>
+        <div class="splash-version">نسخة احترافية v10.0</div>
         <div class="splash-loader">
             <div class="loader-dot"></div>
             <div class="loader-dot"></div>
@@ -131,9 +135,7 @@
     </div>
     
     <!-- كروت الأقسام -->
-    <div class="categories-container" id="categoriesContainer">
-        <!-- سيتم تعبئتها بواسطة JavaScript -->
-    </div>
+    <div class="categories-container" id="categoriesContainer"></div>
     
     <!-- حاوية الأقسام والمواد -->
     <div id="sectionsContainer"></div>
@@ -150,9 +152,7 @@
         
         <div class="ai-stats-grid">
             <div class="ai-stat-card">
-                <div class="ai-stat-icon">
-                    <i class="fas fa-cubes"></i>
-                </div>
+                <div class="ai-stat-icon"><i class="fas fa-cubes"></i></div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">إجمالي المواد</span>
                     <span class="ai-stat-value" id="totalMaterialsCount">0</span>
@@ -161,9 +161,7 @@
             </div>
             
             <div class="ai-stat-card">
-                <div class="ai-stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
+                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">الحجم الكلي</span>
                     <span class="ai-stat-value" id="totalQuantityValue">0</span>
@@ -172,20 +170,15 @@
             </div>
             
             <div class="ai-stat-card warning">
-                <div class="ai-stat-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
+                <div class="ai-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">مواد ناقصة</span>
                     <span class="ai-stat-value" id="lowStockCount">0</span>
-                    <span class="ai-stat-unit">مادة</span>
                 </div>
             </div>
             
             <div class="ai-stat-card success">
-                <div class="ai-stat-icon">
-                    <i class="fas fa-chart-pie"></i>
-                </div>
+                <div class="ai-stat-icon"><i class="fas fa-chart-pie"></i></div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">متوسط الكمية</span>
                     <span class="ai-stat-value" id="avgQuantityValue">0</span>
@@ -409,7 +402,7 @@
     </div>
 </div>
 
-<!-- ==================== SCRIPTS ==================== -->
+<!-- ==================== السكربتات ==================== -->
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
@@ -423,7 +416,9 @@
 <script src="/material-manager/js/modules/dragdrop.js"></script>
 <script src="/material-manager/js/modules/events.js"></script>
 <script src="/material-manager/js/app.js"></script>
-// إخفاء شاشة البداية عند تحميل التطبيق
+
+<script>
+// إخفاء شاشة البداية بعد التحميل
 setTimeout(function() {
     var splash = document.getElementById('splashScreen');
     var app = document.getElementById('appContainer');
@@ -439,13 +434,9 @@ setTimeout(function() {
 // تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/material-manager/sw.js')
-            .then(function(reg) {
-                console.log('✅ Service Worker registered:', reg);
-            })
-            .catch(function(err) {
-                console.error('❌ Service Worker failed:', err);
-            });
+        navigator.serviceWorker.register('/material-manager/service-worker.js')
+            .then(function(reg) {})
+            .catch(function(err) {});
     });
 }
 
