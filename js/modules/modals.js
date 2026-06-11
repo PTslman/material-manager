@@ -3,6 +3,7 @@
 var longPressTimer = null;
 var isLongPress = false;
 var touchStartTime = 0;
+var isOnButton = false;
 
 function setupLongPressForAllCards() {
     var cards = document.querySelectorAll('.material-card');
@@ -31,14 +32,15 @@ function setupLongPressOnCard(card) {
     card.addEventListener('click', onClick);
     
     function onTouchStart(e) {
-        // تسجيل وقت بدء اللمس
-        touchStartTime = Date.now();
-        isLongPress = false;
-        
-        // إذا كان الهدف هو زر التعديل أو الحذف، لا تفعل شيئاً
+        // التحقق إذا كان الضغط على زر التعديل أو الحذف
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
+            isOnButton = true;
             return;
         }
+        
+        isOnButton = false;
+        isLongPress = false;
+        touchStartTime = Date.now();
         
         var self = this;
         
@@ -63,30 +65,27 @@ function setupLongPressOnCard(card) {
     function onTouchEnd(e) {
         var touchDuration = Date.now() - touchStartTime;
         
-        // إذا كان هناك مؤقت نشط
+        // تنظيف المؤقت
         if (longPressTimer) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
         
+        // إذا كان الضغط على زر، لا تفعل شيئاً (يتم التعامل معه في ui.js)
+        if (isOnButton) {
+            isOnButton = false;
+            return;
+        }
+        
         // إذا كانت ضغطة قصيرة (أقل من 1000ms) وليست ضغطة مطولة
         if (touchDuration < 1000 && !isLongPress) {
-            // التحقق إذا كان الهدف هو زر التعديل أو الحذف
-            if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
-                return;
-            }
-            
-            // هنا يمكنك إضافة ما تريد فعله عند الضغطة القصيرة
-            // مثلاً: فتح نافذة تعديل سريع أو أي شيء آخر
-            // حالياً: لا نفعل شيئاً
+            // لا تفعل شيئاً - المستطيل يفلت فقط
             console.log('ضغطة قصيرة - لا تفعل شيئاً');
         }
         
         // إعادة تعيين المؤشرات
-        setTimeout(function() { 
-            isLongPress = false; 
-            touchStartTime = 0;
-        }, 100);
+        isLongPress = false;
+        touchStartTime = 0;
     }
     
     function onTouchMove() {
@@ -96,17 +95,19 @@ function setupLongPressOnCard(card) {
         }
         isLongPress = false;
         touchStartTime = 0;
+        isOnButton = false;
     }
     
     function onMouseDown(e) {
-        // تسجيل وقت بدء الضغط
-        touchStartTime = Date.now();
-        isLongPress = false;
-        
-        // إذا كان الهدف هو زر التعديل أو الحذف، لا تفعل شيئاً
+        // التحقق إذا كان الضغط على زر التعديل أو الحذف
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
+            isOnButton = true;
             return;
         }
+        
+        isOnButton = false;
+        isLongPress = false;
+        touchStartTime = Date.now();
         
         var self = this;
         
@@ -129,23 +130,26 @@ function setupLongPressOnCard(card) {
     function onMouseUp(e) {
         var pressDuration = Date.now() - touchStartTime;
         
+        // تنظيف المؤقت
         if (longPressTimer) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
         
+        // إذا كان الضغط على زر، لا تفعل شيئاً
+        if (isOnButton) {
+            isOnButton = false;
+            return;
+        }
+        
         // إذا كانت ضغطة قصيرة (أقل من 1000ms) وليست ضغطة مطولة
         if (pressDuration < 1000 && !isLongPress) {
-            if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
-                return;
-            }
+            // لا تفعل شيئاً - المستطيل يفلت فقط
             console.log('ضغطة قصيرة - لا تفعل شيئاً');
         }
         
-        setTimeout(function() { 
-            isLongPress = false; 
-            touchStartTime = 0;
-        }, 100);
+        isLongPress = false;
+        touchStartTime = 0;
     }
     
     function onMouseLeave() {
@@ -155,6 +159,7 @@ function setupLongPressOnCard(card) {
         }
         isLongPress = false;
         touchStartTime = 0;
+        isOnButton = false;
     }
     
     function onClick(e) {
@@ -165,7 +170,7 @@ function setupLongPressOnCard(card) {
             return;
         }
         
-        // إذا كان الهدف هو زر التعديل أو الحذف، نسمح بمرور الحدث
+        // إذا كان الضغط على زر التعديل أو الحذف، نسمح بمرور الحدث
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
             return;
         }
