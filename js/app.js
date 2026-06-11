@@ -3,14 +3,32 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 App initializing...');
     
-    renderCategories();
-    bindEvents();
-    startListener();
-    initPWA();
+    // تهيئة المكونات بالترتيب
+    if (typeof renderCategories === 'function') {
+        renderCategories();
+        console.log('✅ Categories rendered');
+    }
     
+    if (typeof bindEvents === 'function') {
+        bindEvents();
+        console.log('✅ Events bound');
+    }
+    
+    if (typeof startListener === 'function') {
+        startListener();
+        console.log('✅ Firestore listener started');
+    }
+    
+    if (typeof initPWA === 'function') {
+        initPWA();
+        console.log('✅ PWA initialized');
+    }
+    
+    // جعل المتغيرات عامة
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
     
+    // تهيئة السحب والإفلات بعد تحميل الصفحة
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') {
             initDragAndDrop();
@@ -19,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
+// تصدير الدوال العالمية
 window.addNewMaterial = addNewMaterial;
 window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
