@@ -5,22 +5,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (typeof renderCategories === 'function') {
         renderCategories();
-        console.log('✅ تم عرض الأقسام');
     }
     
     if (typeof bindEvents === 'function') {
         bindEvents();
-        console.log('✅ تم ربط الأحداث');
     }
     
     if (typeof startListener === 'function') {
         startListener();
-        console.log('✅ بدء الاستماع إلى Firebase');
     }
     
     if (typeof initPWA === 'function') {
         initPWA();
-        console.log('✅ تم تهيئة PWA');
+    }
+    
+    // تهيئة نظام الأسعار ومزامنته مع Firebase
+    if (typeof syncPricesFromFirebase === 'function') {
+        syncPricesFromFirebase();
     }
     
     window.allMaterials = allMaterials;
@@ -29,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') {
             initDragAndDrop();
-            console.log('✅ تم تهيئة السحب والإفلات');
         }
         if (typeof calculateAIMetrics === 'function') {
             calculateAIMetrics();
@@ -45,7 +45,7 @@ window.restoreData = restoreData;
 window.openPresetModal = openPresetModal;
 window.addSelectedPresetItems = addSelectedPresetItems;
 window.startListener = startListener;
-window.refreshData = refreshData;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
 window.initDragAndDrop = initDragAndDrop;
+window.syncPricesFromFirebase = syncPricesFromFirebase;
