@@ -1768,3 +1768,215 @@ body.dark .toast {
 .slide-in-left {
     animation: slideInLeft var(--transition-normal) ease;
          }
+/* ==================== شريط الأدوات المحسن ==================== */
+.toolbar-modern {
+    background: var(--bg-surface);
+    border-radius: var(--radius-5);
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-2);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.toolbar-container {
+    padding: var(--space-4) var(--space-5);
+}
+
+.toolbar-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.toolbar-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-13);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    padding: var(--space-1) var(--space-2);
+    background: var(--bg-card-hover);
+    border-radius: var(--radius-full);
+}
+
+.toolbar-title i {
+    font-size: var(--font-14);
+    color: var(--primary-500);
+}
+
+.toolbar-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: var(--font-12);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.tool-btn:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+.tool-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+}
+
+.tool-btn:active {
+    transform: scale(0.96);
+}
+
+.tool-btn i {
+    font-size: var(--font-14);
+    transition: transform var(--transition-fast);
+}
+
+.tool-btn:hover i {
+    transform: scale(1.1);
+}
+
+/* ألوان الأزرار الخاصة */
+.theme-btn {
+    background: linear-gradient(135deg, var(--gray-700), var(--gray-800));
+    color: white;
+}
+
+.theme-btn:hover {
+    background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+}
+
+.backup-btn {
+    background: linear-gradient(135deg, var(--info-500), var(--info-600));
+    color: white;
+}
+
+.backup-btn:hover {
+    background: linear-gradient(135deg, var(--info-600), var(--info-700));
+}
+
+.restore-btn {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    color: white;
+}
+
+.restore-btn:hover {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+}
+
+.install-btn {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.install-btn:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.clear-btn {
+    background: linear-gradient(135deg, var(--error-500), var(--error-600));
+    color: white;
+}
+
+.clear-btn:hover {
+    background: linear-gradient(135deg, var(--error-600), var(--error-700));
+}
+
+/* الوضع الداكن لشريط الأدوات */
+body.dark .toolbar-modern {
+    background: var(--bg-surface);
+    border-color: var(--border-light);
+}
+
+body.dark .toolbar-title {
+    background: var(--bg-card-hover);
+    color: var(--text-tertiary);
+}
+
+body.dark .tool-btn {
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+}
+
+body.dark .theme-btn {
+    background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+}
+
+body.dark .backup-btn {
+    background: linear-gradient(135deg, var(--info-600), var(--info-700));
+}
+
+body.dark .restore-btn {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+}
+
+body.dark .install-btn {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+body.dark .clear-btn {
+    background: linear-gradient(135deg, var(--error-600), var(--error-700));
+}
+
+/* استجابة شريط الأدوات */
+@media (max-width: 768px) {
+    .toolbar-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-title {
+        justify-content: center;
+        width: fit-content;
+        margin: 0 auto;
+    }
+    
+    .toolbar-buttons {
+        justify-content: center;
+    }
+    
+    .tool-btn span {
+        display: inline-block;
+    }
+}
+
+@media (max-width: 480px) {
+    .toolbar-buttons {
+        flex-direction: column;
+    }
+    
+    .tool-btn {
+        justify-content: center;
+    }
+}
