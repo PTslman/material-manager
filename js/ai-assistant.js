@@ -1,14 +1,8 @@
-// ==================== المساعد الذكي المخفي ====================
+// ==================== المساعد الذكي ====================
 
 var AIAssistant = {
-    // تحليل المخزون المتقدم
     analyzeStockLevels: function(materials) {
-        var analysis = {
-            critical: [],
-            warning: [],
-            optimal: [],
-            excess: []
-        };
+        var analysis = { critical: [], warning: [], optimal: [], excess: [] };
         
         for (var i = 0; i < materials.length; i++) {
             var m = materials[i];
@@ -34,49 +28,6 @@ var AIAssistant = {
         return analysis;
     },
     
-    // توصيات الشراء الذكية
-    getPurchaseRecommendations: function(materials, budget) {
-        var recommendations = [];
-        var criticalNeeds = [];
-        var totalCost = 0;
-        
-        for (var i = 0; i < materials.length; i++) {
-            var m = materials[i];
-            if (m.priority === 'tawsaya') continue;
-            
-            var qty = m.quantity || 0;
-            var unit = m.unitType || 'kg';
-            var qtyInKg = window.aiEngine ? window.aiEngine.convertToKg(qty, unit) : qty;
-            var estimatedPrice = this.estimatePrice(m.name);
-            
-            if (qtyInKg < 1) {
-                var neededQty = 2 - qtyInKg;
-                var cost = neededQty * estimatedPrice;
-                criticalNeeds.push({
-                    name: m.name,
-                    currentQty: qtyInKg,
-                    neededQty: neededQty,
-                    estimatedCost: cost,
-                    priority: qtyInKg === 0 ? 'عالية جداً' : 'عالية'
-                });
-                totalCost += cost;
-            }
-        }
-        
-        criticalNeeds.sort(function(a, b) { 
-            if (a.priority === 'عالية جداً' && b.priority !== 'عالية جداً') return -1;
-            if (a.priority !== 'عالية جداً' && b.priority === 'عالية جداً') return 1;
-            return b.estimatedCost - a.estimatedCost;
-        });
-        
-        return {
-            criticalNeeds: criticalNeeds,
-            totalEstimatedCost: totalCost,
-            recommendation: totalCost > (budget || 500) ? 'تجاوزت الميزانية - أولوية للمواد الحرجة' : 'مناسب ضمن الميزانية'
-        };
-    },
-    
-    // تقدير سعر المادة
     estimatePrice: function(materialName) {
         var prices = {
             'ملح': 2, 'فلفل اسود ناعم': 25, 'كمون ناعم': 20, 'كركم': 15,
@@ -87,8 +38,7 @@ var AIAssistant = {
         return prices[materialName] || 10;
     },
     
-    // التنبؤ بالطلب المستقبلي
-    predictDemand: function(materials, historicalData) {
+    predictDemand: function(materials) {
         var predictions = [];
         
         for (var i = 0; i < materials.length; i++) {
@@ -119,39 +69,6 @@ var AIAssistant = {
         return predictions;
     },
     
-    // تحسين كفاءة المخزون
-    optimizeInventory: function(materials) {
-        var suggestions = [];
-        var slowMovingItems = [];
-        var overstockedItems = [];
-        
-        for (var i = 0; i < materials.length; i++) {
-            var m = materials[i];
-            if (m.priority === 'tawsaya') continue;
-            
-            var qty = window.aiEngine ? window.aiEngine.convertToKg(m.quantity, m.unitType) : (m.quantity || 0);
-            
-            if (qty > 10) {
-                overstockedItems.push({
-                    name: m.name,
-                    quantity: qty,
-                    suggestion: 'تخفيض الكمية أو مشاركتها مع فروع أخرى'
-                });
-            }
-        }
-        
-        if (overstockedItems.length > 0) {
-            suggestions.push({
-                type: 'overstock',
-                title: '📦 مواد بكميات زائدة',
-                items: overstockedItems.slice(0, 5)
-            });
-        }
-        
-        return suggestions;
-    },
-    
-    // حساب القيمة الإجمالية للمخزون
     calculateTotalValue: function(materials) {
         var totalValue = 0;
         for (var i = 0; i < materials.length; i++) {
@@ -164,30 +81,25 @@ var AIAssistant = {
         return Math.round(totalValue);
     },
     
-    // الحصول على تقرير كامل
     getFullReport: function(materials) {
         var stockAnalysis = this.analyzeStockLevels(materials);
-        var purchaseRecs = this.getPurchaseRecommendations(materials, 1000);
         var demandPrediction = this.predictDemand(materials);
-        var optimizations = this.optimizeInventory(materials);
         var totalValue = this.calculateTotalValue(materials);
+        var normalCount = materials.filter(function(m) { return m.priority !== 'tawsaya'; }).length;
         
         return {
             summary: {
-                totalMaterials: materials.filter(function(m) { return m.priority !== 'tawsaya'; }).length,
+                totalMaterials: normalCount,
                 totalValue: totalValue,
                 criticalCount: stockAnalysis.critical.length,
                 warningCount: stockAnalysis.warning.length,
                 excessCount: stockAnalysis.excess.length
             },
             stockAnalysis: stockAnalysis,
-            purchaseRecommendations: purchaseRecs,
             demandPredictions: demandPrediction,
-            optimizationSuggestions: optimizations,
             generatedAt: new Date().toLocaleString('ar-SA')
         };
     }
 };
 
 window.AIAssistant = AIAssistant;
-console.log('✅ AI Assistant loaded');
