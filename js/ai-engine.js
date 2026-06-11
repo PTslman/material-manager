@@ -116,3 +116,39 @@ AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, lowStockC
 };
 
 window.aiEngine = new AIEngine();
+// حساب القيمة الإجمالية للمخزون (باستخدام الأسعار)
+AIEngine.prototype.calculateTotalValueWithPrices = function(materials, getPriceFunction) {
+    if (!materials || materials.length === 0) return 0;
+    if (!getPriceFunction) return 0;
+    
+    var totalValue = 0;
+    var valueBreakdown = [];
+    
+    for (var i = 0; i < materials.length; i++) {
+        var material = materials[i];
+        if (material.priority === 'tawsaya') continue;
+        
+        var price = getPriceFunction(material.name);
+        var quantityInKg = this.convertToKg(material.quantity, material.unitType);
+        var itemValue = quantityInKg * price;
+        totalValue += itemValue;
+        
+        if (price > 0 && quantityInKg > 0) {
+            valueBreakdown.push({
+                name: material.name,
+                quantity: material.quantity,
+                unit: material.unitType,
+                quantityInKg: quantityInKg,
+                pricePerKg: price,
+                totalValue: itemValue,
+                formattedValue: Math.round(itemValue).toLocaleString() + ' ل.س'
+            });
+        }
+    }
+    
+    return {
+        total: totalValue,
+        formattedTotal: Math.round(totalValue).toLocaleString() + ' ل.س',
+        breakdown: valueBreakdown
+    };
+};
