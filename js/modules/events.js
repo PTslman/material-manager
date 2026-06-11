@@ -1,3 +1,4 @@
+
 // ==================== ربط الأحداث ====================
 
 function bindEvents() {
@@ -32,7 +33,6 @@ function bindEvents() {
             var isDark = document.body.classList.contains('dark');
             localStorage.setItem('darkMode', isDark);
         };
-        // استعادة التفضيل المحفوظ
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
         }
@@ -74,10 +74,8 @@ function bindEvents() {
         priceManagerBtn.onclick = function() { 
             if (typeof openPriceModal === 'function') {
                 openPriceModal();
-            } else {
-                if (typeof showToastMessage === 'function') {
-                    showToastMessage('جاري تحميل نظام الأسعار...', false);
-                }
+            } else if (typeof showToastMessage === 'function') {
+                showToastMessage('جاري تحميل نظام الأسعار...', false);
             }
         };
     }
@@ -130,7 +128,6 @@ function bindEvents() {
             var category = this.getAttribute('data-category');
             
             if (category === 'tawsaya') {
-                // فتح نافذة إضافة توصية
                 var modal = document.getElementById('newItemModal');
                 var sectionSelect = document.getElementById('newMaterialSection');
                 if (sectionSelect) {
@@ -140,7 +137,6 @@ function bindEvents() {
                     modal.classList.add('active');
                 }
             } else {
-                // فتح نافذة القوائم الجاهزة
                 if (typeof openPresetModal === 'function') {
                     openPresetModal(category);
                 }
@@ -175,7 +171,6 @@ function bindEvents() {
                 if (typeof closeAllModals === 'function') {
                     closeAllModals();
                 } else {
-                    // إغلاق المودالات مباشرة
                     var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
                     for (var j = 0; j < modals.length; j++) {
                         var el = document.getElementById(modals[j]);
@@ -258,7 +253,17 @@ function bindEvents() {
         });
     }
     
-    console.log('✅ تم ربط جميع الأحداث بنجاح');
+    // زر تثبيت PWA
+    var installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.onclick = function() {
+            if (typeof PWASettings !== 'undefined' && PWASettings.promptInstall) {
+                PWASettings.promptInstall();
+            } else if (typeof showToastMessage === 'function') {
+                showToastMessage('📱 يمكنك تثبيت التطبيق من قائمة المتصفح', false);
+            }
+        };
+    }
 }
 
 // دالة إغلاق جميع المودالات
