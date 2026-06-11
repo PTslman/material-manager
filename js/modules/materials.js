@@ -219,7 +219,6 @@ async function restoreData() {
                 
                 for (var i = 0; i < backup.length; i++) {
                     var priority = backup[i].priority;
-                    // تحويل الأقسام القديمة إلى الجديدة
                     if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
                         priority = 'extra';
                     }
@@ -247,7 +246,6 @@ async function restoreData() {
     input.click();
 }
 
-// تحديث جميع المواد في Firebase لتحويل أقسامها القديمة إلى "extra"
 async function migrateOldSections() {
     if (!materialsCollection) return;
     
@@ -275,9 +273,7 @@ async function migrateOldSections() {
             }
             startListener();
         }
-    } catch(e) {
-        console.error('Migration error:', e);
-    }
+    } catch(e) {}
 }
 
 window.allMaterials = allMaterials;
