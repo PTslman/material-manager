@@ -1,59 +1,44 @@
 // ==================== ربط الأحداث ====================
 
 function bindEvents() {
-    // زر إضافة مادة جديدة
     document.getElementById('mainAddBtn').onclick = function() { 
         document.getElementById('newItemModal').classList.add('active'); 
     };
     
-    // زر المزامنة
     document.getElementById('syncBtn').onclick = function() { 
         if (unsubscribe) unsubscribe(); 
         startListener(); 
         showToast('🔄 جاري المزامنة...'); 
     };
     
-    // زر الوضع الليلي
     document.getElementById('themeToggle').onclick = function() { 
         document.body.classList.toggle('dark'); 
     };
     
-    // زر النسخ الاحتياطي
     document.getElementById('backupBtn').onclick = function() { 
         backupData(); 
     };
     
-    // زر الاستعادة
     document.getElementById('restoreBtn').onclick = function() { 
         restoreData(); 
     };
     
-    // زر مسح الكل
     document.getElementById('clearAllBtn').onclick = function() { 
         clearAllMaterials(); 
     };
     
-    // زر إضافة مادة من المودال
     document.getElementById('saveNewItemBtn').onclick = function() { 
         addNewMaterial(); 
     };
     
-    // زر حفظ التعديل
     document.getElementById('saveEditBtn').onclick = function() { 
         saveEdit(); 
     };
     
-    // زر حفظ القوائم الجاهزة
     document.getElementById('savePresetBtn').onclick = function() { 
         addSelectedPresetItems(); 
     };
     
-    // زر تأكيد النقل
-    document.getElementById('confirmMoveBtn').onclick = function() { 
-        executeMove(); 
-    };
-    
-    // كروت الأقسام
     var categoryCards = document.querySelectorAll('.category-card');
     for (var i = 0; i < categoryCards.length; i++) {
         categoryCards[i].onclick = function(e) {
@@ -70,7 +55,6 @@ function bindEvents() {
         };
     }
     
-    // البحث في القوائم الجاهزة
     var presetSearch = document.getElementById('presetSearchInput');
     if (presetSearch) {
         presetSearch.oninput = function(e) { 
@@ -78,9 +62,8 @@ function bindEvents() {
         };
     }
     
-    // أزرار الإغلاق
     var closeButtons = ['closeNewModalBtn', 'closeNewModalBtn2', 'closePresetModalBtn', 'closePresetModalBtn2', 
-                        'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 'closeSystemMessageBtn'];
+                        'closeEditModalBtn', 'closeEditModalBtn2', 'closeSystemMessageBtn'];
     for (var i = 0; i < closeButtons.length; i++) {
         var btn = document.getElementById(closeButtons[i]);
         if (btn) {
@@ -90,7 +73,6 @@ function bindEvents() {
         }
     }
     
-    // أزرار +/- في نافذة الإضافة
     var dec = document.getElementById('newQtyDec');
     var inc = document.getElementById('newQtyInc');
     var qty = document.getElementById('newQuantityValue');
@@ -107,7 +89,6 @@ function bindEvents() {
         };
     }
     
-    // تغيير الوحدة في نافذة التعديل
     var editUnit = document.getElementById('editUnitSelect');
     if (editUnit) {
         editUnit.onchange = function() {
@@ -117,6 +98,14 @@ function bindEvents() {
             else if (unit === 'quarter') qtyInput.value = 0.25;
             else if (unit === 'oke') qtyInput.value = 0.2;
         };
+    }
+}
+
+function closeAllModals() {
+    var modals = ['newItemModal', 'presetModal', 'editModal', 'systemMessageModal'];
+    for (var i = 0; i < modals.length; i++) {
+        var el = document.getElementById(modals[i]);
+        if (el) el.classList.remove('active');
     }
 }
 
@@ -146,3 +135,4 @@ function initPWA() {
 
 window.bindEvents = bindEvents;
 window.initPWA = initPWA;
+window.closeAllModals = closeAllModals;
