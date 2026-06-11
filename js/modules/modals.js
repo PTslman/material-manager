@@ -1,6 +1,7 @@
 // ==================== الضغطة المطولة ونقل المواد ====================
 
 var longPressTimer = null;
+var isLongPress = false;
 
 function setupLongPressForAllCards() {
     var cards = document.querySelectorAll('.material-card');
@@ -17,6 +18,7 @@ function setupLongPressOnCard(card) {
     card.removeEventListener('mousedown', onMouseDown);
     card.removeEventListener('mouseup', onMouseUp);
     card.removeEventListener('mouseleave', onMouseLeave);
+    card.removeEventListener('click', onClick);
     
     // إضافة مستمعين جدد
     card.addEventListener('touchstart', onTouchStart);
@@ -25,6 +27,7 @@ function setupLongPressOnCard(card) {
     card.addEventListener('mousedown', onMouseDown);
     card.addEventListener('mouseup', onMouseUp);
     card.addEventListener('mouseleave', onMouseLeave);
+    card.addEventListener('click', onClick);
     
     function onTouchStart(e) {
         // منع تفعيل الضغطة الطويلة إذا كان الهدف هو زر التعديل أو الحذف
@@ -32,8 +35,11 @@ function setupLongPressOnCard(card) {
             return;
         }
         
+        isLongPress = false;
         var self = this;
+        
         longPressTimer = setTimeout(function() {
+            isLongPress = true;
             var id = self.getAttribute('data-id');
             var name = self.getAttribute('data-name');
             var section = self.getAttribute('data-section');
@@ -50,6 +56,8 @@ function setupLongPressOnCard(card) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
+        // إعادة تعيين المؤشر بعد انتهاء اللمس
+        setTimeout(function() { isLongPress = false; }, 100);
     }
     
     function onTouchMove() {
@@ -57,6 +65,7 @@ function setupLongPressOnCard(card) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
+        isLongPress = false;
     }
     
     function onMouseDown(e) {
@@ -65,9 +74,11 @@ function setupLongPressOnCard(card) {
             return;
         }
         
-        e.preventDefault();
+        isLongPress = false;
         var self = this;
+        
         longPressTimer = setTimeout(function() {
+            isLongPress = true;
             var id = self.getAttribute('data-id');
             var name = self.getAttribute('data-name');
             var section = self.getAttribute('data-section');
@@ -84,6 +95,7 @@ function setupLongPressOnCard(card) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
+        setTimeout(function() { isLongPress = false; }, 100);
     }
     
     function onMouseLeave() {
@@ -91,10 +103,30 @@ function setupLongPressOnCard(card) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
+        isLongPress = false;
+    }
+    
+    function onClick(e) {
+        // منع النقر العادي إذا كانت ضغطة طويلة
+        if (isLongPress) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+        
+        // إذا كان الهدف هو زر التعديل أو الحذف، لا تفعل شيء (يتم التعامل معها في ui.js)
+        if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
+            return;
+        }
+        
+        // منع أي حدث آخر عند الضغط العادي على البطاقة
+        e.stopPropagation();
+        e.preventDefault();
     }
 }
 
 function openMoveModal(id, name, currentSection) {
+    console.log('Opening move modal for:', name);
     document.getElementById('moveItemName').value = name;
     document.getElementById('moveTargetSection').value = currentSection;
     window.moveData = { id: id, name: name, currentSection: currentSection };
