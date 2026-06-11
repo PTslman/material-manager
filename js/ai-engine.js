@@ -103,6 +103,10 @@ AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
             tawsayaCount++;
         }
     }
+    
+    priceBreakdown.sort(function(a, b) {
+        return b.totalValue - a.totalValue;
+    });
 
     return {
         totalWeight: this.formatNumber(totalWeight),
@@ -110,7 +114,7 @@ AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
         totalValueRaw: totalValue,
         lowStockCount: lowStockCount,
         lowStockList: lowStockList.slice(0, 10),
-        priceBreakdown: priceBreakdown,
+        priceBreakdown: priceBreakdown.slice(0, 5),
         tawsayaCount: tawsayaCount,
         insights: this.getInsights(materials.length, totalWeight, totalValue, lowStockCount, tawsayaCount)
     };
