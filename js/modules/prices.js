@@ -1,7 +1,46 @@
 // ==================== نظام إدارة الأسعار ====================
 
 var materialPrices = {};
-var priceModalOpen = false;
+var allMaterialsList = [];
+
+// تحميل جميع المواد من القوائم الجاهزة
+function loadAllMaterialsFromPresets() {
+    var materialsSet = new Set();
+    
+    // إضافة مواد من أساسيات
+    if (typeof importantItemsList !== 'undefined') {
+        for (var i = 0; i < importantItemsList.length; i++) {
+            materialsSet.add(importantItemsList[i]);
+        }
+    }
+    
+    // إضافة مواد من إضافي
+    if (typeof extraItemsList !== 'undefined') {
+        for (var i = 0; i < extraItemsList.length; i++) {
+            materialsSet.add(extraItemsList[i]);
+        }
+    }
+    
+    // إضافة مواد من أكياس تعبئة
+    if (typeof bagTypesList !== 'undefined') {
+        for (var i = 0; i < bagTypesList.length; i++) {
+            materialsSet.add(bagTypesList[i]);
+        }
+    }
+    
+    // إضافة مواد من توصيات (إذا وجدت)
+    if (typeof tawsayaItemsList !== 'undefined') {
+        for (var i = 0; i < tawsayaItemsList.length; i++) {
+            materialsSet.add(tawsayaItemsList[i]);
+        }
+    }
+    
+    // تحويل Set إلى Array وترتيبها أبجدياً
+    allMaterialsList = Array.from(materialsSet);
+    allMaterialsList.sort(function(a, b) {
+        return a.localeCompare(b);
+    });
+}
 
 // تحميل الأسعار من localStorage
 function loadPrices() {
@@ -46,7 +85,7 @@ function getMaterialPrice(materialName) {
 
 // حساب القيمة الإجمالية للمخزون (باستثناء التوصيات)
 function calculateTotalValue() {
-    if (!window.allMaterials) return 0;
+    if (!window.allMaterials) return { total: 0, formattedTotal: '0 ل.س', breakdown: [] };
     
     var totalValue = 0;
     var priceBreakdown = [];
@@ -75,7 +114,8 @@ function calculateTotalValue() {
                 unit: material.unitType,
                 quantityInKg: quantityInKg,
                 pricePerKg: price,
-                totalValue: itemValue
+                totalValue: itemValue,
+                formattedValue: formatCurrency(itemValue)
             });
         }
     }
@@ -95,6 +135,7 @@ function formatCurrency(value) {
 // فتح نافذة الأسعار
 function openPriceModal() {
     loadPrices();
+    loadAllMaterialsFromPresets();
     
     var modal = document.getElementById('priceModal');
     if (!modal) {
@@ -104,7 +145,6 @@ function openPriceModal() {
     
     renderPriceList();
     modal.classList.add('active');
-    priceModalOpen = true;
 }
 
 // إنشاء نافذة الأسعار
@@ -126,10 +166,26 @@ function createPriceModal() {
                                 <span class="price-total-value" id="totalInventoryValue">0 ل.س</span>
                             </div>
                         </div>
+                        <div class="price-stats">
+                            <div class="price-stat">
+                                <span class="price-stat-label">عدد المواد المسعرة</span>
+                                <span class="price-stat-value" id="pricedCount">0</span>
+                            </div>
+                            <div class="price-stat">
+                                <span class="price-stat-label">إجمالي المواد</span>
+                                <span class="price-stat-value" id="totalMaterialsCountPrice">0</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="price-search">
                         <i class="fas fa-search"></i>
                         <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
+                    </div>
+                    <div class="price-categories">
+                        <button class="price-cat-btn active" data-cat="all">الكل</button>
+                        <button class="price-cat-btn" data-cat="main">⭐ أساسيات</button>
+                        <button class="price-cat-btn" data-cat="extra">➕ إضافي</button>
+                        <button class="price-cat-btn" data-cat="bags">🛍️ أكياس</button>
                     </div>
                     <div class="price-list-container" id="priceListContainer">
                         <div class="price-loading">جاري التحميل...</div>
@@ -152,7 +208,20 @@ function createPriceModal() {
     var searchInput = document.getElementById('priceSearchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
-            renderPriceList(e.target.value);
+            renderPriceList();
+        });
+    }
+    
+    // ربط أزرار التصنيف
+    var catBtns = document.querySelectorAll('.price-cat-btn');
+    for (var i = 0; i < catBtns.length; i++) {
+        catBtns[i].addEventListener('click', function() {
+            var btns = document.querySelectorAll('.price-cat-btn');
+            for (var j = 0; j < btns.length; j++) {
+                btns[j].classList.remove('active');
+            }
+            this.classList.add('active');
+            renderPriceList();
         });
     }
 }
@@ -161,69 +230,88 @@ function createPriceModal() {
 function closePriceModal() {
     var modal = document.getElementById('priceModal');
     if (modal) modal.classList.remove('active');
-    priceModalOpen = false;
+}
+
+// الحصول على تصنيف المادة
+function getMaterialCategory(materialName) {
+    if (typeof importantItemsList !== 'undefined' && importantItemsList.indexOf(materialName) !== -1) {
+        return 'main';
+    }
+    if (typeof extraItemsList !== 'undefined' && extraItemsList.indexOf(materialName) !== -1) {
+        return 'extra';
+    }
+    if (typeof bagTypesList !== 'undefined' && bagTypesList.indexOf(materialName) !== -1) {
+        return 'bags';
+    }
+    return 'other';
 }
 
 // عرض قائمة الأسعار
-function renderPriceList(filter) {
+function renderPriceList() {
     var container = document.getElementById('priceListContainer');
     if (!container) return;
     
-    if (!window.allMaterials || window.allMaterials.length === 0) {
-        container.innerHTML = '<div class="price-empty"><i class="fas fa-box-open"></i><br>لا توجد مواد في المخزون</div>';
-        return;
-    }
+    var searchValue = document.getElementById('priceSearchInput')?.value.toLowerCase() || '';
+    var activeCat = document.querySelector('.price-cat-btn.active')?.getAttribute('data-cat') || 'all';
     
-    // جمع المواد الفريدة (بدون تكرار)
-    var uniqueMaterials = {};
-    for (var i = 0; i < window.allMaterials.length; i++) {
-        var m = window.allMaterials[i];
-        if (m.priority === 'tawsaya') continue;
-        if (!uniqueMaterials[m.name]) {
-            uniqueMaterials[m.name] = {
-                name: m.name,
-                unit: m.unitType,
-                quantity: m.quantity
-            };
+    // تصفية المواد حسب البحث والتصنيف
+    var filteredMaterials = [];
+    for (var i = 0; i < allMaterialsList.length; i++) {
+        var material = allMaterialsList[i];
+        var category = getMaterialCategory(material);
+        
+        // تطبيق تصفية التصنيف
+        if (activeCat !== 'all' && category !== activeCat) {
+            continue;
         }
+        
+        // تطبيق تصفية البحث
+        if (searchValue && !material.toLowerCase().includes(searchValue)) {
+            continue;
+        }
+        
+        filteredMaterials.push(material);
     }
     
-    var materialsList = Object.values(uniqueMaterials);
-    materialsList.sort(function(a, b) {
-        return a.name.localeCompare(b.name);
-    });
-    
-    if (filter) {
-        var filterLower = filter.toLowerCase();
-        materialsList = materialsList.filter(function(m) {
-            return m.name.toLowerCase().includes(filterLower);
-        });
-    }
-    
-    if (materialsList.length === 0) {
+    if (filteredMaterials.length === 0) {
         container.innerHTML = '<div class="price-empty"><i class="fas fa-search"></i><br>لا توجد نتائج</div>';
+        updatePriceSummary();
         return;
     }
     
     var html = '';
-    for (var i = 0; i < materialsList.length; i++) {
-        var m = materialsList[i];
-        var currentPrice = getMaterialPrice(m.name);
+    for (var i = 0; i < filteredMaterials.length; i++) {
+        var material = filteredMaterials[i];
+        var currentPrice = getMaterialPrice(material);
         var priceDisplay = currentPrice > 0 ? formatCurrency(currentPrice) : 'لم يحدد';
+        var category = getMaterialCategory(material);
+        var categoryIcon = '';
+        var categoryClass = '';
+        
+        if (category === 'main') {
+            categoryIcon = '⭐';
+            categoryClass = 'price-cat-main';
+        } else if (category === 'extra') {
+            categoryIcon = '➕';
+            categoryClass = 'price-cat-extra';
+        } else if (category === 'bags') {
+            categoryIcon = '🛍️';
+            categoryClass = 'price-cat-bags';
+        }
         
         html += `
-            <div class="price-item" data-material="${escapeHtml(m.name)}">
+            <div class="price-item ${categoryClass}" data-material="${escapeHtml(material)}">
                 <div class="price-item-info">
                     <div class="price-item-name">
-                        <i class="fas fa-box"></i>
-                        <span>${escapeHtml(m.name)}</span>
+                        <span class="price-cat-icon">${categoryIcon}</span>
+                        <span>${escapeHtml(material)}</span>
                     </div>
                     <div class="price-item-details">
                         <span class="price-item-unit">سعر الكيلو (ل.س)</span>
                     </div>
                 </div>
                 <div class="price-item-input">
-                    <input type="number" class="price-input" data-material="${escapeHtml(m.name)}" value="${currentPrice > 0 ? currentPrice : ''}" placeholder="0" step="100" min="0">
+                    <input type="number" class="price-input" data-material="${escapeHtml(material)}" value="${currentPrice > 0 ? currentPrice : ''}" placeholder="0" step="100" min="0">
                     <span class="price-current">${priceDisplay}</span>
                 </div>
             </div>
@@ -259,6 +347,16 @@ function updatePriceSummary() {
     if (!summaryContainer) return;
     
     var totalValue = calculateTotalValue();
+    var pricedCount = 0;
+    for (var key in materialPrices) {
+        if (materialPrices[key] > 0) pricedCount++;
+    }
+    
+    var pricedCountEl = document.getElementById('pricedCount');
+    var totalMaterialsCountEl = document.getElementById('totalMaterialsCountPrice');
+    
+    if (pricedCountEl) pricedCountEl.innerText = pricedCount;
+    if (totalMaterialsCountEl) totalMaterialsCountEl.innerText = allMaterialsList.length;
     
     summaryContainer.innerHTML = `
         <div class="price-total-card">
@@ -271,11 +369,11 @@ function updatePriceSummary() {
         <div class="price-stats">
             <div class="price-stat">
                 <span class="price-stat-label">عدد المواد المسعرة</span>
-                <span class="price-stat-value">${Object.keys(materialPrices).length}</span>
+                <span class="price-stat-value">${pricedCount}</span>
             </div>
             <div class="price-stat">
-                <span class="price-stat-label">إجمالي الكمية</span>
-                <span class="price-stat-value">${totalValue.breakdown.reduce(function(sum, item) { return sum + item.quantityInKg; }, 0).toFixed(2)} كجم</span>
+                <span class="price-stat-label">إجمالي المواد</span>
+                <span class="price-stat-value">${allMaterialsList.length}</span>
             </div>
         </div>
     `;
@@ -290,8 +388,10 @@ function saveAllPrices() {
     if (typeof calculateAIMetrics === 'function') {
         calculateAIMetrics();
     }
+    updatePriceSummary();
 }
 
+// تصدير الدوال
 window.loadPrices = loadPrices;
 window.savePrices = savePrices;
 window.updateMaterialPrice = updateMaterialPrice;
@@ -302,3 +402,4 @@ window.openPriceModal = openPriceModal;
 window.closePriceModal = closePriceModal;
 window.renderPriceList = renderPriceList;
 window.updatePriceSummary = updatePriceSummary;
+window.loadAllMaterialsFromPresets = loadAllMaterialsFromPresets;
