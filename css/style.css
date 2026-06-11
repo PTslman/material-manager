@@ -1989,3 +1989,225 @@ body.dark .toast {
         border: 1px solid #ccc;
     }
 }
+/* -------------------- شريط الأدوات المحسن -------------------- */
+.toolbar-modern {
+    background: var(--bg-surface);
+    border-radius: var(--radius-2xl);
+    margin-bottom: var(--space-5);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    padding: var(--space-2) var(--space-3);
+}
+
+.toolbar-modern::-webkit-scrollbar {
+    height: 3px;
+}
+
+.toolbar-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 100%;
+}
+
+.toolbar-buttons {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: nowrap;
+}
+
+.tool-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 44px;
+    height: 44px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-13);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    position: relative;
+    white-space: nowrap;
+}
+
+.tool-btn i {
+    font-size: var(--font-16);
+    transition: transform var(--transition-fast);
+}
+
+.tool-btn span {
+    display: none;
+}
+
+.tool-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.tool-btn:hover i {
+    transform: scale(1.1);
+}
+
+.tool-btn:active {
+    transform: scale(0.95);
+}
+
+/* تلميحات الأزرار للشاشات الصغيرة */
+.tool-btn::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: var(--gray-800);
+    color: white;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-10);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+    pointer-events: none;
+    z-index: var(--z-30);
+}
+
+.tool-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+    bottom: -40px;
+}
+
+/* ألوان الأزرار المخصصة */
+.theme-btn {
+    background: linear-gradient(135deg, var(--gray-700), var(--gray-800));
+    color: white;
+}
+.theme-btn:hover {
+    background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+}
+
+.backup-btn {
+    background: linear-gradient(135deg, var(--info-500), var(--info-600));
+    color: white;
+}
+.backup-btn:hover {
+    background: linear-gradient(135deg, var(--info-600), var(--info-700));
+}
+
+.restore-btn {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    color: white;
+}
+.restore-btn:hover {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+}
+
+.install-btn {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+.install-btn:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.clear-btn {
+    background: linear-gradient(135deg, var(--error-500), var(--error-600));
+    color: white;
+}
+.clear-btn:hover {
+    background: linear-gradient(135deg, var(--error-600), var(--error-700));
+}
+
+.price-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+.price-btn:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+/* الوضع الداكن لأزرار شريط الأدوات */
+body.dark .theme-btn {
+    background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+}
+body.dark .backup-btn {
+    background: linear-gradient(135deg, var(--info-600), var(--info-700));
+}
+body.dark .restore-btn {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+}
+body.dark .install-btn {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+body.dark .clear-btn {
+    background: linear-gradient(135deg, var(--error-600), var(--error-700));
+}
+body.dark .price-btn {
+    background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+/* استجابة شريط الأدوات - شاشات متوسطة */
+@media (min-width: 640px) and (max-width: 1024px) {
+    .toolbar-modern {
+        padding: var(--space-2) var(--space-3);
+    }
+    .tool-btn {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 var(--space-2);
+    }
+    .tool-btn i {
+        font-size: var(--font-15);
+    }
+}
+
+/* استجابة شريط الأدوات - شاشات كبيرة (إظهار النص) */
+@media (min-width: 1024px) {
+    .toolbar-modern {
+        padding: var(--space-2) var(--space-4);
+    }
+    .tool-btn {
+        min-width: auto;
+        height: 40px;
+        padding: 0 var(--space-4);
+    }
+    .tool-btn span {
+        display: inline-block;
+    }
+    .tool-btn i {
+        font-size: var(--font-14);
+    }
+    .tool-btn::after {
+        display: none;
+    }
+}
+
+/* استجابة شريط الأدوات - شاشات صغيرة جداً */
+@media (max-width: 480px) {
+    .toolbar-modern {
+        padding: var(--space-2);
+        border-radius: var(--radius-xl);
+    }
+    .tool-btn {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 var(--space-2);
+    }
+    .tool-btn i {
+        font-size: var(--font-14);
+    }
+       }
