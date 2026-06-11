@@ -94,21 +94,16 @@ function setupDroppable(section) {
 async function performDragDropMove(itemId, targetSection, originalSection, itemName) {
     if (!itemId || !targetSection) return false;
     var name = itemName || 'المادة';
-    showToastMessage('🔄 جاري نقل "' + name + '"...', false);
+    if (typeof showToastMessage === 'function') showToastMessage('🔄 جاري نقل "' + name + '"...', false);
     
     try {
         await materialsCollection.doc(itemId).update({ priority: targetSection });
-        var sectionNames = {
-            'main': 'أساسيات',
-            'extra': 'إضافي',
-            'bags': 'أكياس تعبئة',
-            'tawsaya': 'توصيات'
-        };
-        showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        var sectionNames = { 'main': 'أساسيات', 'extra': 'إضافي', 'bags': 'أكياس تعبئة', 'tawsaya': 'توصيات' };
+        if (typeof showToastMessage === 'function') showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
         if (typeof startListener === 'function') startListener();
         return true;
     } catch(error) {
-        showToastMessage('❌ فشل نقل "' + name + '"', true);
+        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل نقل "' + name + '"', true);
         return false;
     }
 }
