@@ -55,13 +55,21 @@
 </head>
 <body>
 
-<!-- شاشة البداية -->
+<!-- ==================== شاشة التحميل ==================== -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
-        <div class="splash-logo"><i class="fas fa-boxes"></i></div>
+        <div class="splash-logo">
+            <i class="fas fa-boxes"></i>
+        </div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
         <div class="splash-version">نسخة احترافية v11.0</div>
+        <div class="splash-progress">
+            <div class="splash-progress-bar">
+                <div class="splash-progress-fill" id="splashProgressFill"></div>
+            </div>
+            <div class="splash-progress-text" id="splashProgressText">جاري التحميل 0%</div>
+        </div>
         <div class="splash-loader">
             <div class="loader-dot"></div>
             <div class="loader-dot"></div>
@@ -70,7 +78,7 @@
     </div>
 </div>
 
-<!-- التطبيق الرئيسي -->
+<!-- ==================== التطبيق الرئيسي ==================== -->
 <div id="appContainer" class="app-main" style="display: none;">
     
     <!-- الهيرو -->
@@ -181,7 +189,7 @@
     </div>
 </div>
 
-<!-- شريط الحالة -->
+<!-- ==================== شريط الحالة ==================== -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -353,30 +361,64 @@
 </div>
 
 <!-- مودال الأسعار -->
-<div id="priceModal" class="modal">
+<div id="priceModal" class="modal price-modal-full">
     <div class="modal-overlay"></div>
-    <div class="modal-content modal-price">
+    <div class="modal-content price-modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-tags"></i> إدارة أسعار المواد</h3>
             <button class="modal-close" id="closePriceModalBtn">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="price-summary" id="priceSummary"></div>
-            <div class="price-search">
-                <i class="fas fa-search"></i>
-                <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
+        <div class="modal-body price-modal-body">
+            <div class="price-stats-cards">
+                <div class="price-stat-card">
+                    <div class="price-stat-icon"><i class="fas fa-boxes"></i></div>
+                    <div class="price-stat-info">
+                        <span class="price-stat-label">إجمالي المواد</span>
+                        <span class="price-stat-value" id="totalMaterialsPrice">0</span>
+                    </div>
+                </div>
+                <div class="price-stat-card">
+                    <div class="price-stat-icon"><i class="fas fa-tag"></i></div>
+                    <div class="price-stat-info">
+                        <span class="price-stat-label">المواد المسعرة</span>
+                        <span class="price-stat-value" id="pricedMaterialsCount">0</span>
+                    </div>
+                </div>
+                <div class="price-stat-card">
+                    <div class="price-stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="price-stat-info">
+                        <span class="price-stat-label">القيمة الإجمالية</span>
+                        <span class="price-stat-value" id="totalInventoryValuePrice">0</span>
+                    </div>
+                </div>
             </div>
-            <div class="price-categories">
-                <button class="price-cat-btn active" data-cat="all">الكل</button>
-                <button class="price-cat-btn" data-cat="main">⭐ أساسيات</button>
-                <button class="price-cat-btn" data-cat="extra">➕ إضافي</button>
-                <button class="price-cat-btn" data-cat="bags">🛍️ أكياس</button>
+            
+            <div class="price-search-section">
+                <div class="price-search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
+                    <button id="clearPriceSearch" class="price-clear-search" style="display: none;"><i class="fas fa-times"></i></button>
+                </div>
             </div>
-            <div id="priceListContainer" class="price-list-container"></div>
+            
+            <div class="price-categories-tabs">
+                <button class="price-cat-tab active" data-cat="all">الكل</button>
+                <button class="price-cat-tab" data-cat="main">⭐ أساسيات</button>
+                <button class="price-cat-tab" data-cat="extra">➕ إضافي</button>
+                <button class="price-cat-tab" data-cat="bags">🛍️ أكياس تعبئة</button>
+            </div>
+            
+            <div class="price-items-container">
+                <div class="price-items-header">
+                    <span class="price-items-header-name">اسم المادة</span>
+                    <span class="price-items-header-price">السعر (ل.س/كجم)</span>
+                </div>
+                <div id="priceListContainer" class="price-items-list"></div>
+            </div>
         </div>
         <div class="modal-footer">
-            <button id="saveAllPricesBtn" class="btn-save">حفظ الكل</button>
-            <button id="closePriceModalBtn2" class="btn-cancel">إغلاق</button>
+            <button id="saveAllPricesBtn" class="btn-save"><i class="fas fa-save"></i> حفظ الكل</button>
+            <button id="closePriceModalBtn2" class="btn-cancel"><i class="fas fa-times"></i> إغلاق</button>
         </div>
     </div>
 </div>
@@ -409,24 +451,68 @@
 <script src="/material-manager/js/app.js"></script>
 
 <script>
-setTimeout(function() {
-    var splash = document.getElementById('splashScreen');
-    var app = document.getElementById('appContainer');
-    if (splash && app) {
-        splash.classList.add('hidden');
-        setTimeout(function() {
-            splash.style.display = 'none';
-            app.style.display = 'block';
-        }, 500);
-    }
-}, 2000);
+// شريط تقدم التحميل
+var progressInterval;
+var currentProgress = 0;
 
+function updateSplashProgress(percent, text) {
+    var fillEl = document.getElementById('splashProgressFill');
+    var textEl = document.getElementById('splashProgressText');
+    if (fillEl) fillEl.style.width = percent + '%';
+    if (textEl) textEl.innerText = text || ('جاري التحميل ' + percent + '%');
+}
+
+function startSplashProgress() {
+    currentProgress = 0;
+    updateSplashProgress(0, 'بدء التحميل...');
+    
+    progressInterval = setInterval(function() {
+        if (currentProgress < 90) {
+            currentProgress += 5;
+            updateSplashProgress(currentProgress, 'جاري التحميل ' + currentProgress + '%');
+        }
+    }, 200);
+}
+
+function completeSplashProgress() {
+    clearInterval(progressInterval);
+    updateSplashProgress(100, 'اكتمل التحميل!');
+    
+    setTimeout(function() {
+        var splash = document.getElementById('splashScreen');
+        var app = document.getElementById('appContainer');
+        if (splash && app) {
+            splash.classList.add('hidden');
+            setTimeout(function() {
+                splash.style.display = 'none';
+                app.style.display = 'block';
+            }, 500);
+        }
+    }, 500);
+}
+
+startSplashProgress();
+
+// بعد تحميل Firebase والبيانات
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        if (typeof startListener === 'function') {
+            startListener();
+        }
+        setTimeout(function() {
+            completeSplashProgress();
+        }, 1000);
+    }, 500);
+});
+
+// تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/material-manager/service-worker.js').then(function(reg) {}).catch(function(err) {});
     });
 }
 
+// إغلاق المودالات
 window.closeAllModals = function() {
     var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
     for (var i = 0; i < modals.length; i++) {
@@ -435,6 +521,7 @@ window.closeAllModals = function() {
     }
 };
 
+// ربط أزرار الإغلاق
 var closeButtons = ['closeNewModalBtn', 'closeNewModalBtn2', 'closePresetModalBtn', 'closePresetModalBtn2', 
                     'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 
                     'closeSystemMessageBtn', 'closePriceModalBtn', 'closePriceModalBtn2'];
@@ -445,6 +532,7 @@ for (var i = 0; i < closeButtons.length; i++) {
     }
 }
 
+// أزرار +/- في نافذة الإضافة
 var dec = document.getElementById('newQtyDec');
 var inc = document.getElementById('newQtyInc');
 var qty = document.getElementById('newQuantityValue');
