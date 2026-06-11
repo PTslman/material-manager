@@ -35,9 +35,9 @@ function renderSections(materials) {
         html += '<div class="priority-section" data-section="' + section + '">' +
             '<div class="section-header"><div class="section-title"><i class="' + getSectionIcon(section) + '"></i><span>' + getSectionTitle(section) + '</span></div>' +
             '<div class="section-count">' + sectionMaterials.length + '</div></div>' +
-            '<div class="materials-grid">';
+            '<div class="materials-grid" data-section="' + section + '">';
         if (sectionMaterials.length === 0) {
-            html += '<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>اضغط على القسم لإضافة مواد جاهزة</small></div>';
+            html += '<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>اسحب وأفلت المواد من الأقسام الأخرى</small></div>';
         } else {
             for (var j = 0; j < sectionMaterials.length; j++) {
                 html += renderMaterialCard(sectionMaterials[j]);
@@ -47,7 +47,13 @@ function renderSections(materials) {
     }
     container.innerHTML = html;
     bindCardButtons();
-    setTimeout(function() { if (typeof setupLongPressForAllCards === 'function') setupLongPressForAllCards(); }, 100);
+    
+    setTimeout(function() { 
+        if (typeof initDragAndDrop === 'function') {
+            initDragAndDrop();
+            console.log('✅ Drag and drop system initialized');
+        }
+    }, 100);
 }
 
 function renderMaterialCard(m) {
@@ -63,7 +69,6 @@ function renderMaterialCard(m) {
 }
 
 function bindCardButtons() {
-    // أزرار التعديل
     var editBtns = document.querySelectorAll('.edit-material');
     for (var i = 0; i < editBtns.length; i++) {
         editBtns[i].removeEventListener('click', editClickHandler);
@@ -84,7 +89,6 @@ function bindCardButtons() {
         }
     }
     
-    // أزرار الحذف
     var delBtns = document.querySelectorAll('.delete-material');
     for (var i = 0; i < delBtns.length; i++) {
         delBtns[i].removeEventListener('click', deleteClickHandler);
