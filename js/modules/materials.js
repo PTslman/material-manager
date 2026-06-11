@@ -5,7 +5,10 @@ var unsubscribe = null;
 var currentEditId = null;
 
 function startListener() {
+    console.log('بدء الاستماع إلى Firebase...');
+    
     if (!materialsCollection) { 
+        console.error('materialsCollection غير معرف، إعادة المحاولة بعد ثانية');
         setTimeout(function() { startListener(); }, 1000);
         return;
     }
@@ -18,11 +21,14 @@ function startListener() {
     }
     
     unsubscribe = query.onSnapshot(function(snapshot) {
+        console.log('تم استلام البيانات، عدد المستندات:', snapshot.size);
+        
         var newMaterials = [];
         snapshot.forEach(function(doc) {
             var data = doc.data();
             var priority = data.priority || 'main';
             
+            // تحويل الأقسام القديمة إلى القسم الجديد "extra"
             if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
                 priority = 'extra';
             }
@@ -37,7 +43,9 @@ function startListener() {
         });
         
         allMaterials = newMaterials;
+        console.log('تم تحديث allMaterials، عدد المواد:', allMaterials.length);
         
+        // تحديث شريط الحالة
         var statusText = document.getElementById('syncStatusText');
         var syncDot = document.getElementById('syncDot');
         var itemsCount = document.getElementById('syncItemsCount');
@@ -48,14 +56,29 @@ function startListener() {
         if (itemsCount) itemsCount.innerHTML = '<i class="fas fa-database"></i> ' + allMaterials.length;
         if (syncTime) syncTime.innerHTML = '<i class="far fa-clock"></i> ' + new Date().toLocaleTimeString();
         
-        if (typeof renderSections === 'function') renderSections(allMaterials);
-        if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
-        if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
+        // عرض المواد في الواجهة
+        if (typeof renderSections === 'function') {
+            renderSections(allMaterials);
+        } else {
+            console.error('renderSections غير معرف');
+        }
         
+        if (typeof updateCategoryCounts === 'function') {
+            updateCategoryCounts();
+        }
+        
+        if (typeof calculateAIMetrics === 'function') {
+            calculateAIMetrics();
+        }
+        
+        // إعادة تهيئة السحب والإفلات
         setTimeout(function() {
-            if (typeof initDragAndDrop === 'function') initDragAndDrop();
+            if (typeof initDragAndDrop === 'function') {
+                initDragAndDrop();
+            }
         }, 200);
         
+        // إخفاء شاشة البداية
         var splash = document.getElementById('splashScreen');
         var app = document.getElementById('appContainer');
         if (splash && app && splash.style.display !== 'none') {
@@ -67,11 +90,22 @@ function startListener() {
         }
         
     }, function(error) {
+        console.error('خطأ في Firestore:', error);
         var statusText = document.getElementById('syncStatusText');
         var syncDot = document.getElementById('syncDot');
         if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
         if (syncDot) syncDot.className = 'sync-dot offline';
     });
+}
+
+// دالة إعادة تحميل البيانات يدوياً
+function refreshData() {
+    console.log('إعادة تحميل البيانات...');
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
+    startListener();
 }
 
 async function addNewMaterial() {
@@ -90,15 +124,13 @@ async function addNewMaterial() {
     else if (unit === 'quarter') quantity = 0.25;
     else if (unit === 'oke') quantity = 0.2;
     
+    // إضافة سعر تقريبي
     if (typeof window.getEstimatedPrice === 'function') {
         var estimatedPrice = window.getEstimatedPrice(name);
         if (estimatedPrice > 0 && typeof window.updateMaterialPrice === 'function') {
             var currentPrice = window.getMaterialPrice(name);
             if (currentPrice === 0) {
                 window.updateMaterialPrice(name, estimatedPrice);
-                if (typeof showToastMessage === 'function') {
-                    showToastMessage('✓ تم إضافة سعر تقريبي لـ "' + name + '" (' + estimatedPrice.toLocaleString() + ' ل.س/كجم)', false);
-                }
             }
         }
     }
@@ -121,10 +153,6 @@ async function addNewMaterial() {
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = '';
         document.getElementById('newQuantityValue').value = '1';
-        
-        if (typeof calculateAIMetrics === 'function') {
-            setTimeout(function() { calculateAIMetrics(); }, 500);
-        }
         
     } catch(e) { 
         if (typeof showToastMessage === 'function') showToastMessage('❌ فشل الإضافة', true); 
@@ -156,10 +184,6 @@ async function saveEdit() {
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
         
-        if (typeof calculateAIMetrics === 'function') {
-            calculateAIMetrics();
-        }
-        
     } catch(e) { 
         if (typeof showToastMessage === 'function') showToastMessage('❌ فشل التحديث', true); 
     }
@@ -181,10 +205,6 @@ async function clearAllMaterials() {
         await batch.commit();
         
         if (typeof showToastMessage === 'function') showToastMessage('✓ تم مسح جميع المواد');
-        
-        if (typeof calculateAIMetrics === 'function') {
-            calculateAIMetrics();
-        }
         
     } catch(e) { 
         if (typeof showToastMessage === 'function') showToastMessage('❌ فشل المسح', true); 
@@ -250,10 +270,6 @@ async function restoreData() {
                 
                 if (typeof showToastMessage === 'function') showToastMessage('✓ تم استعادة ' + backup.length + ' عنصر');
                 
-                if (typeof calculateAIMetrics === 'function') {
-                    setTimeout(function() { calculateAIMetrics(); }, 500);
-                }
-                
             } catch(e) { 
                 if (typeof showToastMessage === 'function') showToastMessage('❌ ملف غير صالح', true); 
             }
@@ -266,6 +282,7 @@ async function restoreData() {
 
 window.allMaterials = allMaterials;
 window.startListener = startListener;
+window.refreshData = refreshData;
 window.addNewMaterial = addNewMaterial;
 window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
