@@ -34,11 +34,7 @@ function renderSections(materials) {
     for (var i = 0; i < sections.length; i++) {
         var section = sections[i];
         var sectionMaterials = materials.filter(function(m) { 
-            var materialSection = m.priority;
-            if (materialSection === 'spices_extra' || materialSection === 'roasted' || materialSection === 'herbs') {
-                materialSection = 'extra';
-            }
-            return materialSection === section;
+            return m.priority === section;
         });
         
         html += '<div class="priority-section" data-section="' + section + '">' +
@@ -78,23 +74,18 @@ function renderSections(materials) {
 }
 
 function renderMaterialCard(m) {
-    var displaySection = m.priority;
-    if (displaySection === 'spices_extra' || displaySection === 'roasted' || displaySection === 'herbs') {
-        displaySection = 'extra';
-    }
-    
-    var isLowStock = (!m.quantity || m.quantity === 0) && displaySection !== 'tawsaya';
+    var isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
     var lowStockClass = isLowStock ? 'low-stock' : '';
     var quantityDisplay = formatDisplay(m);
     
-    if (isLowStock && displaySection !== 'tawsaya') {
+    if (isLowStock && m.priority !== 'tawsaya') {
         quantityDisplay = '⚠️ ناقصة';
     }
     
     return '<div class="material-card ' + lowStockClass + '" ' +
                 'data-id="' + m.id + '" ' +
                 'data-name="' + escapeHtml(m.name) + '" ' +
-                'data-section="' + displaySection + '">' +
+                'data-section="' + m.priority + '">' +
             '<div class="card-header">' +
                 '<div class="card-title">' +
                     '<i class="fas fa-box"></i>' +
@@ -174,11 +165,7 @@ function updateCategoryCounts() {
     
     for (var i = 0; i < window.allMaterials.length; i++) {
         var m = window.allMaterials[i];
-        var section = m.priority;
-        if (section === 'spices_extra' || section === 'roasted' || section === 'herbs') {
-            section = 'extra';
-        }
-        counts[section] = (counts[section] || 0) + 1;
+        counts[m.priority] = (counts[m.priority] || 0) + 1;
     }
     
     for (var key in counts) {
