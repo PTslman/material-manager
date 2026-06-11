@@ -9,9 +9,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="مدير المواد">
     
-    <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
+    <title>مدير المواد الذكي | نظام إدارة المخزون</title>
     
-    <!-- تعطيل الـ console.log في الإنتاج -->
     <script>
         if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
             console.log = function() {};
@@ -20,7 +19,6 @@
         }
     </script>
     
-    <!-- تحديد المسار الأساسي -->
     <script>
         (function() {
             var basePath = '/material-manager';
@@ -36,19 +34,14 @@
         })();
     </script>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- PWA -->
     <link rel="manifest" href="/material-manager/manifest.json">
     <link rel="apple-touch-icon" href="/material-manager/icons/icon-192x192.png">
     
-    <!-- Icons -->
     <link rel="icon" type="image/png" sizes="72x72" href="/material-manager/icons/icon-72x72.png">
     <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
     <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
@@ -58,17 +51,13 @@
     <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
-    <!-- Styles -->
     <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
-<!-- ==================== شاشة البداية ==================== -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
-        <div class="splash-logo">
-            <i class="fas fa-boxes"></i>
-        </div>
+        <div class="splash-logo"><i class="fas fa-boxes"></i></div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
         <div class="splash-version">نسخة احترافية v10.0</div>
@@ -80,10 +69,8 @@
     </div>
 </div>
 
-<!-- ==================== التطبيق الرئيسي ==================== -->
 <div id="appContainer" class="app-main" style="display: none;">
     
-    <!-- Hero Section -->
     <div class="hero">
         <div class="hero-content">
             <h1>مدير المواد والمخزون</h1>
@@ -94,13 +81,11 @@
         </div>
     </div>
     
-    <!-- زر إضافة مادة جديدة -->
     <button id="mainAddBtn" class="main-add-btn">
         <i class="fas fa-plus-circle"></i>
         <span>إضافة مادة جديدة</span>
     </button>
     
-    <!-- شريط المزامنة -->
     <div class="sync-bar">
         <button id="syncBtn" class="sync-main-btn">
             <i class="fas fa-sync-alt"></i>
@@ -108,7 +93,6 @@
         </button>
     </div>
     
-    <!-- شريط الأدوات -->
     <div class="toolbar-modern">
         <div class="toolbar-group">
             <button id="themeToggle" class="tool-btn" title="الوضع الليلي">
@@ -134,36 +118,22 @@
         </div>
     </div>
     
-    <!-- كروت الأقسام -->
     <div class="categories-container" id="categoriesContainer"></div>
     
-    <!-- حاوية الأقسام والمواد -->
     <div id="sectionsContainer"></div>
     
-    <!-- إحصائيات الذكاء الاصطناعي -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
-            <div class="ai-stats-icon">
-                <i class="fas fa-brain"></i>
-            </div>
+            <div class="ai-stats-icon"><i class="fas fa-brain"></i></div>
             <h3>التحليل الذكي للمخزون</h3>
             <div class="ai-badge">AI</div>
         </div>
         
         <div class="ai-stats-grid">
             <div class="ai-stat-card">
-                <div class="ai-stat-icon"><i class="fas fa-cubes"></i></div>
-                <div class="ai-stat-info">
-                    <span class="ai-stat-label">إجمالي المواد</span>
-                    <span class="ai-stat-value" id="totalMaterialsCount">0</span>
-                    <span class="ai-stat-unit">مادة</span>
-                </div>
-            </div>
-            
-            <div class="ai-stat-card">
                 <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="ai-stat-info">
-                    <span class="ai-stat-label">الحجم الكلي</span>
+                    <span class="ai-stat-label">الوزن الكلي</span>
                     <span class="ai-stat-value" id="totalQuantityValue">0</span>
                     <span class="ai-stat-unit">kg</span>
                 </div>
@@ -176,27 +146,15 @@
                     <span class="ai-stat-value" id="lowStockCount">0</span>
                 </div>
             </div>
-            
-            <div class="ai-stat-card success">
-                <div class="ai-stat-icon"><i class="fas fa-chart-pie"></i></div>
-                <div class="ai-stat-info">
-                    <span class="ai-stat-label">متوسط الكمية</span>
-                    <span class="ai-stat-value" id="avgQuantityValue">0</span>
-                    <span class="ai-stat-unit">kg</span>
-                </div>
-            </div>
         </div>
         
         <div class="ai-insights" id="aiInsights">
             <i class="fas fa-robot"></i>
-            <div class="insights-content">
-                <span>جاري تحليل البيانات...</span>
-            </div>
+            <div class="insights-content"><span>جاري تحليل البيانات...</span></div>
         </div>
     </div>
 </div>
 
-<!-- ==================== شريط الحالة ==================== -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -208,9 +166,7 @@
     </div>
 </div>
 
-<!-- ==================== المودالات ==================== -->
-
-<!-- مودال إضافة مادة جديدة -->
+<!-- New Item Modal -->
 <div id="newItemModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -218,7 +174,6 @@
             <h3><i class="fas fa-plus-circle"></i> إضافة مادة جديدة</h3>
             <button class="modal-close" id="closeNewModalBtn">&times;</button>
         </div>
-        
         <div class="modal-body">
             <div class="modern-field">
                 <label>اسم المادة</label>
@@ -227,7 +182,6 @@
                     <input type="text" id="newMaterialName" placeholder="مثال: فلفل أسود، كمون...">
                 </div>
             </div>
-            
             <div class="modern-field">
                 <label>القسم</label>
                 <div class="field-container">
@@ -240,7 +194,6 @@
                     </select>
                 </div>
             </div>
-            
             <div class="modern-field">
                 <label>الكمية</label>
                 <div class="quantity-field-container">
@@ -264,7 +217,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="modal-footer">
             <button id="saveNewItemBtn" class="btn-save">إضافة</button>
             <button id="closeNewModalBtn2" class="btn-cancel">إلغاء</button>
@@ -272,7 +224,7 @@
     </div>
 </div>
 
-<!-- مودال القوائم الجاهزة -->
+<!-- Preset Modal -->
 <div id="presetModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -280,7 +232,6 @@
             <h3 id="presetModalTitle"><i class="fas fa-list"></i> إضافة مواد جاهزة</h3>
             <button class="modal-close" id="closePresetModalBtn">&times;</button>
         </div>
-        
         <div class="modal-body">
             <div class="search-wrapper">
                 <i class="fas fa-search search-icon-preset"></i>
@@ -288,7 +239,6 @@
             </div>
             <div id="presetListContainer" class="modern-card-list"></div>
         </div>
-        
         <div class="modal-footer">
             <button id="savePresetBtn" class="btn-save">إضافة المحددة</button>
             <button id="closePresetModalBtn2" class="btn-cancel">إلغاء</button>
@@ -296,7 +246,7 @@
     </div>
 </div>
 
-<!-- مودال تعديل الكمية -->
+<!-- Edit Modal -->
 <div id="editModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -304,7 +254,6 @@
             <h3><i class="fas fa-edit"></i> تعديل الكمية</h3>
             <button class="modal-close" id="closeEditModalBtn">&times;</button>
         </div>
-        
         <div class="modal-body">
             <div class="modern-field">
                 <label>المادة</label>
@@ -313,7 +262,6 @@
                     <input id="editMaterialName" readonly>
                 </div>
             </div>
-            
             <div class="modern-field">
                 <label>الكمية الجديدة</label>
                 <div class="edit-quantity-field">
@@ -332,7 +280,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="modal-footer">
             <button id="saveEditBtn" class="btn-save">تحديث</button>
             <button id="closeEditModalBtn2" class="btn-cancel">إلغاء</button>
@@ -340,7 +287,7 @@
     </div>
 </div>
 
-<!-- مودال نقل المادة -->
+<!-- Move Item Modal -->
 <div id="moveItemModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -348,7 +295,6 @@
             <h3><i class="fas fa-arrows-alt"></i> نقل المادة</h3>
             <button class="modal-close" id="cancelMoveBtn">&times;</button>
         </div>
-        
         <div class="modal-body">
             <div class="modern-field">
                 <label>المادة المراد نقلها</label>
@@ -357,7 +303,6 @@
                     <input id="moveItemName" readonly>
                 </div>
             </div>
-            
             <div class="modern-field">
                 <label>نقل إلى القسم</label>
                 <div class="field-container">
@@ -371,7 +316,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="modal-footer">
             <button id="confirmMoveBtn" class="btn-save"><i class="fas fa-check"></i> نقل</button>
             <button id="cancelMoveBtn2" class="btn-cancel"><i class="fas fa-times"></i> إلغاء</button>
@@ -379,20 +323,17 @@
     </div>
 </div>
 
-<!-- مودال رسائل النظام -->
+<!-- System Message Modal -->
 <div id="systemMessageModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content modal-message">
-        <div class="modal-icon">
-            <i class="fas fa-info-circle"></i>
-        </div>
+        <div class="modal-icon"><i class="fas fa-info-circle"></i></div>
         <h3 id="systemMessageTitle">رسالة</h3>
         <p id="systemMessageText"></p>
         <button id="closeSystemMessageBtn" class="btn-save">حسناً</button>
     </div>
 </div>
 
-<!-- ==================== السكربتات ==================== -->
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
@@ -408,7 +349,6 @@
 <script src="/material-manager/js/app.js"></script>
 
 <script>
-// إخفاء شاشة البداية بعد التحميل
 setTimeout(function() {
     var splash = document.getElementById('splashScreen');
     var app = document.getElementById('appContainer');
@@ -421,16 +361,12 @@ setTimeout(function() {
     }
 }, 2000);
 
-// تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/material-manager/service-worker.js')
-            .then(function(reg) {})
-            .catch(function(err) {});
+        navigator.serviceWorker.register('/material-manager/service-worker.js').then(function(reg) {}).catch(function(err) {});
     });
 }
 
-// إغلاق المودالات
 window.closeAllModals = function() {
     var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
     for (var i = 0; i < modals.length; i++) {
@@ -439,7 +375,6 @@ window.closeAllModals = function() {
     }
 };
 
-// ربط أزرار الإغلاق
 var closeButtons = ['closeNewModalBtn', 'closeNewModalBtn2', 'closePresetModalBtn', 'closePresetModalBtn2', 
                     'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 'closeSystemMessageBtn'];
 for (var i = 0; i < closeButtons.length; i++) {
@@ -449,7 +384,6 @@ for (var i = 0; i < closeButtons.length; i++) {
     }
 }
 
-// أزرار +/- في نافذة الإضافة
 var dec = document.getElementById('newQtyDec');
 var inc = document.getElementById('newQtyInc');
 var qty = document.getElementById('newQuantityValue');
@@ -467,4 +401,4 @@ if (dec && inc && qty) {
 }
 </script>
 </body>
-</html>
+    </html>
