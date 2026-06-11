@@ -25,11 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // تحميل الأسعار مسبقاً من Firebase
     if (window.aiEngine && typeof window.aiEngine.preloadPrices === 'function') {
         window.aiEngine.preloadPrices().then(function() {
-            console.log('✅ تم تحميل الأسعار من Firebase إلى AI Engine');
+            console.log('✅ تم تحميل الأسعار من Firebase');
             if (typeof calculateAIMetrics === 'function') {
                 setTimeout(function() {
                     calculateAIMetrics();
-                }, 500);
+                }, 300);
             }
         }).catch(function(e) {
             console.error('خطأ في تحميل الأسعار:', e);
