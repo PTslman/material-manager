@@ -23,10 +23,10 @@ function startListener() {
     unsubscribe = query.onSnapshot(function(snapshot) {
         console.log('Snapshot received, documents:', snapshot.size);
         
-        allMaterials = [];
+        var newMaterials = [];
         snapshot.forEach(function(doc) {
             var data = doc.data();
-            allMaterials.push({
+            newMaterials.push({
                 id: doc.id, 
                 name: data.name || 'غير معروف', 
                 unitType: data.unitType || 'kg',
@@ -34,6 +34,8 @@ function startListener() {
                 priority: data.priority || 'main'
             });
         });
+        
+        allMaterials = newMaterials;
         
         var statusText = document.getElementById('syncStatusText');
         var syncDot = document.getElementById('syncDot');
@@ -57,14 +59,12 @@ function startListener() {
             calculateAIMetrics();
         }
         
-        // إعادة تهيئة السحب والإفلات بعد تحديث البيانات
         setTimeout(function() {
             if (typeof initDragAndDrop === 'function') {
                 initDragAndDrop();
             }
         }, 200);
         
-        // إخفاء شاشة البداية
         var splash = document.getElementById('splashScreen');
         var app = document.getElementById('appContainer');
         if (splash && app && splash.style.display !== 'none') {
@@ -87,7 +87,7 @@ function startListener() {
 async function addNewMaterial() {
     var name = document.getElementById('newMaterialName')?.value.trim();
     if (!name) { 
-        if (typeof showToast === 'function') showToast('✏️ اكتب اسم المادة', true); 
+        showToastMessage('✏️ اكتب اسم المادة', true); 
         return; 
     }
     
@@ -101,7 +101,7 @@ async function addNewMaterial() {
     else if (unit === 'oke') quantity = 0.2;
     
     if (quantity === 0 && section !== 'tawsaya') {
-        if (typeof showToast === 'function') showToast('⚠️ تمت إضافة "' + name + '" بدون كمية (مادة ناقصة)', false);
+        showToastMessage('⚠️ تمت إضافة "' + name + '" بدون كمية (مادة ناقصة)', false);
     }
     
     try {
@@ -113,22 +113,20 @@ async function addNewMaterial() {
             priority: section 
         });
         
-        if (typeof showToast === 'function') showToast('✓ تمت إضافة "' + name + '"');
+        showToastMessage('✓ تمت إضافة "' + name + '"');
         
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = '';
         document.getElementById('newQuantityValue').value = '1';
         
-        startListener();
-        
     } catch(e) { 
-        if (typeof showToast === 'function') showToast('❌ فشل الإضافة', true); 
+        showToastMessage('❌ فشل الإضافة', true); 
     }
 }
 
 async function saveEdit() {
     if (!currentEditId) { 
-        if (typeof showToast === 'function') showToast('لا توجد مادة للتعديل', true); 
+        showToastMessage('لا توجد مادة للتعديل', true); 
         return; 
     }
     
@@ -140,27 +138,25 @@ async function saveEdit() {
     else if (unit === 'oke') qty = 0.2;
     
     if (isNaN(qty) || qty < 0) { 
-        if (typeof showToast === 'function') showToast('🔢 كمية صحيحة', true); 
+        showToastMessage('🔢 كمية صحيحة', true); 
         return; 
     }
     
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: qty, unitType: unit });
-        if (typeof showToast === 'function') showToast('✓ تم تحديث الكمية');
+        showToastMessage('✓ تم تحديث الكمية');
         
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
         
-        startListener();
-        
     } catch(e) { 
-        if (typeof showToast === 'function') showToast('❌ فشل التحديث', true); 
+        showToastMessage('❌ فشل التحديث', true); 
     }
 }
 
 async function clearAllMaterials() {
     if (allMaterials.length === 0) { 
-        if (typeof showToast === 'function') showToast('📭 لا توجد بيانات', true); 
+        showToastMessage('📭 لا توجد بيانات', true); 
         return; 
     }
     
@@ -173,18 +169,16 @@ async function clearAllMaterials() {
         }
         await batch.commit();
         
-        if (typeof showToast === 'function') showToast('✓ تم مسح جميع المواد');
-        
-        startListener();
+        showToastMessage('✓ تم مسح جميع المواد');
         
     } catch(e) { 
-        if (typeof showToast === 'function') showToast('❌ فشل المسح', true); 
+        showToastMessage('❌ فشل المسح', true); 
     }
 }
 
 async function backupData() {
     if (allMaterials.length === 0) { 
-        if (typeof showToast === 'function') showToast('📭 لا توجد بيانات للنسخ', true); 
+        showToastMessage('📭 لا توجد بيانات للنسخ', true); 
         return; 
     }
     
@@ -197,7 +191,7 @@ async function backupData() {
     a.click();
     URL.revokeObjectURL(url);
     
-    if (typeof showToast === 'function') showToast('💾 تم نسخ ' + allMaterials.length + ' عنصر');
+    showToastMessage('💾 تم نسخ ' + allMaterials.length + ' عنصر');
 }
 
 async function restoreData() {
@@ -232,18 +226,27 @@ async function restoreData() {
                     });
                 }
                 
-                if (typeof showToast === 'function') showToast('✓ تم استعادة ' + backup.length + ' عنصر');
-                
-                startListener();
+                showToastMessage('✓ تم استعادة ' + backup.length + ' عنصر');
                 
             } catch(e) { 
-                if (typeof showToast === 'function') showToast('❌ ملف غير صالح', true); 
+                showToastMessage('❌ ملف غير صالح', true); 
             }
         };
         reader.readAsText(file);
     };
     
     input.click();
+}
+
+function showToastMessage(msg, isErr) {
+    if (isErr === undefined) isErr = false;
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<i class="fas ' + (isErr ? 'fa-exclamation-triangle' : 'fa-check-circle') + '"></i> ' + msg;
+    document.body.appendChild(toast);
+    setTimeout(function() { if (toast && toast.remove) toast.remove(); }, 2500);
 }
 
 // تصدير الدوال
@@ -254,3 +257,4 @@ window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
 window.backupData = backupData;
 window.restoreData = restoreData;
+window.showToastMessage = showToastMessage;
