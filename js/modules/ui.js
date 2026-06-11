@@ -25,8 +25,18 @@ function renderCategories() {
 }
 
 function renderSections(materials) {
+    console.log('renderSections called with', materials.length, 'materials');
+    
     var container = document.getElementById('sectionsContainer');
-    if (!container) return;
+    if (!container) {
+        console.error('sectionsContainer not found');
+        return;
+    }
+    
+    if (!materials || materials.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>أضف مواد جديدة باستخدام الزر أعلاه</small></div>';
+        return;
+    }
     
     var sections = ['main', 'extra', 'bags', 'tawsaya'];
     var html = '';
@@ -163,6 +173,8 @@ function bindCardButtons() {
 function updateCategoryCounts() {
     var counts = { main: 0, extra: 0, bags: 0, tawsaya: 0 };
     
+    if (!window.allMaterials) return;
+    
     for (var i = 0; i < window.allMaterials.length; i++) {
         var m = window.allMaterials[i];
         counts[m.priority] = (counts[m.priority] || 0) + 1;
@@ -226,6 +238,7 @@ function calculateAIMetrics() {
         }
         
     } catch(e) {
+        console.error('Error in calculateAIMetrics:', e);
         var insightsDiv = document.getElementById('aiInsights');
         if (insightsDiv) {
             var insightsContent = insightsDiv.querySelector('.insights-content');
