@@ -390,12 +390,11 @@ function saveAllPrices() {
     }
     updatePriceSummary();
 }
-
 // تصدير الدوال
+window.getMaterialPrice = getMaterialPrice;
 window.loadPrices = loadPrices;
 window.savePrices = savePrices;
 window.updateMaterialPrice = updateMaterialPrice;
-window.getMaterialPrice = getMaterialPrice;
 window.calculateTotalValue = calculateTotalValue;
 window.formatCurrency = formatCurrency;
 window.openPriceModal = openPriceModal;
