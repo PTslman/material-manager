@@ -25,18 +25,8 @@ function renderCategories() {
 }
 
 function renderSections(materials) {
-    console.log('renderSections called with', materials.length, 'materials');
-    
     var container = document.getElementById('sectionsContainer');
-    if (!container) {
-        console.error('sectionsContainer not found');
-        return;
-    }
-    
-    if (!materials || materials.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>أضف مواد جديدة باستخدام الزر أعلاه</small></div>';
-        return;
-    }
+    if (!container) return;
     
     var sections = ['main', 'extra', 'bags', 'tawsaya'];
     var html = '';
@@ -193,60 +183,66 @@ function calculateAIMetrics() {
         return;
     }
     
-    try {
-        var materials = window.allMaterials || [];
-        
-        var getPriceFunction = null;
-        if (typeof window.getMaterialPrice === 'function') {
-            getPriceFunction = window.getMaterialPrice;
-        }
-        
-        var analysis = window.aiEngine.analyzeInventory(materials, getPriceFunction);
-        
-        var totalQtyEl = document.getElementById('totalQuantityValue');
-        if (totalQtyEl) totalQtyEl.innerText = analysis.totalWeight;
-        
-        var totalValueEl = document.getElementById('totalValueValue');
-        if (totalValueEl) totalValueEl.innerText = analysis.totalValue;
-        
-        var lowStockEl = document.getElementById('lowStockCount');
-        if (lowStockEl) lowStockEl.innerHTML = analysis.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
-        
-        var insightsDiv = document.getElementById('aiInsights');
-        if (insightsDiv && analysis.insights) {
-            var insightsContent = insightsDiv.querySelector('.insights-content');
-            if (insightsContent) {
-                var html = '';
-                for (var i = 0; i < analysis.insights.length; i++) {
-                    html += '<div class="insight-item">' + analysis.insights[i] + '</div>';
+    (async function() {
+        try {
+            var materials = window.allMaterials || [];
+            
+            var getPriceFunction = null;
+            if (typeof window.getMaterialPrice === 'function') {
+                getPriceFunction = window.getMaterialPrice;
+            }
+            
+            var analysis = await window.aiEngine.analyzeInventory(materials, getPriceFunction);
+            
+            var totalQtyEl = document.getElementById('totalQuantityValue');
+            if (totalQtyEl) totalQtyEl.innerText = analysis.totalWeight;
+            
+            var totalValueEl = document.getElementById('totalValueValue');
+            if (totalValueEl) totalValueEl.innerText = analysis.totalValue;
+            
+            var lowStockEl = document.getElementById('lowStockCount');
+            if (lowStockEl) lowStockEl.innerHTML = analysis.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
+            
+            var insightsDiv = document.getElementById('aiInsights');
+            if (insightsDiv && analysis.insights) {
+                var insightsContent = insightsDiv.querySelector('.insights-content');
+                if (insightsContent) {
+                    var html = '';
+                    for (var i = 0; i < analysis.insights.length; i++) {
+                        html += '<div class="insight-item">' + analysis.insights[i] + '</div>';
+                    }
+                    insightsContent.innerHTML = html;
                 }
-                insightsContent.innerHTML = html;
+            }
+            
+            var priceDetailsEl = document.getElementById('priceDetails');
+            if (priceDetailsEl) {
+                if (analysis.priceBreakdown && analysis.priceBreakdown.length > 0) {
+                    var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>';
+                    for (var i = 0; i < analysis.priceBreakdown.length; i++) {
+                        var p = analysis.priceBreakdown[i];
+                        priceHtml += '<div class="price-detail-item">' +
+                            '<span class="price-detail-name">' + escapeHtml(p.name) + '</span>' +
+                            '<span class="price-detail-value">' + p.formattedValue + '</span>' +
+                            '</div>';
+                    }
+                    priceDetailsEl.innerHTML = priceHtml;
+                } else {
+                    priceDetailsEl.innerHTML = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>' +
+                        '<div class="price-detail-item"><span class="price-detail-name">لا توجد أسعار محددة</span><span class="price-detail-value">-</span></div>';
+                }
+            }
+            
+        } catch(e) {
+            var insightsDiv = document.getElementById('aiInsights');
+            if (insightsDiv) {
+                var insightsContent = insightsDiv.querySelector('.insights-content');
+                if (insightsContent) {
+                    insightsContent.innerHTML = '<span>جاري تحليل البيانات...</span>';
+                }
             }
         }
-        
-        var priceDetailsEl = document.getElementById('priceDetails');
-        if (priceDetailsEl && analysis.priceBreakdown && analysis.priceBreakdown.length > 0) {
-            var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>';
-            for (var i = 0; i < analysis.priceBreakdown.length; i++) {
-                var p = analysis.priceBreakdown[i];
-                priceHtml += '<div class="price-detail-item">' +
-                    '<span class="price-detail-name">' + escapeHtml(p.name) + '</span>' +
-                    '<span class="price-detail-value">' + p.formattedValue + '</span>' +
-                    '</div>';
-            }
-            priceDetailsEl.innerHTML = priceHtml;
-        }
-        
-    } catch(e) {
-        console.error('Error in calculateAIMetrics:', e);
-        var insightsDiv = document.getElementById('aiInsights');
-        if (insightsDiv) {
-            var insightsContent = insightsDiv.querySelector('.insights-content');
-            if (insightsContent) {
-                insightsContent.innerHTML = '<span>جاري تحليل البيانات...</span>';
-            }
-        }
-    }
+    })();
 }
 
 function getSectionIcon(section) {
