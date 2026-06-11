@@ -23,8 +23,7 @@ function startListener() {
             var data = doc.data();
             var priority = data.priority || 'main';
             
-            // تحويل الأقسام القديمة إلى القسم الجديد "extra"
-            if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs' || priority === 'extra') {
+            if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
                 priority = 'extra';
             }
             
@@ -49,22 +48,12 @@ function startListener() {
         if (itemsCount) itemsCount.innerHTML = '<i class="fas fa-database"></i> ' + allMaterials.length;
         if (syncTime) syncTime.innerHTML = '<i class="far fa-clock"></i> ' + new Date().toLocaleTimeString();
         
-        if (typeof renderSections === 'function') {
-            renderSections(allMaterials);
-        }
-        
-        if (typeof updateCategoryCounts === 'function') {
-            updateCategoryCounts();
-        }
-        
-        if (typeof calculateAIMetrics === 'function') {
-            calculateAIMetrics();
-        }
+        if (typeof renderSections === 'function') renderSections(allMaterials);
+        if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
+        if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
         
         setTimeout(function() {
-            if (typeof initDragAndDrop === 'function') {
-                initDragAndDrop();
-            }
+            if (typeof initDragAndDrop === 'function') initDragAndDrop();
         }, 200);
         
         var splash = document.getElementById('splashScreen');
@@ -101,6 +90,19 @@ async function addNewMaterial() {
     else if (unit === 'quarter') quantity = 0.25;
     else if (unit === 'oke') quantity = 0.2;
     
+    if (typeof window.getEstimatedPrice === 'function') {
+        var estimatedPrice = window.getEstimatedPrice(name);
+        if (estimatedPrice > 0 && typeof window.updateMaterialPrice === 'function') {
+            var currentPrice = window.getMaterialPrice(name);
+            if (currentPrice === 0) {
+                window.updateMaterialPrice(name, estimatedPrice);
+                if (typeof showToastMessage === 'function') {
+                    showToastMessage('✓ تم إضافة سعر تقريبي لـ "' + name + '" (' + estimatedPrice.toLocaleString() + ' ل.س/كجم)', false);
+                }
+            }
+        }
+    }
+    
     if (quantity === 0 && section !== 'tawsaya') {
         if (typeof showToastMessage === 'function') showToastMessage('⚠️ تمت إضافة "' + name + '" بدون كمية (مادة ناقصة)', false);
     }
@@ -119,6 +121,10 @@ async function addNewMaterial() {
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = '';
         document.getElementById('newQuantityValue').value = '1';
+        
+        if (typeof calculateAIMetrics === 'function') {
+            setTimeout(function() { calculateAIMetrics(); }, 500);
+        }
         
     } catch(e) { 
         if (typeof showToastMessage === 'function') showToastMessage('❌ فشل الإضافة', true); 
@@ -150,6 +156,10 @@ async function saveEdit() {
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
         
+        if (typeof calculateAIMetrics === 'function') {
+            calculateAIMetrics();
+        }
+        
     } catch(e) { 
         if (typeof showToastMessage === 'function') showToastMessage('❌ فشل التحديث', true); 
     }
@@ -171,6 +181,10 @@ async function clearAllMaterials() {
         await batch.commit();
         
         if (typeof showToastMessage === 'function') showToastMessage('✓ تم مسح جميع المواد');
+        
+        if (typeof calculateAIMetrics === 'function') {
+            calculateAIMetrics();
+        }
         
     } catch(e) { 
         if (typeof showToastMessage === 'function') showToastMessage('❌ فشل المسح', true); 
@@ -236,6 +250,10 @@ async function restoreData() {
                 
                 if (typeof showToastMessage === 'function') showToastMessage('✓ تم استعادة ' + backup.length + ' عنصر');
                 
+                if (typeof calculateAIMetrics === 'function') {
+                    setTimeout(function() { calculateAIMetrics(); }, 500);
+                }
+                
             } catch(e) { 
                 if (typeof showToastMessage === 'function') showToastMessage('❌ ملف غير صالح', true); 
             }
@@ -246,36 +264,6 @@ async function restoreData() {
     input.click();
 }
 
-async function migrateOldSections() {
-    if (!materialsCollection) return;
-    
-    try {
-        var snapshot = await materialsCollection.get();
-        var batch = db.batch();
-        var updatedCount = 0;
-        
-        snapshot.forEach(function(doc) {
-            var data = doc.data();
-            var oldPriority = data.priority;
-            var newPriority = oldPriority;
-            
-            if (oldPriority === 'spices_extra' || oldPriority === 'roasted' || oldPriority === 'herbs') {
-                newPriority = 'extra';
-                batch.update(doc.ref, { priority: newPriority });
-                updatedCount++;
-            }
-        });
-        
-        if (updatedCount > 0) {
-            await batch.commit();
-            if (typeof showToastMessage === 'function') {
-                showToastMessage('✓ تم ترحيل ' + updatedCount + ' مادة إلى قسم الإضافي');
-            }
-            startListener();
-        }
-    } catch(e) {}
-}
-
 window.allMaterials = allMaterials;
 window.startListener = startListener;
 window.addNewMaterial = addNewMaterial;
@@ -283,4 +271,3 @@ window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
 window.backupData = backupData;
 window.restoreData = restoreData;
-window.migrateOldSections = migrateOldSections;
