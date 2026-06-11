@@ -1,10 +1,10 @@
 {
   "name": "مدير المواد الذكي",
   "short_name": "مدير المواد",
-  "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية",
+  "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية وذكاء اصطناعي",
   "start_url": "/material-manager/",
   "scope": "/material-manager/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "theme_color": "#10b981",
   "background_color": "#10b981",
@@ -97,15 +97,39 @@
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "النسخ الاحتياطي",
+      "short_name": "نسخ",
+      "description": "إنشاء نسخة احتياطية للبيانات",
+      "url": "/material-manager/?action=backup",
+      "icons": [
+        {
+          "src": "/material-manager/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/material-manager/screenshots/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "شاشة الرئيسية للتطبيق"
     }
   ],
   "prefer_related_applications": false,
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": ["window-controls-overlay", "standalone", "fullscreen"],
   "launch_handler": {
     "client_mode": ["focus-existing", "auto"]
   },
   "edge_side_panel": {
     "preferred_width": 400
   },
-  "handle_links": "preferred"
+  "handle_links": "preferred",
+  "note_taking": {
+    "new_note_url": "/material-manager/"
+  }
 }
