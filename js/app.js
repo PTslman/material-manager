@@ -19,20 +19,35 @@ document.addEventListener('DOMContentLoaded', function() {
         initPWA();
     }
     
-    // تهيئة نظام الأسعار ومزامنته مع Firebase
-    if (typeof syncPricesFromFirebase === 'function') {
-        syncPricesFromFirebase();
-    }
-    
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
+    
+    // تحميل الأسعار من Firebase عند بدء التشغيل
+    if (typeof syncPricesOnStartup === 'function') {
+        syncPricesOnStartup().then(function() {
+            console.log('✅ تم تحميل الأسعار من السحابة');
+            if (typeof calculateAIMetrics === 'function') {
+                setTimeout(function() {
+                    calculateAIMetrics();
+                }, 500);
+            }
+        }).catch(function(e) {
+            console.error('خطأ في تحميل الأسعار:', e);
+            if (typeof calculateAIMetrics === 'function') {
+                calculateAIMetrics();
+            }
+        });
+    } else {
+        if (typeof calculateAIMetrics === 'function') {
+            setTimeout(function() {
+                calculateAIMetrics();
+            }, 500);
+        }
+    }
     
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') {
             initDragAndDrop();
-        }
-        if (typeof calculateAIMetrics === 'function') {
-            calculateAIMetrics();
         }
     }, 1000);
 });
@@ -48,4 +63,4 @@ window.startListener = startListener;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
 window.initDragAndDrop = initDragAndDrop;
-window.syncPricesFromFirebase = syncPricesFromFirebase;
+window.syncPricesOnStartup = syncPricesOnStartup;
