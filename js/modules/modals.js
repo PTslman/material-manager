@@ -1,4 +1,4 @@
-// ==================== الضغطة المطولة ونقل المواد ====================
+// ==================== الضغطة المطولة جداً ونقل المواد ====================
 
 var longPressTimer = null;
 var isLongPress = false;
@@ -38,18 +38,22 @@ function setupLongPressOnCard(card) {
         isLongPress = false;
         var self = this;
         
-        // تغيير الوقت من 500ms إلى 20000ms (20 ثانية)
+        // ضغطة مطولة جداً: 3000ms = 3 ثواني
         longPressTimer = setTimeout(function() {
             isLongPress = true;
             var id = self.getAttribute('data-id');
             var name = self.getAttribute('data-name');
             var section = self.getAttribute('data-section');
             if (id && name) {
-                openMoveModal(id, name, section);
+                // إضافة تأثير اهتزاز للتنبيه
                 self.classList.add('long-press-active');
-                setTimeout(function() { self.classList.remove('long-press-active'); }, 300);
+                // فتح نافذة النقل
+                openMoveModal(id, name, section);
+                setTimeout(function() { 
+                    self.classList.remove('long-press-active'); 
+                }, 500);
             }
-        }, 20000); // 20 ثانية = 20000 مللي ثانية
+        }, 3000); // 3 ثواني - ضغطة مطولة جداً
     }
     
     function onTouchEnd() {
@@ -78,18 +82,20 @@ function setupLongPressOnCard(card) {
         isLongPress = false;
         var self = this;
         
-        // تغيير الوقت من 500ms إلى 20000ms (20 ثانية)
+        // ضغطة مطولة جداً: 3000ms = 3 ثواني
         longPressTimer = setTimeout(function() {
             isLongPress = true;
             var id = self.getAttribute('data-id');
             var name = self.getAttribute('data-name');
             var section = self.getAttribute('data-section');
             if (id && name) {
-                openMoveModal(id, name, section);
                 self.classList.add('long-press-active');
-                setTimeout(function() { self.classList.remove('long-press-active'); }, 300);
+                openMoveModal(id, name, section);
+                setTimeout(function() { 
+                    self.classList.remove('long-press-active'); 
+                }, 500);
             }
-        }, 20000); // 20 ثانية = 20000 مللي ثانية
+        }, 3000); // 3 ثواني - ضغطة مطولة جداً
     }
     
     function onMouseUp() {
@@ -109,21 +115,17 @@ function setupLongPressOnCard(card) {
     }
     
     function onClick(e) {
-        // منع النقر العادي إذا كانت ضغطة طويلة
-        if (isLongPress) {
-            e.stopPropagation();
-            e.preventDefault();
-            return;
-        }
+        // منع أي حدث عند الضغط العادي على البطاقة
+        e.stopPropagation();
+        e.preventDefault();
         
-        // إذا كان الهدف هو زر التعديل أو الحذف، لا تفعل شيء (يتم التعامل معها في ui.js)
+        // إذا كان الهدف هو زر التعديل أو الحذف، نسمح بتمرير الحدث
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
             return;
         }
         
-        // منع أي حدث آخر عند الضغط العادي على البطاقة
-        e.stopPropagation();
-        e.preventDefault();
+        // لا تفعل شيئاً عند الضغط العادي
+        return false;
     }
 }
 
