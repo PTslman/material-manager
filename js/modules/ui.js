@@ -215,15 +215,12 @@ function calculateAIMetrics() {
         var priceDetailsEl = document.getElementById('priceDetails');
         if (priceDetailsEl && analysis.priceBreakdown && analysis.priceBreakdown.length > 0) {
             var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>';
-            for (var i = 0; i < Math.min(analysis.priceBreakdown.length, 5); i++) {
+            for (var i = 0; i < analysis.priceBreakdown.length; i++) {
                 var p = analysis.priceBreakdown[i];
                 priceHtml += '<div class="price-detail-item">' +
                     '<span class="price-detail-name">' + escapeHtml(p.name) + '</span>' +
                     '<span class="price-detail-value">' + p.formattedValue + '</span>' +
                     '</div>';
-            }
-            if (analysis.priceBreakdown.length > 5) {
-                priceHtml += '<div class="price-detail-more">+' + (analysis.priceBreakdown.length - 5) + ' مواد أخرى</div>';
             }
             priceDetailsEl.innerHTML = priceHtml;
         }
