@@ -3,6 +3,7 @@
 var AIEngine = function() {
     this.learningData = this.loadLearningData();
     this.pricesCache = {};
+    this.pricesLoaded = false;
 };
 
 AIEngine.prototype.loadLearningData = function() {
@@ -66,6 +67,7 @@ AIEngine.prototype.fetchPricesFromFirebase = async function() {
             prices[doc.id] = data.price;
         });
         this.pricesCache = prices;
+        this.pricesLoaded = true;
         console.log('تم جلب الأسعار من Firebase:', Object.keys(prices).length, 'مادة');
         return true;
     } catch(e) {
@@ -79,97 +81,7 @@ AIEngine.prototype.getPrice = function(materialName) {
     return this.pricesCache[materialName] || 0;
 };
 
-// تحديث كاش الأسعار
-AIEngine.prototype.updatePricesCache = function(prices) {
-    this.pricesCache = prices || {};
-};
-
-// تحليل المخزون مع جلب الأسعار من Firebase
-AIEngine.prototype.analyzeInventory = async function(materials, externalGetPriceFunction) {
-    // جلب الأسعار من Firebase أولاً
-    await this.fetchPricesFromFirebase();
-    
-    if (!materials || materials.length === 0) {
-        return {
-            totalWeight: '0',
-            totalValue: '0',
-            lowStockCount: 0,
-            lowStockList: [],
-            priceBreakdown: [],
-            insights: ['لا توجد مواد في المخزون', 'أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"']
-        };
-    }
-    
-    var totalWeight = 0;
-    var totalValue = 0;
-    var lowStockCount = 0;
-    var lowStockList = [];
-    var priceBreakdown = [];
-    var tawsayaCount = 0;
-
-    for (var i = 0; i < materials.length; i++) {
-        var material = materials[i];
-        var isTawsaya = material.priority === 'tawsaya';
-        var quantityInKg = this.convertToKg(material.quantity, material.unitType);
-        
-        if (!isTawsaya) {
-            totalWeight += quantityInKg;
-            
-            // المادة تعتبر ناقصة فقط إذا كانت الكمية = 0
-            if (quantityInKg === 0) {
-                lowStockCount++;
-                lowStockList.push({
-                    name: material.name,
-                    quantity: material.quantity,
-                    unit: material.unitType,
-                    weight: this.formatNumber(quantityInKg)
-                });
-            }
-            
-            // الحصول على السعر من الكاش (الذي تم جلبه من Firebase)
-            var price = this.getPrice(material.name);
-            
-            // إذا كان هناك دالة خارجية للسعر، استخدمها كبديل
-            if (typeof externalGetPriceFunction === 'function' && price === 0) {
-                price = externalGetPriceFunction(material.name) || 0;
-            }
-            
-            var itemValue = quantityInKg * price;
-            totalValue += itemValue;
-            
-            if (price > 0 && quantityInKg > 0) {
-                priceBreakdown.push({
-                    name: material.name,
-                    quantity: material.quantity,
-                    unit: material.unitType,
-                    quantityInKg: this.formatNumber(quantityInKg),
-                    pricePerKg: price,
-                    totalValue: Math.round(itemValue),
-                    formattedValue: this.formatCurrency(itemValue)
-                });
-            }
-        } else {
-            tawsayaCount++;
-        }
-    }
-    
-    priceBreakdown.sort(function(a, b) {
-        return b.totalValue - a.totalValue;
-    });
-
-    return {
-        totalWeight: this.formatNumber(totalWeight),
-        totalValue: this.formatCurrency(totalValue),
-        totalValueRaw: totalValue,
-        lowStockCount: lowStockCount,
-        lowStockList: lowStockList.slice(0, 10),
-        priceBreakdown: priceBreakdown.slice(0, 5),
-        tawsayaCount: tawsayaCount,
-        insights: this.getInsights(totalWeight, totalValue, lowStockCount, tawsayaCount)
-    };
-};
-
-// نسخة متزامنة للتحليل (إذا كانت الأسعار محملة مسبقاً)
+// تحليل المخزون (متزامن - يستخدم الكاش الحالي)
 AIEngine.prototype.analyzeInventorySync = function(materials, externalGetPriceFunction) {
     if (!materials || materials.length === 0) {
         return {
@@ -248,6 +160,26 @@ AIEngine.prototype.analyzeInventorySync = function(materials, externalGetPriceFu
     };
 };
 
+// تحليل المخزون (غير متزامن - يجلب الأسعار أولاً)
+AIEngine.prototype.analyzeInventory = async function(materials, externalGetPriceFunction) {
+    if (!this.pricesLoaded) {
+        await this.fetchPricesFromFirebase();
+    }
+    return this.analyzeInventorySync(materials, externalGetPriceFunction);
+};
+
+// دالة مع callback للتوافق مع الواجهة القديمة
+AIEngine.prototype.analyzeInventoryWithCallback = function(materials, callback) {
+    var self = this;
+    this.fetchPricesFromFirebase().then(function() {
+        var result = self.analyzeInventorySync(materials, window.getMaterialPrice);
+        if (callback) callback(result);
+    }).catch(function() {
+        var result = self.analyzeInventorySync(materials, window.getMaterialPrice);
+        if (callback) callback(result);
+    });
+};
+
 AIEngine.prototype.getInsights = function(totalWeight, totalValue, lowStockCount, tawsayaCount) {
     var insights = [];
     
@@ -274,7 +206,7 @@ AIEngine.prototype.getInsights = function(totalWeight, totalValue, lowStockCount
     return insights;
 };
 
-// دالة لتحميل الأسعار مسبقاً (تستخدم عند بدء التشغيل)
+// دالة لتحميل الأسعار مسبقاً
 AIEngine.prototype.preloadPrices = async function() {
     return await this.fetchPricesFromFirebase();
 };
