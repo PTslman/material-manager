@@ -5,10 +5,7 @@ var unsubscribe = null;
 var currentEditId = null;
 
 function startListener() {
-    console.log('Starting Firestore listener on spices_final_v12');
-    
     if (!materialsCollection) { 
-        console.error('No collection found');
         setTimeout(function() { startListener(); }, 1000);
         return;
     }
@@ -21,8 +18,6 @@ function startListener() {
     }
     
     unsubscribe = query.onSnapshot(function(snapshot) {
-        console.log('Snapshot received, documents:', snapshot.size);
-        
         var newMaterials = [];
         snapshot.forEach(function(doc) {
             var data = doc.data();
@@ -76,7 +71,6 @@ function startListener() {
         }
         
     }, function(error) {
-        console.error('Firestore error:', error);
         var statusText = document.getElementById('syncStatusText');
         var syncDot = document.getElementById('syncDot');
         if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
@@ -87,7 +81,7 @@ function startListener() {
 async function addNewMaterial() {
     var name = document.getElementById('newMaterialName')?.value.trim();
     if (!name) { 
-        showToastMessage('✏️ اكتب اسم المادة', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('✏️ اكتب اسم المادة', true); 
         return; 
     }
     
@@ -101,7 +95,7 @@ async function addNewMaterial() {
     else if (unit === 'oke') quantity = 0.2;
     
     if (quantity === 0 && section !== 'tawsaya') {
-        showToastMessage('⚠️ تمت إضافة "' + name + '" بدون كمية (مادة ناقصة)', false);
+        if (typeof showToastMessage === 'function') showToastMessage('⚠️ تمت إضافة "' + name + '" بدون كمية (مادة ناقصة)', false);
     }
     
     try {
@@ -113,20 +107,20 @@ async function addNewMaterial() {
             priority: section 
         });
         
-        showToastMessage('✓ تمت إضافة "' + name + '"');
+        if (typeof showToastMessage === 'function') showToastMessage('✓ تمت إضافة "' + name + '"');
         
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = '';
         document.getElementById('newQuantityValue').value = '1';
         
     } catch(e) { 
-        showToastMessage('❌ فشل الإضافة', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل الإضافة', true); 
     }
 }
 
 async function saveEdit() {
     if (!currentEditId) { 
-        showToastMessage('لا توجد مادة للتعديل', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('لا توجد مادة للتعديل', true); 
         return; 
     }
     
@@ -138,25 +132,25 @@ async function saveEdit() {
     else if (unit === 'oke') qty = 0.2;
     
     if (isNaN(qty) || qty < 0) { 
-        showToastMessage('🔢 كمية صحيحة', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('🔢 كمية صحيحة', true); 
         return; 
     }
     
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: qty, unitType: unit });
-        showToastMessage('✓ تم تحديث الكمية');
+        if (typeof showToastMessage === 'function') showToastMessage('✓ تم تحديث الكمية');
         
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
         
     } catch(e) { 
-        showToastMessage('❌ فشل التحديث', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل التحديث', true); 
     }
 }
 
 async function clearAllMaterials() {
     if (allMaterials.length === 0) { 
-        showToastMessage('📭 لا توجد بيانات', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('📭 لا توجد بيانات', true); 
         return; 
     }
     
@@ -169,16 +163,16 @@ async function clearAllMaterials() {
         }
         await batch.commit();
         
-        showToastMessage('✓ تم مسح جميع المواد');
+        if (typeof showToastMessage === 'function') showToastMessage('✓ تم مسح جميع المواد');
         
     } catch(e) { 
-        showToastMessage('❌ فشل المسح', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل المسح', true); 
     }
 }
 
 async function backupData() {
     if (allMaterials.length === 0) { 
-        showToastMessage('📭 لا توجد بيانات للنسخ', true); 
+        if (typeof showToastMessage === 'function') showToastMessage('📭 لا توجد بيانات للنسخ', true); 
         return; 
     }
     
@@ -191,7 +185,7 @@ async function backupData() {
     a.click();
     URL.revokeObjectURL(url);
     
-    showToastMessage('💾 تم نسخ ' + allMaterials.length + ' عنصر');
+    if (typeof showToastMessage === 'function') showToastMessage('💾 تم نسخ ' + allMaterials.length + ' عنصر');
 }
 
 async function restoreData() {
@@ -226,10 +220,10 @@ async function restoreData() {
                     });
                 }
                 
-                showToastMessage('✓ تم استعادة ' + backup.length + ' عنصر');
+                if (typeof showToastMessage === 'function') showToastMessage('✓ تم استعادة ' + backup.length + ' عنصر');
                 
             } catch(e) { 
-                showToastMessage('❌ ملف غير صالح', true); 
+                if (typeof showToastMessage === 'function') showToastMessage('❌ ملف غير صالح', true); 
             }
         };
         reader.readAsText(file);
@@ -238,18 +232,6 @@ async function restoreData() {
     input.click();
 }
 
-function showToastMessage(msg, isErr) {
-    if (isErr === undefined) isErr = false;
-    var existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    var toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = '<i class="fas ' + (isErr ? 'fa-exclamation-triangle' : 'fa-check-circle') + '"></i> ' + msg;
-    document.body.appendChild(toast);
-    setTimeout(function() { if (toast && toast.remove) toast.remove(); }, 2500);
-}
-
-// تصدير الدوال
 window.allMaterials = allMaterials;
 window.startListener = startListener;
 window.addNewMaterial = addNewMaterial;
@@ -257,4 +239,3 @@ window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
 window.backupData = backupData;
 window.restoreData = restoreData;
-window.showToastMessage = showToastMessage;
