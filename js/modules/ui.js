@@ -6,10 +6,7 @@ function renderCategories() {
     
     var categories = [
         { id: 'main', icon: 'fas fa-star', title: 'أساسيات', color: '#f59e0b' },
-        { id: 'spices_extra', icon: 'fas fa-leaf', title: 'بهارات اضافية', color: '#10b981' },
-        { id: 'roasted', icon: 'fas fa-fire', title: 'المحمصة', color: '#ef4444' },
-        { id: 'herbs', icon: 'fas fa-seedling', title: 'الأعشاب', color: '#8b5cf6' },
-        { id: 'extra', icon: 'fas fa-plus-circle', title: 'مواد اضافية', color: '#3b82f6' },
+        { id: 'extra', icon: 'fas fa-plus-circle', title: 'إضافي', color: '#3b82f6' },
         { id: 'bags', icon: 'fas fa-shopping-bag', title: 'أكياس تعبئة', color: '#ec4899' },
         { id: 'tawsaya', icon: 'fas fa-gift', title: 'توصيات', color: '#06b6d4' }
     ];
@@ -31,13 +28,17 @@ function renderSections(materials) {
     var container = document.getElementById('sectionsContainer');
     if (!container) return;
     
-    var sections = ['main', 'spices_extra', 'roasted', 'herbs', 'extra', 'bags', 'tawsaya'];
+    var sections = ['main', 'extra', 'bags', 'tawsaya'];
     var html = '';
     
     for (var i = 0; i < sections.length; i++) {
         var section = sections[i];
         var sectionMaterials = materials.filter(function(m) { 
-            return m.priority === section; 
+            var materialSection = m.priority;
+            if (materialSection === 'spices_extra' || materialSection === 'roasted' || materialSection === 'herbs') {
+                materialSection = 'extra';
+            }
+            return materialSection === section;
         });
         
         html += '<div class="priority-section" data-section="' + section + '">' +
@@ -77,18 +78,23 @@ function renderSections(materials) {
 }
 
 function renderMaterialCard(m) {
-    var isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
+    var displaySection = m.priority;
+    if (displaySection === 'spices_extra' || displaySection === 'roasted' || displaySection === 'herbs') {
+        displaySection = 'extra';
+    }
+    
+    var isLowStock = (!m.quantity || m.quantity === 0) && displaySection !== 'tawsaya';
     var lowStockClass = isLowStock ? 'low-stock' : '';
     var quantityDisplay = formatDisplay(m);
     
-    if (isLowStock && m.priority !== 'tawsaya') {
+    if (isLowStock && displaySection !== 'tawsaya') {
         quantityDisplay = '⚠️ ناقصة';
     }
     
     return '<div class="material-card ' + lowStockClass + '" ' +
                 'data-id="' + m.id + '" ' +
                 'data-name="' + escapeHtml(m.name) + '" ' +
-                'data-section="' + m.priority + '">' +
+                'data-section="' + displaySection + '">' +
             '<div class="card-header">' +
                 '<div class="card-title">' +
                     '<i class="fas fa-box"></i>' +
@@ -164,19 +170,15 @@ function bindCardButtons() {
 }
 
 function updateCategoryCounts() {
-    var counts = { 
-        main: 0, 
-        spices_extra: 0, 
-        roasted: 0, 
-        herbs: 0, 
-        extra: 0, 
-        bags: 0, 
-        tawsaya: 0 
-    };
+    var counts = { main: 0, extra: 0, bags: 0, tawsaya: 0 };
     
     for (var i = 0; i < window.allMaterials.length; i++) {
         var m = window.allMaterials[i];
-        counts[m.priority] = (counts[m.priority] || 0) + 1;
+        var section = m.priority;
+        if (section === 'spices_extra' || section === 'roasted' || section === 'herbs') {
+            section = 'extra';
+        }
+        counts[section] = (counts[section] || 0) + 1;
     }
     
     for (var key in counts) {
@@ -229,9 +231,31 @@ function calculateAIMetrics() {
     }
 }
 
+function getSectionIcon(section) {
+    var icons = {
+        'main': 'fas fa-star',
+        'extra': 'fas fa-plus-circle',
+        'bags': 'fas fa-shopping-bag',
+        'tawsaya': 'fas fa-gift'
+    };
+    return icons[section] || 'fas fa-box';
+}
+
+function getSectionTitle(section) {
+    var titles = {
+        'main': '⭐ أساسيات',
+        'extra': '➕ إضافي',
+        'bags': '🛍️ أكياس تعبئة',
+        'tawsaya': '🎁 توصيات'
+    };
+    return titles[section] || section;
+}
+
 window.renderCategories = renderCategories;
 window.renderSections = renderSections;
 window.renderMaterialCard = renderMaterialCard;
 window.bindCardButtons = bindCardButtons;
 window.updateCategoryCounts = updateCategoryCounts;
 window.calculateAIMetrics = calculateAIMetrics;
+window.getSectionIcon = getSectionIcon;
+window.getSectionTitle = getSectionTitle;
