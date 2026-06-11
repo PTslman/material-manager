@@ -1,8 +1,9 @@
-// ==================== نظام إدارة الأسعار ====================
+// ==================== نظام إدارة الأسعار مع Firebase ====================
 
 var materialPrices = {};
 var allMaterialsList = [];
 var priceModalWindow = null;
+var isSyncing = false;
 
 // تحميل جميع المواد من القوائم الجاهزة
 function loadAllMaterialsFromPresets() {
@@ -32,8 +33,81 @@ function loadAllMaterialsFromPresets() {
     });
 }
 
+// تحميل الأسعار من Firebase
+async function loadPricesFromFirebase() {
+    if (!pricesCollection) return false;
+    
+    try {
+        var snapshot = await pricesCollection.get();
+        var prices = {};
+        snapshot.forEach(function(doc) {
+            var data = doc.data();
+            prices[doc.id] = data.price;
+        });
+        materialPrices = prices;
+        
+        // حفظ محلياً
+        savePricesToLocal();
+        
+        console.log('تم تحميل الأسعار من Firebase:', Object.keys(prices).length, 'مادة');
+        return true;
+    } catch(e) {
+        console.error('خطأ في تحميل الأسعار من Firebase:', e);
+        return false;
+    }
+}
+
+// حفظ الأسعار في Firebase
+async function savePricesToFirebase() {
+    if (!pricesCollection) return false;
+    
+    try {
+        var batch = db.batch();
+        var currentPrices = {};
+        
+        var snapshot = await pricesCollection.get();
+        snapshot.forEach(function(doc) {
+            currentPrices[doc.id] = doc.data().price;
+        });
+        
+        for (var materialName in materialPrices) {
+            var price = materialPrices[materialName];
+            if (price > 0) {
+                var docRef = pricesCollection.doc(materialName);
+                if (currentPrices[materialName] !== undefined) {
+                    batch.update(docRef, { 
+                        price: price, 
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                    });
+                } else {
+                    batch.set(docRef, { 
+                        name: materialName,
+                        price: price, 
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            }
+        }
+        
+        for (var existingName in currentPrices) {
+            if (!materialPrices[existingName] || materialPrices[existingName] === 0) {
+                var docRef = pricesCollection.doc(existingName);
+                batch.delete(docRef);
+            }
+        }
+        
+        await batch.commit();
+        console.log('تم حفظ الأسعار في Firebase');
+        return true;
+    } catch(e) {
+        console.error('خطأ في حفظ الأسعار في Firebase:', e);
+        return false;
+    }
+}
+
 // تحميل الأسعار من localStorage
-function loadPrices() {
+function loadPricesFromLocal() {
     try {
         var saved = localStorage.getItem('material_prices');
         if (saved) {
@@ -42,19 +116,66 @@ function loadPrices() {
     } catch(e) {
         materialPrices = {};
     }
-    return materialPrices;
 }
 
 // حفظ الأسعار في localStorage
-function savePrices() {
+function savePricesToLocal() {
     try {
         localStorage.setItem('material_prices', JSON.stringify(materialPrices));
     } catch(e) {}
 }
 
-// تحديث سعر مادة
-function updateMaterialPrice(materialName, price) {
+// تحميل الأسعار (من Firebase أولاً)
+async function loadPrices() {
+    // محاولة التحميل من Firebase أولاً
+    var firebaseSuccess = await loadPricesFromFirebase();
+    
+    if (!firebaseSuccess) {
+        // إذا فشل، تحميل من localStorage
+        loadPricesFromLocal();
+        console.log('تم تحميل الأسعار من localStorage');
+    }
+    
+    // تحديث التحليل الذكي
+    if (typeof calculateAIMetrics === 'function') {
+        setTimeout(function() {
+            calculateAIMetrics();
+        }, 100);
+    }
+    
+    return materialPrices;
+}
+
+// حفظ الأسعار (في Firebase و localStorage)
+async function savePrices() {
+    // حفظ محلياً
+    savePricesToLocal();
+    
+    // حفظ في Firebase
+    var firebaseSuccess = await savePricesToFirebase();
+    
+    if (firebaseSuccess) {
+        if (typeof showToastMessage === 'function') {
+            showToastMessage('✓ تم حفظ الأسعار في السحابة');
+        }
+    } else {
+        if (typeof showToastMessage === 'function') {
+            showToastMessage('⚠️ تم حفظ الأسعار محلياً فقط', false);
+        }
+    }
+    
+    // تحديث التحليل الذكي
+    if (typeof calculateAIMetrics === 'function') {
+        calculateAIMetrics();
+    }
+    
+    return firebaseSuccess;
+}
+
+// تحديث سعر مادة وحفظه
+async function updateMaterialPrice(materialName, price) {
     if (!materialName) return;
+    
     if (price === undefined || price === null || price === '') {
         delete materialPrices[materialName];
     } else {
@@ -63,12 +184,19 @@ function updateMaterialPrice(materialName, price) {
             materialPrices[materialName] = numPrice;
         }
     }
-    savePrices();
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
+    
+    // حفظ التغييرات
+    savePricesToLocal();
+    await savePricesToFirebase();
+    
+    // تحديث النافذة المنفصلة
     if (priceModalWindow && !priceModalWindow.closed) {
         updatePriceWindowDisplay();
+    }
+    
+    // تحديث التحليل الذكي
+    if (typeof calculateAIMetrics === 'function') {
+        calculateAIMetrics();
     }
 }
 
@@ -89,7 +217,7 @@ function getEstimatedPrice(materialName) {
     return estimatedPrices[materialName] || 0;
 }
 
-// حساب القيمة الإجمالية
+// حساب القيمة الإجمالية للمخزون
 function calculateTotalValue() {
     if (!window.allMaterials) return { total: 0, formattedTotal: '0 ل.س', breakdown: [] };
     
@@ -153,8 +281,9 @@ function getMaterialCategory(materialName) {
 }
 
 // فتح نافذة الأسعار
-function openPriceModal() {
-    loadPrices();
+async function openPriceModal() {
+    // تحميل الأسعار أولاً
+    await loadPrices();
     loadAllMaterialsFromPresets();
     
     if (priceModalWindow && !priceModalWindow.closed) {
@@ -239,7 +368,7 @@ function getPriceWindowHTML() {
     <body>
         <div class="container">
             <div class="header">
-                <div><h1><i class="fas fa-tags"></i> إدارة أسعار المواد</h1><p>تحديد أسعار المواد بالكيلوغرام (ليرة سورية)</p></div>
+                <div><h1><i class="fas fa-tags"></i> إدارة أسعار المواد</h1><p>تحديد أسعار المواد بالكيلوغرام (ليرة سورية) - يتم الحفظ في السحابة</p></div>
                 <button class="close-btn" onclick="window.close()"><i class="fas fa-times"></i> إغلاق</button>
             </div>
             
@@ -365,6 +494,14 @@ function saveAllPricesAndClose() { savePrices(); if (typeof calculateAIMetrics =
 
 function bindPriceWindowEvents() { if (!priceModalWindow || priceModalWindow.closed) return; var searchInput = priceModalWindow.document.getElementById('searchInput'); if (searchInput) { searchInput.oninput = function(e) { filterPriceList(e.target.value); }; } var tabs = priceModalWindow.document.querySelectorAll('.tab'); for (var i = 0; i < tabs.length; i++) { tabs[i].onclick = function() { var btns = priceModalWindow.document.querySelectorAll('.tab'); for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active'); this.classList.add('active'); filterPriceListByCategory(this.dataset.cat); }; } }
 
+// مزامنة الأسعار عند تحميل التطبيق
+async function syncPricesOnStartup() {
+    await loadPrices();
+    if (typeof calculateAIMetrics === 'function') {
+        calculateAIMetrics();
+    }
+}
+
 window.getMaterialPrice = getMaterialPrice;
 window.getEstimatedPrice = getEstimatedPrice;
 window.loadPrices = loadPrices;
@@ -378,3 +515,4 @@ window.filterPriceListByCategory = filterPriceListByCategory;
 window.getPriceDisplayData = getPriceDisplayData;
 window.updateMaterialPriceFromWindow = updateMaterialPriceFromWindow;
 window.saveAllPricesAndClose = saveAllPricesAndClose;
+window.syncPricesOnStartup = syncPricesOnStartup;
