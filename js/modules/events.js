@@ -13,8 +13,10 @@ function bindEvents() {
     var syncBtn = document.getElementById('syncBtn');
     if (syncBtn) {
         syncBtn.onclick = function() { 
-            if (typeof startListener === 'function') {
-                startListener(); 
+            if (typeof refreshData === 'function') {
+                refreshData();
+            } else if (typeof startListener === 'function') {
+                startListener();
             }
             if (typeof showToastMessage === 'function') {
                 showToastMessage('🔄 جاري المزامنة...');
@@ -30,7 +32,6 @@ function bindEvents() {
             var isDark = document.body.classList.contains('dark');
             localStorage.setItem('darkMode', isDark);
         };
-        
         // استعادة التفضيل المحفوظ
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
@@ -67,12 +68,12 @@ function bindEvents() {
         };
     }
     
-    // زر إدارة الأسعار
+    // زر إدارة الأسعار - يفتح نافذة منفصلة
     var priceManagerBtn = document.getElementById('priceManagerBtn');
     if (priceManagerBtn) {
         priceManagerBtn.onclick = function() { 
             if (typeof openPriceModal === 'function') {
-                openPriceModal(); 
+                openPriceModal();
             } else {
                 if (typeof showToastMessage === 'function') {
                     showToastMessage('جاري تحميل نظام الأسعار...', false);
@@ -185,7 +186,7 @@ function bindEvents() {
         }
     }
     
-    // زر حفظ جميع الأسعار
+    // زر حفظ جميع الأسعار (إذا كان موجوداً في نفس النافذة)
     var saveAllPricesBtn = document.getElementById('saveAllPricesBtn');
     if (saveAllPricesBtn) {
         saveAllPricesBtn.onclick = function() { 
@@ -256,6 +257,8 @@ function bindEvents() {
             }
         });
     }
+    
+    console.log('✅ تم ربط جميع الأحداث بنجاح');
 }
 
 // دالة إغلاق جميع المودالات
