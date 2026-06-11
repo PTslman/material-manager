@@ -1,7 +1,8 @@
-// ==================== الضغطة المطولة جداً ونقل المواد ====================
+// ==================== الضغطة المطولة ونقل المواد ====================
 
 var longPressTimer = null;
 var isLongPress = false;
+var touchStartTime = 0;
 
 function setupLongPressForAllCards() {
     var cards = document.querySelectorAll('.material-card');
@@ -30,39 +31,62 @@ function setupLongPressOnCard(card) {
     card.addEventListener('click', onClick);
     
     function onTouchStart(e) {
-        // منع تفعيل الضغطة الطويلة إذا كان الهدف هو زر التعديل أو الحذف
+        // تسجيل وقت بدء اللمس
+        touchStartTime = Date.now();
+        isLongPress = false;
+        
+        // إذا كان الهدف هو زر التعديل أو الحذف، لا تفعل شيئاً
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
             return;
         }
         
-        isLongPress = false;
         var self = this;
         
-        // ضغطة مطولة جداً: 3000ms = 3 ثواني
+        // بدء مؤقت الضغطة المطولة (1000ms = 1 ثانية)
         longPressTimer = setTimeout(function() {
             isLongPress = true;
             var id = self.getAttribute('data-id');
             var name = self.getAttribute('data-name');
             var section = self.getAttribute('data-section');
             if (id && name) {
-                // إضافة تأثير اهتزاز للتنبيه
+                // تأثير اهتزاز للتنبيه
                 self.classList.add('long-press-active');
-                // فتح نافذة النقل
+                // فتح نافذة نقل المادة
                 openMoveModal(id, name, section);
                 setTimeout(function() { 
                     self.classList.remove('long-press-active'); 
-                }, 500);
+                }, 300);
             }
-        }, 3000); // 3 ثواني - ضغطة مطولة جداً
+        }, 1000); // 1 ثانية = ضغطة مطولة
     }
     
-    function onTouchEnd() {
+    function onTouchEnd(e) {
+        var touchDuration = Date.now() - touchStartTime;
+        
+        // إذا كان هناك مؤقت نشط
         if (longPressTimer) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
-        // إعادة تعيين المؤشر بعد انتهاء اللمس
-        setTimeout(function() { isLongPress = false; }, 100);
+        
+        // إذا كانت ضغطة قصيرة (أقل من 1000ms) وليست ضغطة مطولة
+        if (touchDuration < 1000 && !isLongPress) {
+            // التحقق إذا كان الهدف هو زر التعديل أو الحذف
+            if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
+                return;
+            }
+            
+            // هنا يمكنك إضافة ما تريد فعله عند الضغطة القصيرة
+            // مثلاً: فتح نافذة تعديل سريع أو أي شيء آخر
+            // حالياً: لا نفعل شيئاً
+            console.log('ضغطة قصيرة - لا تفعل شيئاً');
+        }
+        
+        // إعادة تعيين المؤشرات
+        setTimeout(function() { 
+            isLongPress = false; 
+            touchStartTime = 0;
+        }, 100);
     }
     
     function onTouchMove() {
@@ -71,18 +95,22 @@ function setupLongPressOnCard(card) {
             longPressTimer = null;
         }
         isLongPress = false;
+        touchStartTime = 0;
     }
     
     function onMouseDown(e) {
-        // منع تفعيل الضغطة الطويلة إذا كان الهدف هو زر التعديل أو الحذف
+        // تسجيل وقت بدء الضغط
+        touchStartTime = Date.now();
+        isLongPress = false;
+        
+        // إذا كان الهدف هو زر التعديل أو الحذف، لا تفعل شيئاً
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
             return;
         }
         
-        isLongPress = false;
         var self = this;
         
-        // ضغطة مطولة جداً: 3000ms = 3 ثواني
+        // بدء مؤقت الضغطة المطولة (1000ms = 1 ثانية)
         longPressTimer = setTimeout(function() {
             isLongPress = true;
             var id = self.getAttribute('data-id');
@@ -93,17 +121,31 @@ function setupLongPressOnCard(card) {
                 openMoveModal(id, name, section);
                 setTimeout(function() { 
                     self.classList.remove('long-press-active'); 
-                }, 500);
+                }, 300);
             }
-        }, 3000); // 3 ثواني - ضغطة مطولة جداً
+        }, 1000); // 1 ثانية = ضغطة مطولة
     }
     
-    function onMouseUp() {
+    function onMouseUp(e) {
+        var pressDuration = Date.now() - touchStartTime;
+        
         if (longPressTimer) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
-        setTimeout(function() { isLongPress = false; }, 100);
+        
+        // إذا كانت ضغطة قصيرة (أقل من 1000ms) وليست ضغطة مطولة
+        if (pressDuration < 1000 && !isLongPress) {
+            if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
+                return;
+            }
+            console.log('ضغطة قصيرة - لا تفعل شيئاً');
+        }
+        
+        setTimeout(function() { 
+            isLongPress = false; 
+            touchStartTime = 0;
+        }, 100);
     }
     
     function onMouseLeave() {
@@ -112,25 +154,30 @@ function setupLongPressOnCard(card) {
             longPressTimer = null;
         }
         isLongPress = false;
+        touchStartTime = 0;
     }
     
     function onClick(e) {
-        // منع أي حدث عند الضغط العادي على البطاقة
-        e.stopPropagation();
-        e.preventDefault();
+        // إذا كانت ضغطة مطولة، نمنع النقر
+        if (isLongPress) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
         
-        // إذا كان الهدف هو زر التعديل أو الحذف، نسمح بتمرير الحدث
+        // إذا كان الهدف هو زر التعديل أو الحذف، نسمح بمرور الحدث
         if (e.target.closest('.edit-material') || e.target.closest('.delete-material')) {
             return;
         }
         
-        // لا تفعل شيئاً عند الضغط العادي
-        return false;
+        // نمنع أي حدث آخر عند النقر العادي على البطاقة
+        e.stopPropagation();
+        e.preventDefault();
     }
 }
 
 function openMoveModal(id, name, currentSection) {
-    console.log('Opening move modal for:', name);
+    console.log('فتح نافذة نقل المادة:', name);
     document.getElementById('moveItemName').value = name;
     document.getElementById('moveTargetSection').value = currentSection;
     window.moveData = { id: id, name: name, currentSection: currentSection };
