@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.currentEditId = currentEditId;
     
     setTimeout(function() { 
-        if (typeof setupLongPressForAllCards === 'function') {
-            setupLongPressForAllCards();
-            console.log('✅ Long press system initialized');
+        if (typeof initDragAndDrop === 'function') {
+            initDragAndDrop();
+            console.log('✅ Drag and drop system ready');
         }
     }, 1000);
 });
@@ -26,8 +26,7 @@ window.backupData = backupData;
 window.restoreData = restoreData;
 window.openPresetModal = openPresetModal;
 window.addSelectedPresetItems = addSelectedPresetItems;
-window.executeMove = executeMove;
 window.startListener = startListener;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
-window.setupLongPressForAllCards = setupLongPressForAllCards;
+window.initDragAndDrop = initDragAndDrop;
