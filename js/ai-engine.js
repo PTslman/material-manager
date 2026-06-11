@@ -1,3 +1,4 @@
+
 // ==================== محرك الذكاء الاصطناعي ====================
 
 var AIEngine = function() {
@@ -46,7 +47,14 @@ AIEngine.prototype.formatNumber = function(value) {
     return rounded.toFixed(1);
 };
 
+// دالة لتنسيق العملة
+AIEngine.prototype.formatCurrency = function(value) {
+    return Math.round(value).toLocaleString() + ' ل.س';
+};
+
 AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
+    console.log('تحليل المخزون، عدد المواد:', materials ? materials.length : 0);
+    
     if (!materials || materials.length === 0) {
         return {
             totalWeight: '0',
@@ -70,23 +78,35 @@ AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
         var isTawsaya = material.priority === 'tawsaya';
         var quantityInKg = this.convertToKg(material.quantity, material.unitType);
         
+        console.log('تحليل مادة:', material.name, 'الكمية:', quantityInKg, 'كجم', 'القسم:', material.priority);
+        
         if (!isTawsaya) {
             totalWeight += quantityInKg;
-            lowStockCount++;
             
+            // المادة تعتبر ناقصة فقط إذا كانت الكمية = 0
+            if (quantityInKg === 0) {
+                lowStockCount++;
+                lowStockList.push({
+                    name: material.name,
+                    quantity: material.quantity,
+                    unit: material.unitType,
+                    weight: this.formatNumber(quantityInKg)
+                });
+            }
+            
+            // حساب السعر
             var price = 0;
             if (typeof getPriceFunction === 'function') {
-                price = getPriceFunction(material.name) || 0;
+                try {
+                    price = getPriceFunction(material.name) || 0;
+                    console.log('سعر المادة', material.name, ':', price, 'ل.س/كجم');
+                } catch(e) {
+                    console.error('خطأ في جلب سعر المادة', material.name, e);
+                }
             }
+            
             var itemValue = quantityInKg * price;
             totalValue += itemValue;
-            
-            lowStockList.push({
-                name: material.name,
-                quantity: material.quantity,
-                unit: material.unitType,
-                weight: this.formatNumber(quantityInKg)
-            });
             
             if (price > 0 && quantityInKg > 0) {
                 priceBreakdown.push({
@@ -96,7 +116,7 @@ AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
                     quantityInKg: this.formatNumber(quantityInKg),
                     pricePerKg: price,
                     totalValue: Math.round(itemValue),
-                    formattedValue: Math.round(itemValue).toLocaleString() + ' ل.س'
+                    formattedValue: this.formatCurrency(itemValue)
                 });
             }
         } else {
@@ -108,27 +128,36 @@ AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
         return b.totalValue - a.totalValue;
     });
 
-    return {
+    var result = {
         totalWeight: this.formatNumber(totalWeight),
-        totalValue: Math.round(totalValue).toLocaleString() + ' ل.س',
+        totalValue: this.formatCurrency(totalValue),
         totalValueRaw: totalValue,
         lowStockCount: lowStockCount,
         lowStockList: lowStockList.slice(0, 10),
         priceBreakdown: priceBreakdown.slice(0, 5),
         tawsayaCount: tawsayaCount,
-        insights: this.getInsights(materials.length, totalWeight, totalValue, lowStockCount, tawsayaCount)
+        insights: this.getInsights(totalWeight, totalValue, lowStockCount, tawsayaCount)
     };
+    
+    console.log('نتيجة التحليل:', {
+        totalWeight: result.totalWeight,
+        totalValue: result.totalValue,
+        lowStockCount: result.lowStockCount,
+        priceBreakdownCount: result.priceBreakdown.length
+    });
+    
+    return result;
 };
 
-AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, totalValue, lowStockCount, tawsayaCount) {
+AIEngine.prototype.getInsights = function(totalWeight, totalValue, lowStockCount, tawsayaCount) {
     var insights = [];
     
-    if (totalMaterials === 0) {
+    if (totalWeight === 0 && totalValue === 0) {
         insights.push('لا توجد مواد في المخزون');
         insights.push('أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"');
     } else {
         insights.push('الوزن الكلي للمخزون: ' + this.formatNumber(totalWeight) + ' كجم');
-        insights.push('القيمة التقديرية للمخزون: ' + Math.round(totalValue).toLocaleString() + ' ل.س');
+        insights.push('القيمة التقديرية للمخزون: ' + this.formatCurrency(totalValue));
         insights.push('عدد المواد الناقصة: ' + lowStockCount + ' مادة');
         
         if (tawsayaCount > 0) {
@@ -139,8 +168,7 @@ AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, totalValu
     var tips = [
         'اسحب أي مادة وأفلتها في قسم آخر لنقلها',
         'المواد ذات الخلفية البرتقالية ناقصة وتحتاج إعادة تعبئة',
-        'المزامنة التلقائية تحفظ بياناتك في السحابة',
-        'المواد الأساسية هي الأكثر طلباً'
+        'المزامنة التلقائية تحفظ بياناتك في السحابة'
     ];
     insights.push(tips[Math.floor(Math.random() * tips.length)]);
     
@@ -148,3 +176,4 @@ AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, totalValu
 };
 
 window.aiEngine = new AIEngine();
+console.log('✅ AI Engine initialized');
