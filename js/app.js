@@ -3,7 +3,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 App initializing...');
     
-    // تهيئة المكونات بالترتيب
     if (typeof renderCategories === 'function') {
         renderCategories();
         console.log('✅ Categories rendered');
@@ -24,11 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ PWA initialized');
     }
     
-    // جعل المتغيرات عامة
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
     
-    // تهيئة السحب والإفلات بعد تحميل الصفحة
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') {
             initDragAndDrop();
@@ -37,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
-// تصدير الدوال العالمية
 window.addNewMaterial = addNewMaterial;
 window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
@@ -49,3 +45,4 @@ window.startListener = startListener;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
 window.initDragAndDrop = initDragAndDrop;
+window.showToastMessage = showToastMessage;
