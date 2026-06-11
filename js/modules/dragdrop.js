@@ -1,4 +1,3 @@
-
 // ==================== نظام السحب والإفلات ====================
 
 var draggedItem = null;
@@ -40,14 +39,7 @@ function setupDraggable(element) {
         
         var dragIcon = document.createElement('div');
         dragIcon.textContent = draggedItemName;
-        dragIcon.style.position = 'absolute';
-        dragIcon.style.top = '-1000px';
-        dragIcon.style.backgroundColor = '#10b981';
-        dragIcon.style.color = 'white';
-        dragIcon.style.padding = '8px 16px';
-        dragIcon.style.borderRadius = '9999px';
-        dragIcon.style.fontSize = '12px';
-        dragIcon.style.fontWeight = 'bold';
+        dragIcon.style.cssText = 'position:absolute;top:-1000px;background:#10b981;color:white;padding:8px 16px;border-radius:999px;font-size:12px;font-weight:bold';
         document.body.appendChild(dragIcon);
         e.dataTransfer.setDragImage(dragIcon, 0, 0);
         setTimeout(function() { document.body.removeChild(dragIcon); }, 0);
@@ -101,45 +93,22 @@ function setupDroppable(section) {
 
 async function performDragDropMove(itemId, targetSection, originalSection, itemName) {
     if (!itemId || !targetSection) return false;
-    
     var name = itemName || 'المادة';
-    
-    if (typeof showToastMessage === 'function') {
-        showToastMessage('🔄 جاري نقل "' + name + '"...', false);
-    }
+    showToastMessage('🔄 جاري نقل "' + name + '"...', false);
     
     try {
-        // تحديث في Firebase
-        await materialsCollection.doc(itemId).update({ 
-            priority: targetSection,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
+        await materialsCollection.doc(itemId).update({ priority: targetSection });
         var sectionNames = {
             'main': 'أساسيات',
-            'spices_extra': 'بهارات اضافية',
-            'roasted': 'المحمصة',
-            'herbs': 'الأعشاب',
-            'extra': 'مواد اضافية',
+            'extra': 'إضافي',
             'bags': 'أكياس تعبئة',
             'tawsaya': 'توصيات'
         };
-        
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
-        }
-        
-        // إعادة تحميل البيانات من Firebase
-        if (typeof startListener === 'function') {
-            startListener();
-        }
-        
+        showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        if (typeof startListener === 'function') startListener();
         return true;
     } catch(error) {
-        console.error('خطأ في النقل:', error);
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('❌ فشل نقل "' + name + '"', true);
-        }
+        showToastMessage('❌ فشل نقل "' + name + '"', true);
         return false;
     }
 }
