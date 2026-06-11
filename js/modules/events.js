@@ -1,344 +1,273 @@
+// ==================== واجهة المستخدم ====================
 
-// ==================== ربط الأحداث ====================
-
-function bindEvents() {
-    // زر إضافة مادة جديدة
-    var mainAddBtn = document.getElementById('mainAddBtn');
-    if (mainAddBtn) {
-        mainAddBtn.onclick = function() { 
-            document.getElementById('newItemModal').classList.add('active'); 
-        };
-    }
+function renderCategories() {
+    var container = document.getElementById('categoriesContainer');
+    if (!container) return;
     
-    // زر المزامنة
-    var syncBtn = document.getElementById('syncBtn');
-    if (syncBtn) {
-        syncBtn.onclick = function() { 
-            if (typeof refreshData === 'function') {
-                refreshData();
-            } else if (typeof startListener === 'function') {
-                startListener();
-            }
-            if (typeof showToastMessage === 'function') {
-                showToastMessage('🔄 جاري المزامنة...');
-            }
-        };
-    }
-    
-    // زر الوضع الليلي
-    var themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.onclick = function() { 
-            document.body.classList.toggle('dark');
-            var isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-        };
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-        }
-    }
-    
-    // زر النسخ الاحتياطي
-    var backupBtn = document.getElementById('backupBtn');
-    if (backupBtn) {
-        backupBtn.onclick = function() { 
-            if (typeof backupData === 'function') {
-                backupData(); 
-            }
-        };
-    }
-    
-    // زر الاستعادة
-    var restoreBtn = document.getElementById('restoreBtn');
-    if (restoreBtn) {
-        restoreBtn.onclick = function() { 
-            if (typeof restoreData === 'function') {
-                restoreData(); 
-            }
-        };
-    }
-    
-    // زر مسح الكل
-    var clearAllBtn = document.getElementById('clearAllBtn');
-    if (clearAllBtn) {
-        clearAllBtn.onclick = function() { 
-            if (typeof clearAllMaterials === 'function') {
-                clearAllMaterials(); 
-            }
-        };
-    }
-    
-    // زر إدارة الأسعار - يفتح نافذة منفصلة
-    var priceManagerBtn = document.getElementById('priceManagerBtn');
-    if (priceManagerBtn) {
-        priceManagerBtn.onclick = function() { 
-            if (typeof openPriceModal === 'function') {
-                openPriceModal();
-            } else if (typeof showToastMessage === 'function') {
-                showToastMessage('جاري تحميل نظام الأسعار...', false);
-            }
-        };
-    }
-    
-    // زر إضافة مادة من المودال
-    var saveNewItemBtn = document.getElementById('saveNewItemBtn');
-    if (saveNewItemBtn) {
-        saveNewItemBtn.onclick = function() { 
-            if (typeof addNewMaterial === 'function') {
-                addNewMaterial(); 
-            }
-        };
-    }
-    
-    // زر حفظ التعديل
-    var saveEditBtn = document.getElementById('saveEditBtn');
-    if (saveEditBtn) {
-        saveEditBtn.onclick = function() { 
-            if (typeof saveEdit === 'function') {
-                saveEdit(); 
-            }
-        };
-    }
-    
-    // زر حفظ القوائم الجاهزة
-    var savePresetBtn = document.getElementById('savePresetBtn');
-    if (savePresetBtn) {
-        savePresetBtn.onclick = function() { 
-            if (typeof addSelectedPresetItems === 'function') {
-                addSelectedPresetItems(); 
-            }
-        };
-    }
-    
-    // زر تأكيد النقل
-    var confirmMoveBtn = document.getElementById('confirmMoveBtn');
-    if (confirmMoveBtn) {
-        confirmMoveBtn.onclick = function() { 
-            if (typeof executeMove === 'function') {
-                executeMove(); 
-            }
-        };
-    }
-    
-    // كروت الأقسام
-    var categoryCards = document.querySelectorAll('.category-card');
-    for (var i = 0; i < categoryCards.length; i++) {
-        categoryCards[i].onclick = function(e) {
-            e.stopPropagation();
-            var category = this.getAttribute('data-category');
-            
-            if (category === 'tawsaya') {
-                var modal = document.getElementById('newItemModal');
-                var sectionSelect = document.getElementById('newMaterialSection');
-                if (sectionSelect) {
-                    sectionSelect.value = 'tawsaya';
-                }
-                if (modal) {
-                    modal.classList.add('active');
-                }
-            } else {
-                if (typeof openPresetModal === 'function') {
-                    openPresetModal(category);
-                }
-            }
-        };
-    }
-    
-    // البحث في القوائم الجاهزة
-    var presetSearch = document.getElementById('presetSearchInput');
-    if (presetSearch) {
-        presetSearch.oninput = function(e) { 
-            if (typeof renderPresetList === 'function') {
-                renderPresetList(window.currentPresetCategory || 'main', e.target.value);
-            }
-        };
-    }
-    
-    // أزرار إغلاق المودالات العامة
-    var closeButtons = [
-        'closeNewModalBtn', 'closeNewModalBtn2',
-        'closePresetModalBtn', 'closePresetModalBtn2',
-        'closeEditModalBtn', 'closeEditModalBtn2',
-        'cancelMoveBtn', 'cancelMoveBtn2',
-        'closeSystemMessageBtn',
-        'closePriceModalBtn', 'closePriceModalBtn2'
+    var categories = [
+        { id: 'main', icon: 'fas fa-star', title: 'أساسيات', color: '#f59e0b' },
+        { id: 'extra', icon: 'fas fa-plus-circle', title: 'إضافي', color: '#3b82f6' },
+        { id: 'bags', icon: 'fas fa-shopping-bag', title: 'أكياس تعبئة', color: '#ec4899' },
+        { id: 'tawsaya', icon: 'fas fa-gift', title: 'توصيات', color: '#06b6d4' }
     ];
     
-    for (var i = 0; i < closeButtons.length; i++) {
-        var btn = document.getElementById(closeButtons[i]);
-        if (btn) {
-            btn.onclick = function() { 
-                if (typeof closeAllModals === 'function') {
-                    closeAllModals();
-                } else {
-                    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
-                    for (var j = 0; j < modals.length; j++) {
-                        var el = document.getElementById(modals[j]);
-                        if (el) el.classList.remove('active');
-                    }
-                }
-            };
-        }
+    container.innerHTML = '';
+    
+    for (var i = 0; i < categories.length; i++) {
+        var cat = categories[i];
+        container.innerHTML += '<button class="category-card" data-category="' + cat.id + '" style="border-right: 3px solid ' + cat.color + ';">' +
+            '<div class="category-icon" style="background: linear-gradient(135deg, ' + cat.color + '15, ' + cat.color + '25);">' +
+            '<i class="' + cat.icon + '" style="color: ' + cat.color + ';"></i></div>' +
+            '<div class="category-info"><h3 class="category-title">' + cat.title + '</h3></div>' +
+            '<div class="category-count" id="count-' + cat.id + '">0</div>' +
+            '<div class="category-arrow"><i class="fas fa-chevron-left"></i></div></button>';
     }
+}
+
+function renderSections(materials) {
+    var container = document.getElementById('sectionsContainer');
+    if (!container) return;
     
-    // زر حفظ جميع الأسعار (إذا كان موجوداً في نفس النافذة)
-    var saveAllPricesBtn = document.getElementById('saveAllPricesBtn');
-    if (saveAllPricesBtn) {
-        saveAllPricesBtn.onclick = function() { 
-            if (typeof saveAllPrices === 'function') {
-                saveAllPrices();
-            }
-        };
-    }
+    var sections = ['main', 'extra', 'bags', 'tawsaya'];
+    var html = '';
     
-    // أزرار +/- في نافذة الإضافة
-    var dec = document.getElementById('newQtyDec');
-    var inc = document.getElementById('newQtyInc');
-    var qty = document.getElementById('newQuantityValue');
-    
-    if (dec && inc && qty) {
-        dec.onclick = function() { 
-            var v = parseFloat(qty.value) || 1; 
-            v = Math.max(0.25, v - 0.25); 
-            qty.value = v; 
-        };
+    for (var i = 0; i < sections.length; i++) {
+        var section = sections[i];
+        var sectionMaterials = materials.filter(function(m) { 
+            return m.priority === section;
+        });
         
-        inc.onclick = function() { 
-            var v = parseFloat(qty.value) || 1; 
-            v = v + 0.25; 
-            qty.value = v; 
-        };
-    }
-    
-    // تغيير الوحدة في نافذة التعديل
-    var editUnit = document.getElementById('editUnitSelect');
-    if (editUnit) {
-        editUnit.onchange = function() {
-            var unit = this.value;
-            var qtyInput = document.getElementById('editQuantityValue');
-            if (unit === 'half') {
-                qtyInput.value = 0.5;
-            } else if (unit === 'quarter') {
-                qtyInput.value = 0.25;
-            } else if (unit === 'oke') {
-                qtyInput.value = 0.2;
+        html += '<div class="priority-section" data-section="' + section + '">' +
+            '<div class="section-header">' +
+                '<div class="section-title">' +
+                    '<i class="' + getSectionIcon(section) + '"></i>' +
+                    '<span>' + getSectionTitle(section) + '</span>' +
+                '</div>' +
+                '<div class="section-count">' + sectionMaterials.length + '</div>' +
+            '</div>' +
+            '<div class="materials-grid" data-section="' + section + '">';
+        
+        if (sectionMaterials.length === 0) {
+            html += '<div class="empty-state">' +
+                '<i class="fas fa-box-open"></i>' +
+                '<br>لا توجد مواد' +
+                '<br><small>اسحب وأفلت المواد من الأقسام الأخرى</small>' +
+                '</div>';
+        } else {
+            for (var j = 0; j < sectionMaterials.length; j++) {
+                html += renderMaterialCard(sectionMaterials[j]);
             }
-        };
-    }
-    
-    // أزرار نوع التوصية (إذا كانت موجودة)
-    var tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-    for (var i = 0; i < tawsayaTypeBtns.length; i++) {
-        tawsayaTypeBtns[i].addEventListener('click', function() {
-            var btns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
-            for (var j = 0; j < btns.length; j++) {
-                btns[j].classList.remove('active');
-            }
-            this.classList.add('active');
-            var customGroup = document.getElementById('tawsayaCustomQtyGroup');
-            if (customGroup) {
-                customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
-            }
-        });
-    }
-    
-    // أزرار الأوزان المخصصة (إذا كانت موجودة)
-    var weightPresets = document.querySelectorAll('.weight-preset');
-    for (var i = 0; i < weightPresets.length; i++) {
-        weightPresets[i].addEventListener('click', function() {
-            var qtyInput = document.getElementById('tawsayaCustomQty');
-            if (qtyInput) {
-                qtyInput.value = this.getAttribute('data-value');
-            }
-        });
-    }
-    
-    // زر تثبيت PWA
-    var installBtn = document.getElementById('installBtn');
-    if (installBtn) {
-        installBtn.onclick = function() {
-            if (typeof PWASettings !== 'undefined' && PWASettings.promptInstall) {
-                PWASettings.promptInstall();
-            } else if (typeof showToastMessage === 'function') {
-                showToastMessage('📱 يمكنك تثبيت التطبيق من قائمة المتصفح', false);
-            }
-        };
-    }
-}
-
-// دالة إغلاق جميع المودالات
-function closeAllModals() {
-    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
-    for (var i = 0; i < modals.length; i++) {
-        var el = document.getElementById(modals[i]);
-        if (el) {
-            el.classList.remove('active');
         }
+        
+        html += '</div></div>';
     }
+    
+    container.innerHTML = html;
+    
+    bindCardButtons();
+    
+    setTimeout(function() { 
+        if (typeof initDragAndDrop === 'function') {
+            initDragAndDrop();
+        }
+    }, 100);
 }
 
-// تهيئة PWA للتثبيت
-function initPWA() {
-    var deferredPrompt;
+function renderMaterialCard(m) {
+    var isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
+    var lowStockClass = isLowStock ? 'low-stock' : '';
+    var quantityDisplay = formatDisplay(m);
     
-    window.addEventListener('beforeinstallprompt', function(e) {
+    if (isLowStock && m.priority !== 'tawsaya') {
+        quantityDisplay = '⚠️ ناقصة';
+    }
+    
+    return '<div class="material-card ' + lowStockClass + '" ' +
+                'data-id="' + m.id + '" ' +
+                'data-name="' + escapeHtml(m.name) + '" ' +
+                'data-section="' + m.priority + '">' +
+            '<div class="card-header">' +
+                '<div class="card-title">' +
+                    '<i class="fas fa-box"></i>' +
+                    '<span>' + escapeHtml(m.name) + '</span>' +
+                '</div>' +
+                '<div class="card-actions">' +
+                    '<button class="edit-material" data-id="' + m.id + '" title="تعديل الكمية">' +
+                        '<i class="fas fa-edit"></i>' +
+                    '</button>' +
+                    '<button class="delete-material" data-id="' + m.id + '" title="حذف المادة">' +
+                        '<i class="fas fa-trash-alt"></i>' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="qty-badge">' + quantityDisplay + '</div>' +
+        '</div>';
+}
+
+function bindCardButtons() {
+    var editBtns = document.querySelectorAll('.edit-material');
+    for (var i = 0; i < editBtns.length; i++) {
+        editBtns[i].removeEventListener('click', editClickHandler);
+        editBtns[i].addEventListener('click', editClickHandler);
+    }
+    
+    function editClickHandler(e) {
+        e.stopPropagation();
         e.preventDefault();
-        deferredPrompt = e;
-        var installBtn = document.getElementById('installBtn');
-        if (installBtn) {
-            installBtn.style.display = 'inline-flex';
+        
+        var id = this.getAttribute('data-id');
+        var material = window.allMaterials ? window.allMaterials.find(function(m) { 
+            return m.id === id; 
+        }) : null;
+        
+        if (material) {
+            window.currentEditId = id;
+            document.getElementById('editMaterialName').value = material.name;
+            document.getElementById('editQuantityValue').value = material.quantity;
+            document.getElementById('editUnitSelect').value = material.unitType || 'kg';
+            document.getElementById('editModal').classList.add('active');
         }
-    });
+    }
     
-    var installBtn = document.getElementById('installBtn');
-    if (installBtn) {
-        installBtn.onclick = function() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(function() { 
-                    deferredPrompt = null; 
-                    if (installBtn) {
-                        installBtn.style.display = 'none';
+    var delBtns = document.querySelectorAll('.delete-material');
+    for (var i = 0; i < delBtns.length; i++) {
+        delBtns[i].removeEventListener('click', deleteClickHandler);
+        delBtns[i].addEventListener('click', deleteClickHandler);
+    }
+    
+    function deleteClickHandler(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        var id = this.getAttribute('data-id');
+        var material = window.allMaterials ? window.allMaterials.find(function(m) { 
+            return m.id === id; 
+        }) : null;
+        
+        if (confirm('⚠️ هل أنت متأكد من حذف "' + (material?.name || 'هذه المادة') + '"؟')) {
+            materialsCollection.doc(id).delete()
+                .then(function() { 
+                    if (typeof showToastMessage === 'function') {
+                        showToastMessage('✅ تم الحذف');
+                    }
+                })
+                .catch(function(e) { 
+                    if (typeof showToastMessage === 'function') {
+                        showToastMessage('❌ فشل الحذف', true);
                     }
                 });
-            } else { 
-                if (typeof showToastMessage === 'function') {
-                    showToastMessage('📱 التطبيق مثبت مسبقاً', false);
-                }
-            }
-        };
-    }
-}
-
-// دالة عرض رسائل النظام
-function showSystemMessage(title, message, type) {
-    if (type === undefined) type = 'info';
-    
-    var modal = document.getElementById('systemMessageModal');
-    var titleEl = document.getElementById('systemMessageTitle');
-    var textEl = document.getElementById('systemMessageText');
-    
-    if (titleEl) titleEl.innerText = title;
-    if (textEl) textEl.innerText = message;
-    
-    var icon = modal ? modal.querySelector('.modal-icon i') : null;
-    if (icon) {
-        if (type === 'error') {
-            icon.style.color = '#ef4444';
-        } else if (type === 'warning') {
-            icon.style.color = '#f59e0b';
-        } else {
-            icon.style.color = '#10b981';
         }
     }
+}
+
+function updateCategoryCounts() {
+    var counts = { main: 0, extra: 0, bags: 0, tawsaya: 0 };
     
-    if (modal) {
-        modal.classList.add('active');
+    if (!window.allMaterials) return;
+    
+    for (var i = 0; i < window.allMaterials.length; i++) {
+        var m = window.allMaterials[i];
+        counts[m.priority] = (counts[m.priority] || 0) + 1;
+    }
+    
+    for (var key in counts) {
+        var el = document.getElementById('count-' + key);
+        if (el) {
+            el.innerText = counts[key];
+        }
     }
 }
 
-// تصدير الدوال
-window.bindEvents = bindEvents;
-window.closeAllModals = closeAllModals;
-window.initPWA = initPWA;
-window.showSystemMessage = showSystemMessage;
+function calculateAIMetrics() {
+    if (!window.aiEngine) {
+        return;
+    }
+    
+    try {
+        var materials = window.allMaterials || [];
+        
+        var getPriceFunction = null;
+        if (typeof window.getMaterialPrice === 'function') {
+            getPriceFunction = window.getMaterialPrice;
+        }
+        
+        var analysis = window.aiEngine.analyzeInventory(materials, getPriceFunction);
+        
+        var totalQtyEl = document.getElementById('totalQuantityValue');
+        if (totalQtyEl) totalQtyEl.innerText = analysis.totalWeight;
+        
+        var totalValueEl = document.getElementById('totalValueValue');
+        if (totalValueEl) totalValueEl.innerText = analysis.totalValue;
+        
+        var lowStockEl = document.getElementById('lowStockCount');
+        if (lowStockEl) lowStockEl.innerHTML = analysis.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
+        
+        var insightsDiv = document.getElementById('aiInsights');
+        if (insightsDiv && analysis.insights) {
+            var insightsContent = insightsDiv.querySelector('.insights-content');
+            if (insightsContent) {
+                var html = '';
+                for (var i = 0; i < analysis.insights.length; i++) {
+                    html += '<div class="insight-item">' + analysis.insights[i] + '</div>';
+                }
+                insightsContent.innerHTML = html;
+            }
+        }
+        
+        var priceDetailsEl = document.getElementById('priceDetails');
+        if (priceDetailsEl) {
+            if (analysis.priceBreakdown && analysis.priceBreakdown.length > 0) {
+                var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>';
+                for (var i = 0; i < analysis.priceBreakdown.length; i++) {
+                    var p = analysis.priceBreakdown[i];
+                    priceHtml += '<div class="price-detail-item">' +
+                        '<span class="price-detail-name">' + escapeHtml(p.name) + '</span>' +
+                        '<span class="price-detail-value">' + p.formattedValue + '</span>' +
+                        '</div>';
+                }
+                priceDetailsEl.innerHTML = priceHtml;
+            } else {
+                priceDetailsEl.innerHTML = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>' +
+                    '<div class="price-detail-item"><span class="price-detail-name">لا توجد أسعار محددة</span><span class="price-detail-value">-</span></div>';
+            }
+        }
+        
+    } catch(e) {
+        var insightsDiv = document.getElementById('aiInsights');
+        if (insightsDiv) {
+            var insightsContent = insightsDiv.querySelector('.insights-content');
+            if (insightsContent) {
+                insightsContent.innerHTML = '<span>جاري تحليل البيانات...</span>';
+            }
+        }
+    }
+}
+
+function getSectionIcon(section) {
+    var icons = {
+        'main': 'fas fa-star',
+        'extra': 'fas fa-plus-circle',
+        'bags': 'fas fa-shopping-bag',
+        'tawsaya': 'fas fa-gift'
+    };
+    return icons[section] || 'fas fa-box';
+}
+
+function getSectionTitle(section) {
+    var titles = {
+        'main': '⭐ أساسيات',
+        'extra': '➕ إضافي',
+        'bags': '🛍️ أكياس تعبئة',
+        'tawsaya': '🎁 توصيات'
+    };
+    return titles[section] || section;
+}
+
+window.renderCategories = renderCategories;
+window.renderSections = renderSections;
+window.renderMaterialCard = renderMaterialCard;
+window.bindCardButtons = bindCardButtons;
+window.updateCategoryCounts = updateCategoryCounts;
+window.calculateAIMetrics = calculateAIMetrics;
+window.getSectionIcon = getSectionIcon;
+window.getSectionTitle = getSectionTitle;
