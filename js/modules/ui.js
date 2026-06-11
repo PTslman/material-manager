@@ -184,17 +184,12 @@ function calculateAIMetrics() {
     try {
         var materials = window.allMaterials || [];
         var analysis = window.aiEngine.analyzeInventory(materials);
-        var stats = analysis.statistics;
         
-        var totalEl = document.getElementById('totalMaterialsCount');
         var totalQtyEl = document.getElementById('totalQuantityValue');
         var lowStockEl = document.getElementById('lowStockCount');
-        var avgQtyEl = document.getElementById('avgQuantityValue');
         
-        if (totalEl) totalEl.innerText = stats.totalMaterials;
-        if (totalQtyEl) totalQtyEl.innerText = stats.totalQuantity;
-        if (lowStockEl) lowStockEl.innerHTML = stats.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
-        if (avgQtyEl) avgQtyEl.innerText = stats.avgQuantity;
+        if (totalQtyEl) totalQtyEl.innerText = analysis.totalWeight;
+        if (lowStockEl) lowStockEl.innerHTML = analysis.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
         
         var insightsDiv = document.getElementById('aiInsights');
         if (insightsDiv && analysis.insights) {
