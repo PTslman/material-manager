@@ -1,6 +1,6 @@
 // ==================== القوائم الجاهزة ====================
 
-// قائمة أساسيات (تبقى كما هي)
+// قائمة أساسيات
 var importantItemsList = [
     "شطة حلوة", "شطة حدة وسط", "شطة بابريكا مدخنة", "توابل هندية", "فلفل اسود ناعم", "توم ناعم", "بصل ناعم",
     "جوز هند خشن", "حليب نصف دسم", "جوز امريكي", "حبة البركة", "زنجبيل خشن", "زنجبيل ناعم", "سمسم محمص",
@@ -11,9 +11,8 @@ var importantItemsList = [
     "هيل ناعم", "نعنع يابس", "يانسون حب", "شوفان", "تمر سري"
 ];
 
-// دمج جميع القوائم الإضافية في قائمة واحدة (بهارات اضافية + محمصة + أعشاب + مواد اضافية)
+// دمج جميع القوائم الإضافية في قائمة واحدة
 var extraItemsList = [
-    // بهارات اضافية
     "بطاطا", "بروستد", "زعتر اوريغانو", "بيتزا", "جوزة الطيب حب", "جوزة الطيب ناعمة", "حلبه حب", "حلبه ناعمة",
     "خل نكهة", "خميرة فرط", "سدر ناعم", "سكر نبات", "سمك", "سجق", "سحلب", "سلطة", "شمرا ناعمة", "شمرا حب",
     "شيش", "شاورما", "كريسبي", "كليجة", "كاري", "كربونة الصوديوم", "كراوية", "مجروش الكعك", "كلس خشن",
@@ -21,43 +20,26 @@ var extraItemsList = [
     "مدخنة", "محاشي", "محلب", "نشا درس", "نعنع يابس", "يانسون ناعم", "يانسون نجمة", "ورق غار", "صفار زعفران",
     "صفار بيض", "فلفل اسود حب", "فلفل ابيض ناعم", "توابل هندية حارة", "طحينية", "رمان مجفف", "اندومي",
     "رز مطحون", "ماجي حبيبات", "شمرا حب",
-    // محمصة
     "دوار شمس ملكي", "دوار شمس شبح", "فستق مدخن", "فستق مملح", "بذر كوسا", "بذر ابيض عريض", "بذر اصفر مصري",
     "فستق ني ارجنتيني", "لوز بقشرو", "لوز ني", "كاجو ني", "بذور الشيا", "بذور الكتان", "بذور اليقطين",
     "بذر الرشاد", "ذرة الفوشار", "خل نكهة", "جنبة نكهة", "كتشب نكهة", "بابريكا نكهة", "زعتر اخضر", "زعتر احمر",
     "كابتشينو", "ميلو", "هوت شوكلت",
-    // أعشاب
     "زهرة الالماسة", "زهورات مشكلة", "زعتر بري", "كركدية", "ميرمية", "ورد جوري", "عشرق", "مرتكوش", "سنامكي",
     "بابونج", "اكليل الجبل",
-    // مواد اضافية
     "ماجي ظروف", "مكعبات ماجي", "ماجي شرائح", "خميره ظروفة", "مستكه", "فانيلا ظروفة الريم", "فانيلا فرط",
     "بكمبودر ريم", "بكمبودر فرط", "تمر عجوه", "تمر سري"
 ];
 
-// قائمة أكياس تعبئة (تبقى كما هي)
 var bagTypesList = ["شفاف 10×12", "شفاف 20×12", "شفاف 10×20", "شفاف 25×17", "شفاف 20×30", "شفاف 35×25", "صيدلية", "أسود 30", "أسود 35", "أسود 40", "أسود 45"];
 
-// قائمة توصيات (ستضاف يدوياً)
 var tawsayaItemsList = [];
 
-// حالة التحديدات لكل قسم
-var presetSelections = { 
-    main: {}, 
-    extra: {}, 
-    bags: {},
-    tawsaya: {}
-};
-
+var presetSelections = { main: {}, extra: {}, bags: {}, tawsaya: {} };
 var currentPresetCategory = 'main';
 
 function openPresetModal(category) {
     currentPresetCategory = category;
-    var titles = { 
-        'main': 'أساسيات', 
-        'extra': 'إضافي (بهارات - محمصة - أعشاب - مواد)', 
-        'bags': 'أكياس تعبئة',
-        'tawsaya': 'توصيات'
-    };
+    var titles = { 'main': 'أساسيات', 'extra': 'إضافي', 'bags': 'أكياس تعبئة', 'tawsaya': 'توصيات' };
     
     var modalTitle = document.getElementById('presetModalTitle');
     if (modalTitle) {
@@ -135,7 +117,6 @@ function renderPresetList(category, filter) {
             '</div>';
         }
         
-        // ربط أحداث أزرار + و -
         var decBtns = container.querySelectorAll('.qty-dec-btn');
         for (var i = 0; i < decBtns.length; i++) {
             decBtns[i].onclick = function(e) {
@@ -163,7 +144,6 @@ function renderPresetList(category, filter) {
         }
     }
     
-    // ربط أحداث复选框
     var checkboxes = container.querySelectorAll('.preset-checkbox');
     for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].addEventListener('change', function(e) {
@@ -189,11 +169,9 @@ async function addSelectedPresetItems() {
     var selections = presetSelections[category] || {};
     var itemsToAdd = [];
     
-    // تجميع العناصر المحددة
     for (var idx in selections) {
         if (selections[idx] === true) {
             var itemName = itemsList[parseInt(idx)];
-            
             if (!itemName) continue;
             
             var unit = 'kg';
@@ -201,36 +179,23 @@ async function addSelectedPresetItems() {
             
             if (category !== 'bags' && category !== 'tawsaya') {
                 var unitSelect = document.querySelector('.preset-unit[data-index="' + idx + '"]');
-                if (unitSelect) {
-                    unit = unitSelect.value;
-                }
+                if (unitSelect) unit = unitSelect.value;
                 
-                if (unit === 'half') {
-                    quantity = 0.5;
-                } else if (unit === 'quarter') {
-                    quantity = 0.25;
-                } else if (unit === 'oke') {
-                    quantity = 0.2;
-                } else {
+                if (unit === 'half') quantity = 0.5;
+                else if (unit === 'quarter') quantity = 0.25;
+                else if (unit === 'oke') quantity = 0.2;
+                else {
                     var qtyInput = document.querySelector('.preset-qty[data-idx="' + idx + '"]');
-                    if (qtyInput) {
-                        quantity = parseFloat(qtyInput.value) || 1;
-                    }
+                    if (qtyInput) quantity = parseFloat(qtyInput.value) || 1;
                 }
             }
             
-            itemsToAdd.push({ 
-                name: itemName, 
-                unitType: unit, 
-                quantity: quantity 
-            });
+            itemsToAdd.push({ name: itemName, unitType: unit, quantity: quantity });
         }
     }
     
     if (itemsToAdd.length === 0) {
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('📦 اختر مادة واحدة على الأقل', true);
-        }
+        if (typeof showToastMessage === 'function') showToastMessage('📦 اختر مادة واحدة على الأقل', true);
         return;
     }
     
@@ -250,40 +215,26 @@ async function addSelectedPresetItems() {
         }
         await batch.commit();
         
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('✓ تم إضافة ' + itemsToAdd.length + ' مادة بنجاح');
-        }
+        if (typeof showToastMessage === 'function') showToastMessage('✓ تم إضافة ' + itemsToAdd.length + ' مادة بنجاح');
         
-        // إغلاق النافذة
         var modal = document.getElementById('presetModal');
         if (modal) modal.classList.remove('active');
         
-        // مسح التحديدات
         presetSelections[category] = {};
         
-        // تحديث البيانات
-        if (typeof startListener === 'function') {
-            startListener();
-        }
+        if (typeof startListener === 'function') startListener();
         
     } catch(e) {
-        console.error('Error adding preset items:', e);
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('❌ فشل الإضافة', true);
-        }
+        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل الإضافة', true);
     }
 }
 
-// دالة لإضافة مواد توصية
 function addTawsayaItem(name, quantity, unit) {
     if (!name) return;
     tawsayaItemsList.push(name);
-    if (typeof showToastMessage === 'function') {
-        showToastMessage('✓ تم إضافة "' + name + '" إلى قائمة التوصيات');
-    }
+    if (typeof showToastMessage === 'function') showToastMessage('✓ تم إضافة "' + name + '" إلى قائمة التوصيات');
 }
 
-// تصدير الدوال
 window.openPresetModal = openPresetModal;
 window.renderPresetList = renderPresetList;
 window.addSelectedPresetItems = addSelectedPresetItems;
