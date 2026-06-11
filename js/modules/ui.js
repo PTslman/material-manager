@@ -3,6 +3,7 @@
 function renderCategories() {
     var container = document.getElementById('categoriesContainer');
     if (!container) return;
+    
     var categories = [
         { id: 'main', icon: 'fas fa-star', title: 'أساسيات', color: '#f59e0b' },
         { id: 'spices_extra', icon: 'fas fa-leaf', title: 'بهارات اضافية', color: '#10b981' },
@@ -12,7 +13,9 @@ function renderCategories() {
         { id: 'bags', icon: 'fas fa-shopping-bag', title: 'أكياس تعبئة', color: '#ec4899' },
         { id: 'tawsaya', icon: 'fas fa-gift', title: 'توصيات', color: '#06b6d4' }
     ];
+    
     container.innerHTML = '';
+    
     for (var i = 0; i < categories.length; i++) {
         var cat = categories[i];
         container.innerHTML += '<button class="category-card" data-category="' + cat.id + '" style="border-right: 3px solid ' + cat.color + ';">' +
@@ -27,27 +30,47 @@ function renderCategories() {
 function renderSections(materials) {
     var container = document.getElementById('sectionsContainer');
     if (!container) return;
+    
     var sections = ['main', 'spices_extra', 'roasted', 'herbs', 'extra', 'bags', 'tawsaya'];
     var html = '';
+    
     for (var i = 0; i < sections.length; i++) {
         var section = sections[i];
-        var sectionMaterials = materials.filter(function(m) { return m.priority === section; });
+        var sectionMaterials = materials.filter(function(m) { 
+            return m.priority === section; 
+        });
+        
         html += '<div class="priority-section" data-section="' + section + '">' +
-            '<div class="section-header"><div class="section-title"><i class="' + getSectionIcon(section) + '"></i><span>' + getSectionTitle(section) + '</span></div>' +
-            '<div class="section-count">' + sectionMaterials.length + '</div></div>' +
+            '<div class="section-header">' +
+                '<div class="section-title">' +
+                    '<i class="' + getSectionIcon(section) + '"></i>' +
+                    '<span>' + getSectionTitle(section) + '</span>' +
+                '</div>' +
+                '<div class="section-count">' + sectionMaterials.length + '</div>' +
+            '</div>' +
             '<div class="materials-grid" data-section="' + section + '">';
+        
         if (sectionMaterials.length === 0) {
-            html += '<div class="empty-state"><i class="fas fa-box-open"></i><br>لا توجد مواد<br><small>اسحب وأفلت المواد من الأقسام الأخرى</small></div>';
+            html += '<div class="empty-state">' +
+                '<i class="fas fa-box-open"></i>' +
+                '<br>لا توجد مواد' +
+                '<br><small>اسحب وأفلت المواد من الأقسام الأخرى</small>' +
+                '</div>';
         } else {
             for (var j = 0; j < sectionMaterials.length; j++) {
                 html += renderMaterialCard(sectionMaterials[j]);
             }
         }
+        
         html += '</div></div>';
     }
+    
     container.innerHTML = html;
+    
+    // ربط أزرار التعديل والحذف
     bindCardButtons();
     
+    // تهيئة نظام السحب والإفلات
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') {
             initDragAndDrop();
@@ -60,15 +83,35 @@ function renderMaterialCard(m) {
     var isLowStock = (!m.quantity || m.quantity === 0) && m.priority !== 'tawsaya';
     var lowStockClass = isLowStock ? 'low-stock' : '';
     var quantityDisplay = formatDisplay(m);
-    if (isLowStock && m.priority !== 'tawsaya') quantityDisplay = '⚠️ ناقصة';
-    return '<div class="material-card ' + lowStockClass + '" data-id="' + m.id + '" data-name="' + escapeHtml(m.name) + '" data-section="' + m.priority + '">' +
-        '<div class="card-header"><div class="card-title"><i class="fas fa-box"></i><span>' + escapeHtml(m.name) + '</span></div>' +
-        '<div class="card-actions"><button class="edit-material" data-id="' + m.id + '" title="تعديل الكمية"><i class="fas fa-edit"></i></button>' +
-        '<button class="delete-material" data-id="' + m.id + '" title="حذف المادة"><i class="fas fa-trash-alt"></i></button></div></div>' +
-        '<div class="qty-badge">' + quantityDisplay + '</div></div>';
+    
+    if (isLowStock && m.priority !== 'tawsaya') {
+        quantityDisplay = '⚠️ ناقصة';
+    }
+    
+    return '<div class="material-card ' + lowStockClass + '" ' +
+                'data-id="' + m.id + '" ' +
+                'data-name="' + escapeHtml(m.name) + '" ' +
+                'data-section="' + m.priority + '">' +
+            '<div class="card-header">' +
+                '<div class="card-title">' +
+                    '<i class="fas fa-box"></i>' +
+                    '<span>' + escapeHtml(m.name) + '</span>' +
+                '</div>' +
+                '<div class="card-actions">' +
+                    '<button class="edit-material" data-id="' + m.id + '" title="تعديل الكمية">' +
+                        '<i class="fas fa-edit"></i>' +
+                    '</button>' +
+                    '<button class="delete-material" data-id="' + m.id + '" title="حذف المادة">' +
+                        '<i class="fas fa-trash-alt"></i>' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="qty-badge">' + quantityDisplay + '</div>' +
+        '</div>';
 }
 
 function bindCardButtons() {
+    // أزرار التعديل
     var editBtns = document.querySelectorAll('.edit-material');
     for (var i = 0; i < editBtns.length; i++) {
         editBtns[i].removeEventListener('click', editClickHandler);
@@ -78,8 +121,12 @@ function bindCardButtons() {
     function editClickHandler(e) {
         e.stopPropagation();
         e.preventDefault();
+        
         var id = this.getAttribute('data-id');
-        var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
+        var material = window.allMaterials ? window.allMaterials.find(function(m) { 
+            return m.id === id; 
+        }) : null;
+        
         if (material) {
             window.currentEditId = id;
             document.getElementById('editMaterialName').value = material.name;
@@ -89,6 +136,7 @@ function bindCardButtons() {
         }
     }
     
+    // أزرار الحذف
     var delBtns = document.querySelectorAll('.delete-material');
     for (var i = 0; i < delBtns.length; i++) {
         delBtns[i].removeEventListener('click', deleteClickHandler);
@@ -98,41 +146,69 @@ function bindCardButtons() {
     function deleteClickHandler(e) {
         e.stopPropagation();
         e.preventDefault();
+        
         var id = this.getAttribute('data-id');
-        var material = window.allMaterials ? window.allMaterials.find(function(m) { return m.id === id; }) : null;
+        var material = window.allMaterials ? window.allMaterials.find(function(m) { 
+            return m.id === id; 
+        }) : null;
+        
         if (confirm('⚠️ هل أنت متأكد من حذف "' + (material?.name || 'هذه المادة') + '"؟')) {
             materialsCollection.doc(id).delete()
-                .then(function() { showToast('✅ تم الحذف'); })
-                .catch(function(e) { showToast('❌ فشل الحذف', true); });
+                .then(function() { 
+                    if (typeof showToastMessage === 'function') {
+                        showToastMessage('✅ تم الحذف');
+                    }
+                })
+                .catch(function(e) { 
+                    if (typeof showToastMessage === 'function') {
+                        showToastMessage('❌ فشل الحذف', true);
+                    }
+                });
         }
     }
 }
 
 function updateCategoryCounts() {
-    var counts = { main: 0, spices_extra: 0, roasted: 0, herbs: 0, extra: 0, bags: 0, tawsaya: 0 };
+    var counts = { 
+        main: 0, 
+        spices_extra: 0, 
+        roasted: 0, 
+        herbs: 0, 
+        extra: 0, 
+        bags: 0, 
+        tawsaya: 0 
+    };
+    
     for (var i = 0; i < window.allMaterials.length; i++) {
         var m = window.allMaterials[i];
         counts[m.priority] = (counts[m.priority] || 0) + 1;
     }
+    
     for (var key in counts) {
         var el = document.getElementById('count-' + key);
-        if (el) el.innerText = counts[key];
+        if (el) {
+            el.innerText = counts[key];
+        }
     }
 }
 
 function calculateAIMetrics() {
     if (!window.aiEngine) return;
+    
     try {
         var analysis = window.aiEngine.analyzeInventory(window.allMaterials || []);
         var stats = analysis.statistics;
+        
         var totalEl = document.getElementById('totalMaterialsCount');
         var totalQtyEl = document.getElementById('totalQuantityValue');
         var lowStockEl = document.getElementById('lowStockCount');
         var avgQtyEl = document.getElementById('avgQuantityValue');
+        
         if (totalEl) totalEl.innerText = stats.totalMaterials;
         if (totalQtyEl) totalQtyEl.innerText = stats.totalQuantity.toFixed(2);
         if (lowStockEl) lowStockEl.innerHTML = stats.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
         if (avgQtyEl) avgQtyEl.innerText = stats.avgQuantity;
+        
         var insightsDiv = document.getElementById('aiInsights');
         if (insightsDiv && analysis.insights) {
             var insightsContent = insightsDiv.querySelector('.insights-content');
@@ -144,9 +220,12 @@ function calculateAIMetrics() {
                 insightsContent.innerHTML = html;
             }
         }
-    } catch(e) { console.error('AI Error:', e); }
+    } catch(e) { 
+        console.error('AI Error:', e); 
+    }
 }
 
+// تصدير الدوال
 window.renderCategories = renderCategories;
 window.renderSections = renderSections;
 window.renderMaterialCard = renderMaterialCard;
