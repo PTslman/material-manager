@@ -1,3 +1,5 @@
+// ==================== إدارة المواد والمزامنة ====================
+
 var allMaterials = [];
 var unsubscribe = null;
 var currentEditId = null;
@@ -27,6 +29,13 @@ function startListener() {
         if (typeof renderSections === 'function') renderSections(allMaterials);
         if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
         if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
+        
+        setTimeout(function() {
+            if (typeof initDragAndDrop === 'function') {
+                initDragAndDrop();
+            }
+        }, 200);
+        
         var splash = document.getElementById('splashScreen');
         var app = document.getElementById('appContainer');
         if (splash && app && splash.style.display !== 'none') {
@@ -41,6 +50,7 @@ function startListener() {
         if (syncDot) syncDot.className = 'sync-dot offline';
     });
 }
+
 async function addNewMaterial() {
     var name = document.getElementById('newMaterialName')?.value.trim();
     if (!name) { showToast('✏️ اكتب اسم المادة', true); return; }
@@ -62,6 +72,7 @@ async function addNewMaterial() {
         startListener();
     } catch(e) { showToast('❌ فشل الإضافة', true); }
 }
+
 async function saveEdit() {
     if (!currentEditId) { showToast('لا توجد مادة للتعديل', true); return; }
     var unit = document.getElementById('editUnitSelect').value;
@@ -79,6 +90,7 @@ async function saveEdit() {
         startListener();
     } catch(e) { showToast('❌ فشل التحديث', true); }
 }
+
 async function clearAllMaterials() {
     if (allMaterials.length === 0) { showToast('📭 لا توجد بيانات', true); return; }
     if (!confirm('⚠️ هل أنت متأكد من حذف جميع المواد نهائياً؟')) return;
@@ -91,6 +103,7 @@ async function clearAllMaterials() {
         startListener();
     } catch(e) { showToast('❌ فشل المسح', true); }
 }
+
 async function backupData() {
     if (allMaterials.length === 0) { showToast('📭 لا توجد بيانات للنسخ', true); return; }
     var data = JSON.stringify(allMaterials, null, 2);
@@ -103,6 +116,7 @@ async function backupData() {
     URL.revokeObjectURL(url);
     showToast('💾 تم نسخ ' + allMaterials.length + ' عنصر');
 }
+
 async function restoreData() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -134,6 +148,7 @@ async function restoreData() {
     };
     input.click();
 }
+
 window.allMaterials = allMaterials;
 window.startListener = startListener;
 window.addNewMaterial = addNewMaterial;
