@@ -1275,3 +1275,319 @@ body.dark .price-detail-value {
         grid-template-columns: 1fr;
     }
 }
+/* ==================== نافذة الأسعار المنفصلة ==================== */
+.price-modal-full .price-modal-content {
+    max-width: 800px;
+    width: 95%;
+}
+
+.price-modal-body {
+    padding: 0 !important;
+}
+
+/* إحصائيات الأسعار */
+.price-stats-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background: linear-gradient(135deg, var(--primary-50), var(--bg-surface));
+    border-bottom: 1px solid var(--border-light);
+}
+
+.price-stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.price-stat-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--primary-50);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.price-stat-icon i {
+    font-size: var(--font-20);
+    color: var(--primary-600);
+}
+
+.price-stat-info {
+    flex: 1;
+}
+
+.price-stat-label {
+    display: block;
+    font-size: var(--font-11);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+}
+
+.price-stat-value {
+    display: block;
+    font-size: var(--font-20);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+}
+
+/* شريط البحث */
+.price-search-section {
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.price-search-wrapper {
+    position: relative;
+}
+
+.price-search-wrapper i {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    font-size: var(--font-14);
+}
+
+.price-search-input {
+    width: 100%;
+    padding: var(--space-3) 45px var(--space-3) 45px;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-full);
+    background: var(--bg-input);
+    font-family: inherit;
+    font-size: var(--font-14);
+    color: var(--text-primary);
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.price-search-input:focus {
+    border-color: var(--primary-500);
+    box-shadow: var(--shadow-focus);
+}
+
+.price-clear-search {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: var(--font-14);
+    padding: var(--space-1);
+    border-radius: var(--radius-full);
+}
+
+.price-clear-search:hover {
+    color: var(--text-primary);
+}
+
+/* أزرار التصنيف */
+.price-categories-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-surface);
+}
+
+.price-cat-tab {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-light);
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    font-size: var(--font-12);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.price-cat-tab:hover {
+    background: var(--bg-card);
+    transform: translateY(-1px);
+}
+
+.price-cat-tab.active {
+    background: var(--primary-500);
+    color: white;
+    border-color: var(--primary-500);
+}
+
+/* جدول المواد */
+.price-items-container {
+    padding: var(--space-4) var(--space-5);
+}
+
+.price-items-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-card-hover);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+    font-size: var(--font-12);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+}
+
+.price-items-header-name {
+    flex: 1;
+    text-align: right;
+}
+
+.price-items-header-price {
+    width: 180px;
+    text-align: center;
+}
+
+.price-items-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.price-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+    transition: all var(--transition-fast);
+}
+
+.price-item-row:hover {
+    background: var(--bg-card-hover);
+}
+
+.price-item-name-cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.price-category-icon {
+    font-size: var(--font-14);
+    width: 28px;
+}
+
+.price-material-name {
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+.price-item-price-cell {
+    width: 200px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.price-input-field {
+    flex: 1;
+    padding: var(--space-2) var(--space-3);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-full);
+    background: var(--bg-input);
+    font-family: inherit;
+    font-size: var(--font-13);
+    text-align: center;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.price-input-field:focus {
+    border-color: var(--primary-500);
+    box-shadow: var(--shadow-focus);
+}
+
+.price-currency {
+    font-size: var(--font-11);
+    color: var(--text-tertiary);
+    min-width: 35px;
+}
+
+.price-empty-state {
+    text-align: center;
+    padding: var(--space-10);
+    color: var(--text-tertiary);
+}
+
+.price-empty-state i {
+    font-size: 48px;
+    margin-bottom: var(--space-3);
+    opacity: 0.5;
+}
+
+/* الوضع الداكن */
+body.dark .price-stat-card {
+    background: var(--bg-card);
+}
+
+body.dark .price-stat-icon {
+    background: var(--primary-900);
+}
+
+body.dark .price-cat-tab {
+    background: var(--bg-card);
+}
+
+body.dark .price-cat-tab.active {
+    background: var(--primary-600);
+}
+
+body.dark .price-items-header {
+    background: var(--bg-card);
+}
+
+/* استجابة */
+@media (max-width: 768px) {
+    .price-stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-2);
+        padding: var(--space-4);
+    }
+    
+    .price-items-header {
+        display: none;
+    }
+    
+    .price-item-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-2);
+    }
+    
+    .price-item-price-cell {
+        width: 100%;
+    }
+    
+    .price-categories-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding: var(--space-3) var(--space-4);
+    }
+}
+
+@media (max-width: 480px) {
+    .price-stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-modal-full .price-modal-content {
+        width: 98%;
+    }
+}
