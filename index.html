@@ -61,7 +61,7 @@
         <div class="splash-logo"><i class="fas fa-boxes"></i></div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
-        <div class="splash-version">نسخة احترافية v10.0</div>
+        <div class="splash-version">نسخة احترافية v11.0</div>
         <div class="splash-loader">
             <div class="loader-dot"></div>
             <div class="loader-dot"></div>
@@ -98,44 +98,37 @@
         </button>
     </div>
     
-    <!-- ==================== شريط الأدوات المحسن ==================== -->
+    <!-- شريط الأدوات -->
     <div class="toolbar-modern">
         <div class="toolbar-container">
-            <div class="toolbar-section">
-                <div class="toolbar-title">
-                    <i class="fas fa-sliders-h"></i>
-                    <span>الأدوات</span>
-                </div>
-                <div class="toolbar-buttons">
-                    <button id="themeToggle" class="tool-btn theme-btn" title="الوضع الليلي">
-                        <i class="fas fa-moon"></i>
-                        <span>الوضع الليلي</span>
-                    </button>
-                    <button id="backupBtn" class="tool-btn backup-btn" title="نسخ احتياطي">
-                        <i class="fas fa-download"></i>
-                        <span>نسخ احتياطي</span>
-                    </button>
-                    <button id="restoreBtn" class="tool-btn restore-btn" title="استعادة">
-                        <i class="fas fa-upload"></i>
-                        <span>استعادة</span>
-                    </button>
-                    <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
-                        <i class="fas fa-download"></i>
-                        <span>تثبيت</span>
-                    </button>
-                    <button id="clearAllBtn" class="tool-btn clear-btn" title="مسح الكل">
-                        <i class="fas fa-trash-alt"></i>
-                        <span>مسح الكل</span>
-                    </button>
-                    <button id="priceManagerBtn" class="tool-btn price-btn" title="إدارة الأسعار">
-    <i class="fas fa-tags"></i>
-    <span>الأسعار</span>
-                    </button>
-                </div>
+            <div class="toolbar-buttons">
+                <button id="themeToggle" class="tool-btn theme-btn" title="الوضع الليلي">
+                    <i class="fas fa-moon"></i>
+                    <span>ليلي</span>
+                </button>
+                <button id="backupBtn" class="tool-btn backup-btn" title="نسخ احتياطي">
+                    <i class="fas fa-download"></i>
+                    <span>نسخ</span>
+                </button>
+                <button id="restoreBtn" class="tool-btn restore-btn" title="استعادة">
+                    <i class="fas fa-upload"></i>
+                    <span>استعادة</span>
+                </button>
+                <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
+                    <i class="fas fa-download"></i>
+                    <span>تثبيت</span>
+                </button>
+                <button id="priceManagerBtn" class="tool-btn price-btn" title="إدارة الأسعار">
+                    <i class="fas fa-tags"></i>
+                    <span>أسعار</span>
+                </button>
+                <button id="clearAllBtn" class="tool-btn clear-btn" title="مسح الكل">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>مسح</span>
+                </button>
             </div>
         </div>
     </div>
-    <!-- ==================== نهاية شريط الأدوات ==================== -->
     
     <!-- كروت الأقسام -->
     <div class="categories-container" id="categoriesContainer"></div>
@@ -146,18 +139,25 @@
     <!-- إحصائيات الذكاء الاصطناعي -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
-            <div class="ai-stats-icon"><i class="fas fa-brain"></i></div>
             <h3>التحليل الذكي للمخزون</h3>
-            <div class="ai-badge">AI</div>
         </div>
         
         <div class="ai-stats-grid">
             <div class="ai-stat-card">
-                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="ai-stat-icon"><i class="fas fa-weight-hanging"></i></div>
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">الوزن الكلي</span>
                     <span class="ai-stat-value" id="totalQuantityValue">0</span>
-                    <span class="ai-stat-unit">kg</span>
+                    <span class="ai-stat-unit">كجم</span>
+                </div>
+            </div>
+            
+            <div class="ai-stat-card">
+                <div class="ai-stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="ai-stat-info">
+                    <span class="ai-stat-label">القيمة التقديرية</span>
+                    <span class="ai-stat-value" id="totalValueValue">0</span>
+                    <span class="ai-stat-unit">ل.س</span>
                 </div>
             </div>
             
@@ -172,9 +172,12 @@
         </div>
         
         <div class="ai-insights" id="aiInsights">
-            <i class="fas fa-robot"></i>
-            <div class="insights-content"><span>جاري تحليل البيانات...</span></div>
+            <div class="insights-content">
+                <span>جاري تحليل البيانات...</span>
+            </div>
         </div>
+        
+        <div id="priceDetails" class="price-details"></div>
     </div>
 </div>
 
@@ -349,6 +352,35 @@
     </div>
 </div>
 
+<!-- مودال الأسعار -->
+<div id="priceModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-price">
+        <div class="modal-header">
+            <h3><i class="fas fa-tags"></i> إدارة أسعار المواد</h3>
+            <button class="modal-close" id="closePriceModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="price-summary" id="priceSummary"></div>
+            <div class="price-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
+            </div>
+            <div class="price-categories">
+                <button class="price-cat-btn active" data-cat="all">الكل</button>
+                <button class="price-cat-btn" data-cat="main">⭐ أساسيات</button>
+                <button class="price-cat-btn" data-cat="extra">➕ إضافي</button>
+                <button class="price-cat-btn" data-cat="bags">🛍️ أكياس</button>
+            </div>
+            <div id="priceListContainer" class="price-list-container"></div>
+        </div>
+        <div class="modal-footer">
+            <button id="saveAllPricesBtn" class="btn-save">حفظ الكل</button>
+            <button id="closePriceModalBtn2" class="btn-cancel">إغلاق</button>
+        </div>
+    </div>
+</div>
+
 <!-- مودال رسائل النظام -->
 <div id="systemMessageModal" class="modal">
     <div class="modal-overlay"></div>
@@ -375,8 +407,8 @@
 <script src="/material-manager/js/modules/prices.js"></script>
 <script src="/material-manager/js/modules/events.js"></script>
 <script src="/material-manager/js/app.js"></script>
+
 <script>
-// إخفاء شاشة البداية
 setTimeout(function() {
     var splash = document.getElementById('splashScreen');
     var app = document.getElementById('appContainer');
@@ -389,25 +421,23 @@ setTimeout(function() {
     }
 }, 2000);
 
-// تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/material-manager/service-worker.js').then(function(reg) {}).catch(function(err) {});
     });
 }
 
-// إغلاق المودالات
 window.closeAllModals = function() {
-    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
+    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
     for (var i = 0; i < modals.length; i++) {
         var el = document.getElementById(modals[i]);
         if (el) el.classList.remove('active');
     }
 };
 
-// ربط أزرار الإغلاق
 var closeButtons = ['closeNewModalBtn', 'closeNewModalBtn2', 'closePresetModalBtn', 'closePresetModalBtn2', 
-                    'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 'closeSystemMessageBtn'];
+                    'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 
+                    'closeSystemMessageBtn', 'closePriceModalBtn', 'closePriceModalBtn2'];
 for (var i = 0; i < closeButtons.length; i++) {
     var btn = document.getElementById(closeButtons[i]);
     if (btn) {
@@ -415,7 +445,6 @@ for (var i = 0; i < closeButtons.length; i++) {
     }
 }
 
-// أزرار +/- في نافذة الإضافة
 var dec = document.getElementById('newQtyDec');
 var inc = document.getElementById('newQtyInc');
 var qty = document.getElementById('newQuantityValue');
@@ -431,28 +460,6 @@ if (dec && inc && qty) {
         qty.value = v;
     };
 }
-
-// أزرار نوع التوصية
-document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(function(b) {
-            b.classList.remove('active');
-        });
-        this.classList.add('active');
-        var customGroup = document.getElementById('tawsayaCustomQtyGroup');
-        if (customGroup) {
-            customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
-        }
-    });
-});
-
-// أزرار الأوزان
-document.querySelectorAll('.weight-preset').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var qtyInput = document.getElementById('tawsayaCustomQty');
-        if (qtyInput) qtyInput.value = this.dataset.value;
-    });
-});
 </script>
 </body>
 </html>
