@@ -987,3 +987,59 @@ body.dark .toast { background: var(--gray-900); }
     .sync-stats { flex-direction: row; justify-content: center; }
     .price-stats { grid-template-columns: 1fr; }
    }
+/* -------------------- أزرار تصنيف الأسعار -------------------- */
+.price-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.price-cat-btn {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-light);
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    font-size: var(--font-12);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.price-cat-btn:hover {
+    background: var(--bg-card);
+    transform: translateY(-1px);
+}
+
+.price-cat-btn.active {
+    background: var(--primary-500);
+    color: white;
+    border-color: var(--primary-500);
+}
+
+/* تنسيق عناصر الأسعار حسب التصنيف */
+.price-cat-main {
+    border-right: 3px solid #f59e0b;
+}
+
+.price-cat-extra {
+    border-right: 3px solid #3b82f6;
+}
+
+.price-cat-bags {
+    border-right: 3px solid #ec4899;
+}
+
+.price-cat-icon {
+    font-size: var(--font-14);
+    margin-left: var(--space-2);
+}
+
+.price-loading {
+    text-align: center;
+    padding: var(--space-10);
+    color: var(--text-tertiary);
+}
