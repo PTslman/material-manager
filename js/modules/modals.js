@@ -38,6 +38,7 @@ function setupLongPressOnCard(card) {
         isLongPress = false;
         var self = this;
         
+        // تغيير الوقت من 500ms إلى 20000ms (20 ثانية)
         longPressTimer = setTimeout(function() {
             isLongPress = true;
             var id = self.getAttribute('data-id');
@@ -48,7 +49,7 @@ function setupLongPressOnCard(card) {
                 self.classList.add('long-press-active');
                 setTimeout(function() { self.classList.remove('long-press-active'); }, 300);
             }
-        }, 500);
+        }, 20000); // 20 ثانية = 20000 مللي ثانية
     }
     
     function onTouchEnd() {
@@ -77,6 +78,7 @@ function setupLongPressOnCard(card) {
         isLongPress = false;
         var self = this;
         
+        // تغيير الوقت من 500ms إلى 20000ms (20 ثانية)
         longPressTimer = setTimeout(function() {
             isLongPress = true;
             var id = self.getAttribute('data-id');
@@ -87,7 +89,7 @@ function setupLongPressOnCard(card) {
                 self.classList.add('long-press-active');
                 setTimeout(function() { self.classList.remove('long-press-active'); }, 300);
             }
-        }, 500);
+        }, 20000); // 20 ثانية = 20000 مللي ثانية
     }
     
     function onMouseUp() {
