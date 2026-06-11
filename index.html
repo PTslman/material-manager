@@ -48,22 +48,20 @@
     <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
     <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png>
     <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
     
     <link rel="stylesheet" href="/material-manager/css/style.css">
 </head>
 <body>
 
-<!-- ==================== شاشة التحميل ==================== -->
+<!-- شاشة البداية -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
-        <div class="splash-logo">
-            <i class="fas fa-boxes"></i>
-        </div>
+        <div class="splash-logo"><i class="fas fa-boxes"></i></div>
         <h2>مدير المواد</h2>
         <div class="splash-subtitle">نظام إدارة المخزون الذكي</div>
-        <div class="splash-version">نسخة احترافية v11.0</div>
+        <div class="splash-version">نسخة احترافية v12.0</div>
         <div class="splash-progress">
             <div class="splash-progress-bar">
                 <div class="splash-progress-fill" id="splashProgressFill"></div>
@@ -78,7 +76,7 @@
     </div>
 </div>
 
-<!-- ==================== التطبيق الرئيسي ==================== -->
+<!-- التطبيق الرئيسي -->
 <div id="appContainer" class="app-main" style="display: none;">
     
     <!-- الهيرو -->
@@ -107,37 +105,34 @@
     </div>
     
     <!-- شريط الأدوات -->
-    <!-- شريط الأدوات -->
-<div class="toolbar-modern">
-    <div class="toolbar-container">
-        <div class="toolbar-buttons">
-            <button id="themeToggle" class="tool-btn theme-btn" title="الوضع الليلي">
-                <i class="fas fa-moon"></i>
-                <span>ليلي</span>
-            </button>
-            <button id="backupBtn" class="tool-btn backup-btn" title="نسخ احتياطي">
-                <i class="fas fa-download"></i>
-                <span>نسخ</span>
-            </button>
-            <button id="restoreBtn" class="tool-btn restore-btn" title="استعادة">
-                <i class="fas fa-upload"></i>
-                <span>استعادة</span>
-            </button>
-            <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
-                <i class="fas fa-download"></i>
-                <span>تثبيت</span>
-            </button>
-            <button id="priceManagerBtn" class="tool-btn price-btn" title="إدارة الأسعار">
-                <i class="fas fa-tags"></i>
-                <span>أسعار</span>
-            </button>
-            <button id="clearAllBtn" class="tool-btn clear-btn" title="مسح الكل">
-                <i class="fas fa-trash-alt"></i>
-                <span>مسح</span>
-            </button>
-        </div>
-    </div>
-</div>>
+    <div class="toolbar-modern">
+        <div class="toolbar-container">
+            <div class="toolbar-buttons">
+                <button id="themeToggle" class="tool-btn theme-btn" title="الوضع الليلي">
+                    <i class="fas fa-moon"></i>
+                    <span>ليلي</span>
+                </button>
+                <button id="backupBtn" class="tool-btn backup-btn" title="نسخ احتياطي">
+                    <i class="fas fa-download"></i>
+                    <span>نسخ</span>
+                </button>
+                <button id="restoreBtn" class="tool-btn restore-btn" title="استعادة">
+                    <i class="fas fa-upload"></i>
+                    <span>استعادة</span>
+                </button>
+                <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
+                    <i class="fas fa-download"></i>
+                    <span>تثبيت</span>
+                </button>
+                <button id="priceManagerBtn" class="tool-btn price-btn" title="إدارة الأسعار">
+                    <i class="fas fa-tags"></i>
+                    <span>أسعار</span>
+                </button>
+                <button id="clearAllBtn" class="tool-btn clear-btn" title="مسح الكل">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>مسح</span>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -192,7 +187,7 @@
     </div>
 </div>
 
-<!-- ==================== شريط الحالة ==================== -->
+<!-- شريط الحالة -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -496,22 +491,19 @@ function completeSplashProgress() {
 
 startSplashProgress();
 
-// بعد تحميل Firebase والبيانات
+// بعد تحميل الصفحة
 window.addEventListener('load', function() {
     setTimeout(function() {
-        if (typeof startListener === 'function') {
-            startListener();
-        }
-        setTimeout(function() {
-            completeSplashProgress();
-        }, 1000);
-    }, 500);
+        completeSplashProgress();
+    }, 1500);
 });
 
 // تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/material-manager/service-worker.js').then(function(reg) {}).catch(function(err) {});
+        navigator.serviceWorker.register('/material-manager/sw.js')
+            .then(function(reg) { console.log('Service Worker registered'); })
+            .catch(function(err) { console.log('Service Worker failed:', err); });
     });
 }
 
