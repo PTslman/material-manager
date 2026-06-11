@@ -67,14 +67,11 @@ function renderSections(materials) {
     
     container.innerHTML = html;
     
-    // ربط أزرار التعديل والحذف
     bindCardButtons();
     
-    // تهيئة نظام السحب والإفلات
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') {
             initDragAndDrop();
-            console.log('✅ Drag and drop system initialized');
         }
     }, 100);
 }
@@ -111,7 +108,6 @@ function renderMaterialCard(m) {
 }
 
 function bindCardButtons() {
-    // أزرار التعديل
     var editBtns = document.querySelectorAll('.edit-material');
     for (var i = 0; i < editBtns.length; i++) {
         editBtns[i].removeEventListener('click', editClickHandler);
@@ -136,7 +132,6 @@ function bindCardButtons() {
         }
     }
     
-    // أزرار الحذف
     var delBtns = document.querySelectorAll('.delete-material');
     for (var i = 0; i < delBtns.length; i++) {
         delBtns[i].removeEventListener('click', deleteClickHandler);
@@ -193,10 +188,13 @@ function updateCategoryCounts() {
 }
 
 function calculateAIMetrics() {
-    if (!window.aiEngine) return;
+    if (!window.aiEngine) {
+        return;
+    }
     
     try {
-        var analysis = window.aiEngine.analyzeInventory(window.allMaterials || []);
+        var materials = window.allMaterials || [];
+        var analysis = window.aiEngine.analyzeInventory(materials);
         var stats = analysis.statistics;
         
         var totalEl = document.getElementById('totalMaterialsCount');
@@ -205,7 +203,7 @@ function calculateAIMetrics() {
         var avgQtyEl = document.getElementById('avgQuantityValue');
         
         if (totalEl) totalEl.innerText = stats.totalMaterials;
-        if (totalQtyEl) totalQtyEl.innerText = stats.totalQuantity.toFixed(2);
+        if (totalQtyEl) totalQtyEl.innerText = stats.totalQuantity;
         if (lowStockEl) lowStockEl.innerHTML = stats.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
         if (avgQtyEl) avgQtyEl.innerText = stats.avgQuantity;
         
@@ -220,12 +218,17 @@ function calculateAIMetrics() {
                 insightsContent.innerHTML = html;
             }
         }
-    } catch(e) { 
-        console.error('AI Error:', e); 
+    } catch(e) {
+        var insightsDiv = document.getElementById('aiInsights');
+        if (insightsDiv) {
+            var insightsContent = insightsDiv.querySelector('.insights-content');
+            if (insightsContent) {
+                insightsContent.innerHTML = '<span>جاري تحليل البيانات...</span>';
+            }
+        }
     }
 }
 
-// تصدير الدوال
 window.renderCategories = renderCategories;
 window.renderSections = renderSections;
 window.renderMaterialCard = renderMaterialCard;
