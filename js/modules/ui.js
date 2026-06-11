@@ -183,12 +183,21 @@ function calculateAIMetrics() {
     
     try {
         var materials = window.allMaterials || [];
-        var analysis = window.aiEngine.analyzeInventory(materials);
+        
+        var getPriceFunction = null;
+        if (typeof window.getMaterialPrice === 'function') {
+            getPriceFunction = window.getMaterialPrice;
+        }
+        
+        var analysis = window.aiEngine.analyzeInventory(materials, getPriceFunction);
         
         var totalQtyEl = document.getElementById('totalQuantityValue');
-        var lowStockEl = document.getElementById('lowStockCount');
-        
         if (totalQtyEl) totalQtyEl.innerText = analysis.totalWeight;
+        
+        var totalValueEl = document.getElementById('totalValueValue');
+        if (totalValueEl) totalValueEl.innerText = analysis.totalValue;
+        
+        var lowStockEl = document.getElementById('lowStockCount');
         if (lowStockEl) lowStockEl.innerHTML = analysis.lowStockCount + '<span class="ai-stat-unit"> مادة</span>';
         
         var insightsDiv = document.getElementById('aiInsights');
@@ -197,11 +206,28 @@ function calculateAIMetrics() {
             if (insightsContent) {
                 var html = '';
                 for (var i = 0; i < analysis.insights.length; i++) {
-                    html += '<div style="margin-bottom: 6px;">' + analysis.insights[i] + '</div>';
+                    html += '<div class="insight-item">' + analysis.insights[i] + '</div>';
                 }
                 insightsContent.innerHTML = html;
             }
         }
+        
+        var priceDetailsEl = document.getElementById('priceDetails');
+        if (priceDetailsEl && analysis.priceBreakdown && analysis.priceBreakdown.length > 0) {
+            var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>';
+            for (var i = 0; i < Math.min(analysis.priceBreakdown.length, 5); i++) {
+                var p = analysis.priceBreakdown[i];
+                priceHtml += '<div class="price-detail-item">' +
+                    '<span class="price-detail-name">' + escapeHtml(p.name) + '</span>' +
+                    '<span class="price-detail-value">' + p.formattedValue + '</span>' +
+                    '</div>';
+            }
+            if (analysis.priceBreakdown.length > 5) {
+                priceHtml += '<div class="price-detail-more">+' + (analysis.priceBreakdown.length - 5) + ' مواد أخرى</div>';
+            }
+            priceDetailsEl.innerHTML = priceHtml;
+        }
+        
     } catch(e) {
         var insightsDiv = document.getElementById('aiInsights');
         if (insightsDiv) {
