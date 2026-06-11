@@ -1,104 +1,39 @@
-// ==================== نظام إدارة الأسعار - مع Firebase ====================
+// ==================== نظام إدارة الأسعار ====================
 
 var materialPrices = {};
 var allMaterialsList = [];
 var priceModalWindow = null;
-var isPriceWindowOpen = false;
-var pricesCollection = null;
 
-// تهيئة مجموعة الأسعار في Firebase
-function initPricesCollection() {
-    if (db && !pricesCollection) {
-        pricesCollection = db.collection('material_prices');
-        console.log('✅ تم تهيئة مجموعة الأسعار في Firebase');
-    }
-}
-
-// تحميل الأسعار من Firebase
-async function loadPricesFromFirebase() {
-    initPricesCollection();
-    if (!pricesCollection) return;
+// تحميل جميع المواد من القوائم الجاهزة
+function loadAllMaterialsFromPresets() {
+    var materialsSet = new Set();
     
-    try {
-        var snapshot = await pricesCollection.get();
-        var prices = {};
-        snapshot.forEach(function(doc) {
-            var data = doc.data();
-            prices[doc.id] = data.price;
-        });
-        materialPrices = prices;
-        savePricesToLocal();
-        console.log('✅ تم تحميل الأسعار من Firebase:', Object.keys(prices).length);
-        return true;
-    } catch(e) {
-        console.error('خطأ في تحميل الأسعار من Firebase:', e);
-        return false;
+    if (typeof importantItemsList !== 'undefined') {
+        for (var i = 0; i < importantItemsList.length; i++) {
+            materialsSet.add(importantItemsList[i]);
+        }
     }
-}
-
-// حفظ الأسعار في Firebase
-async function savePricesToFirebase() {
-    initPricesCollection();
-    if (!pricesCollection) return false;
     
-    try {
-        var batch = db.batch();
-        var currentPrices = {};
-        
-        // جلب الأسعار الحالية من Firebase
-        var snapshot = await pricesCollection.get();
-        snapshot.forEach(function(doc) {
-            currentPrices[doc.id] = doc.data().price;
-        });
-        
-        // إضافة أو تحديث الأسعار
-        for (var materialName in materialPrices) {
-            var price = materialPrices[materialName];
-            if (price > 0) {
-                var docRef = pricesCollection.doc(materialName);
-                if (currentPrices[materialName] !== undefined) {
-                    batch.update(docRef, { price: price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-                } else {
-                    batch.set(docRef, { 
-                        name: materialName,
-                        price: price, 
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-            }
+    if (typeof extraItemsList !== 'undefined') {
+        for (var i = 0; i < extraItemsList.length; i++) {
+            materialsSet.add(extraItemsList[i]);
         }
-        
-        // حذف الأسعار التي أصبحت صفراً من Firebase
-        for (var existingName in currentPrices) {
-            if (!materialPrices[existingName] || materialPrices[existingName] === 0) {
-                var docRef = pricesCollection.doc(existingName);
-                batch.delete(docRef);
-            }
-        }
-        
-        await batch.commit();
-        console.log('✅ تم حفظ الأسعار في Firebase');
-        
-        // حفظ محلياً أيضاً
-        savePricesToLocal();
-        
-        return true;
-    } catch(e) {
-        console.error('خطأ في حفظ الأسعار في Firebase:', e);
-        return false;
     }
-}
-
-// حفظ الأسعار في localStorage
-function savePricesToLocal() {
-    try {
-        localStorage.setItem('material_prices', JSON.stringify(materialPrices));
-    } catch(e) {}
+    
+    if (typeof bagTypesList !== 'undefined') {
+        for (var i = 0; i < bagTypesList.length; i++) {
+            materialsSet.add(bagTypesList[i]);
+        }
+    }
+    
+    allMaterialsList = Array.from(materialsSet);
+    allMaterialsList.sort(function(a, b) {
+        return a.localeCompare(b);
+    });
 }
 
 // تحميل الأسعار من localStorage
-function loadPricesFromLocal() {
+function loadPrices() {
     try {
         var saved = localStorage.getItem('material_prices');
         if (saved) {
@@ -107,47 +42,18 @@ function loadPricesFromLocal() {
     } catch(e) {
         materialPrices = {};
     }
-}
-
-// تحميل الأسعار (محاولة من Firebase أولاً)
-async function loadPrices() {
-    // حاول التحميل من Firebase أولاً
-    var success = await loadPricesFromFirebase();
-    if (!success) {
-        // إذا فشل، حمل من localStorage
-        loadPricesFromLocal();
-    }
     return materialPrices;
 }
 
-// حفظ الأسعار (في Firebase و localStorage)
-async function savePrices() {
-    // حفظ في localStorage
-    savePricesToLocal();
-    
-    // حفظ في Firebase
-    var firebaseSuccess = await savePricesToFirebase();
-    
-    if (firebaseSuccess) {
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('✓ تم حفظ الأسعار في السحابة');
-        }
-    } else {
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('⚠️ تم حفظ الأسعار محلياً فقط (غير متصل)', false);
-        }
-    }
-    
-    // تحديث التحليل الذكي
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
-    
-    return firebaseSuccess;
+// حفظ الأسعار في localStorage
+function savePrices() {
+    try {
+        localStorage.setItem('material_prices', JSON.stringify(materialPrices));
+    } catch(e) {}
 }
 
-// تحديث سعر مادة وحفظه في Firebase
-async function updateMaterialPrice(materialName, price) {
+// تحديث سعر مادة
+function updateMaterialPrice(materialName, price) {
     if (!materialName) return;
     if (price === undefined || price === null || price === '') {
         delete materialPrices[materialName];
@@ -157,18 +63,12 @@ async function updateMaterialPrice(materialName, price) {
             materialPrices[materialName] = numPrice;
         }
     }
-    
-    // حفظ التغييرات
-    await savePrices();
-    
-    // تحديث النافذة المنفصلة إذا كانت مفتوحة
-    if (priceModalWindow && !priceModalWindow.closed) {
-        updatePriceWindowSummary();
-        renderPriceWindowList();
-    }
-    
+    savePrices();
     if (typeof calculateAIMetrics === 'function') {
         calculateAIMetrics();
+    }
+    if (priceModalWindow && !priceModalWindow.closed) {
+        updatePriceWindowDisplay();
     }
 }
 
@@ -189,7 +89,7 @@ function getEstimatedPrice(materialName) {
     return estimatedPrices[materialName] || 0;
 }
 
-// حساب القيمة الإجمالية للمخزون
+// حساب القيمة الإجمالية
 function calculateTotalValue() {
     if (!window.allMaterials) return { total: 0, formattedTotal: '0 ل.س', breakdown: [] };
     
@@ -235,43 +135,26 @@ function calculateTotalValue() {
     };
 }
 
-// تنسيق العملة
 function formatCurrency(value) {
     return Math.round(value).toLocaleString() + ' ل.س';
 }
 
-// تحميل جميع المواد من القوائم الجاهزة
-function loadAllMaterialsFromPresets() {
-    var materialsSet = new Set();
-    
-    if (typeof importantItemsList !== 'undefined') {
-        for (var i = 0; i < importantItemsList.length; i++) {
-            materialsSet.add(importantItemsList[i]);
-        }
+function getMaterialCategory(materialName) {
+    if (typeof importantItemsList !== 'undefined' && importantItemsList.indexOf(materialName) !== -1) {
+        return 'main';
     }
-    
-    if (typeof extraItemsList !== 'undefined') {
-        for (var i = 0; i < extraItemsList.length; i++) {
-            materialsSet.add(extraItemsList[i]);
-        }
+    if (typeof extraItemsList !== 'undefined' && extraItemsList.indexOf(materialName) !== -1) {
+        return 'extra';
     }
-    
-    if (typeof bagTypesList !== 'undefined') {
-        for (var i = 0; i < bagTypesList.length; i++) {
-            materialsSet.add(bagTypesList[i]);
-        }
+    if (typeof bagTypesList !== 'undefined' && bagTypesList.indexOf(materialName) !== -1) {
+        return 'bags';
     }
-    
-    allMaterialsList = Array.from(materialsSet);
-    allMaterialsList.sort(function(a, b) {
-        return a.localeCompare(b);
-    });
+    return 'other';
 }
 
-// فتح نافذة الأسعار المنفصلة
-async function openPriceModal() {
-    // تحميل الأسعار أولاً
-    await loadPrices();
+// فتح نافذة الأسعار
+function openPriceModal() {
+    loadPrices();
     loadAllMaterialsFromPresets();
     
     if (priceModalWindow && !priceModalWindow.closed) {
@@ -279,7 +162,6 @@ async function openPriceModal() {
         return;
     }
     
-    // إنشاء نافذة منفصلة
     var windowFeatures = 'width=850,height=750,left=200,top=100,resizable=yes,scrollbars=yes,dir=rtl';
     priceModalWindow = window.open('', 'PriceManager', windowFeatures);
     
@@ -294,546 +176,195 @@ async function openPriceModal() {
     priceModalWindow.document.write(htmlContent);
     priceModalWindow.document.close();
     
-    // ربط الأحداث بعد تحميل النافذة
     setTimeout(function() {
+        updatePriceWindowDisplay();
         bindPriceWindowEvents();
-        renderPriceWindowList();
-        updatePriceWindowSummary();
     }, 200);
-    
-    isPriceWindowOpen = true;
 }
 
-// إنشاء HTML لنافذة الأسعار المنفصلة
 function getPriceWindowHTML() {
     return `<!DOCTYPE html>
     <html lang="ar" dir="rtl">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>إدارة أسعار المواد - مدير المواد الذكي</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+        <title>إدارة أسعار المواد</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-                font-family: 'Inter', 'Tajawal', sans-serif;
-                background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-                min-height: 100vh;
-                padding: 20px;
-                direction: rtl;
-            }
-            .price-window-container { max-width: 1200px; margin: 0 auto; }
-            .price-window-header {
-                background: linear-gradient(135deg, #059669, #047857);
-                border-radius: 24px;
-                padding: 24px 32px;
-                margin-bottom: 24px;
-                color: white;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 16px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            }
-            .price-window-title h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
-            .price-window-title p { font-size: 13px; opacity: 0.8; }
-            .price-window-close {
-                background: rgba(255,255,255,0.2);
-                border: none;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 999px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-            .price-window-close:hover { background: rgba(255,255,255,0.3); transform: scale(1.02); }
-            .price-stats-cards {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 16px;
-                margin-bottom: 24px;
-            }
-            .price-stat-card {
-                background: white;
-                border-radius: 20px;
-                padding: 20px;
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                transition: transform 0.2s;
-            }
-            .price-stat-card:hover { transform: translateY(-3px); }
-            .price-stat-icon {
-                width: 56px;
-                height: 56px;
-                background: #ecfdf5;
-                border-radius: 16px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .price-stat-icon i { font-size: 28px; color: #059669; }
-            .price-stat-info { flex: 1; }
-            .price-stat-label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; }
-            .price-stat-value { font-size: 28px; font-weight: 800; color: #1e293b; }
-            .price-search-section { margin-bottom: 20px; }
-            .price-search-wrapper { position: relative; }
-            .price-search-wrapper i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-            .price-search-input {
-                width: 100%;
-                padding: 14px 45px 14px 16px;
-                border: 1.5px solid #e2e8f0;
-                border-radius: 999px;
-                font-size: 14px;
-                font-family: inherit;
-                outline: none;
-                transition: all 0.2s;
-            }
-            .price-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-            .price-clear-search {
-                position: absolute;
-                left: 16px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: none;
-                border: none;
-                color: #94a3b8;
-                cursor: pointer;
-                font-size: 14px;
-            }
-            .price-categories-tabs {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
-                border-bottom: 1px solid #e2e8f0;
-            }
-            .price-cat-tab {
-                padding: 8px 20px;
-                border-radius: 999px;
-                border: 1px solid #e2e8f0;
-                background: white;
-                color: #64748b;
-                font-size: 13px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .price-cat-tab:hover { background: #f1f5f9; transform: translateY(-1px); }
-            .price-cat-tab.active { background: #10b981; color: white; border-color: #10b981; }
-            .price-items-container {
-                background: white;
-                border-radius: 20px;
-                overflow: hidden;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            }
-            .price-items-header {
-                display: flex;
-                justify-content: space-between;
-                padding: 16px 20px;
-                background: #f8fafc;
-                border-bottom: 1px solid #e2e8f0;
-                font-weight: 600;
-                color: #475569;
-                font-size: 13px;
-            }
-            .price-items-header-name { flex: 1; text-align: right; }
-            .price-items-header-price { width: 200px; text-align: center; }
-            .price-items-list { max-height: 450px; overflow-y: auto; }
-            .price-item-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 14px 20px;
-                border-bottom: 1px solid #f1f5f9;
-                transition: background 0.2s;
-            }
-            .price-item-row:hover { background: #f8fafc; }
-            .price-item-name-cell { flex: 1; display: flex; align-items: center; gap: 10px; }
-            .price-category-icon { font-size: 18px; width: 32px; }
-            .price-material-name { font-weight: 500; color: #1e293b; }
-            .price-item-price-cell { width: 200px; display: flex; align-items: center; gap: 10px; }
-            .price-input-field {
-                flex: 1;
-                padding: 10px 12px;
-                border: 1.5px solid #e2e8f0;
-                border-radius: 999px;
-                font-size: 13px;
-                text-align: center;
-                outline: none;
-                transition: all 0.2s;
-            }
-            .price-input-field:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-            .price-currency { font-size: 11px; color: #64748b; min-width: 35px; }
-            .price-window-footer {
-                margin-top: 24px;
-                display: flex;
-                justify-content: flex-end;
-                gap: 12px;
-            }
-            .btn-save-all {
-                background: linear-gradient(135deg, #059669, #047857);
-                color: white;
-                border: none;
-                padding: 12px 28px;
-                border-radius: 999px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-save-all:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
-            .btn-close {
-                background: #f1f5f9;
-                border: 1px solid #e2e8f0;
-                padding: 12px 28px;
-                border-radius: 999px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-close:hover { background: #e2e8f0; }
-            .price-empty-state { text-align: center; padding: 60px; color: #94a3b8; }
-            .price-empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+            body { font-family: 'Inter', 'Tajawal', sans-serif; background: #f0fdf4; padding: 20px; direction: rtl; }
+            .container { max-width: 1200px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #059669, #047857); border-radius: 24px; padding: 24px 32px; margin-bottom: 24px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+            .header h1 { font-size: 24px; margin-bottom: 4px; }
+            .header p { font-size: 13px; opacity: 0.8; }
+            .close-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 999px; cursor: pointer; }
+            .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+            .stat-card { background: white; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+            .stat-icon { width: 56px; height: 56px; background: #ecfdf5; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .stat-icon i { font-size: 28px; color: #059669; }
+            .stat-label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; }
+            .stat-value { font-size: 28px; font-weight: 800; color: #1e293b; }
+            .search-section { margin-bottom: 20px; }
+            .search-wrapper { position: relative; }
+            .search-wrapper i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+            .search-input { width: 100%; padding: 14px 45px 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 999px; font-size: 14px; outline: none; }
+            .search-input:focus { border-color: #10b981; }
+            .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+            .tab { padding: 8px 20px; border-radius: 999px; border: 1px solid #e2e8f0; background: white; color: #64748b; font-size: 13px; cursor: pointer; }
+            .tab.active { background: #10b981; color: white; border-color: #10b981; }
+            .table { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+            .table-header { display: flex; justify-content: space-between; padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #475569; }
+            .table-header-name { flex: 1; text-align: right; }
+            .table-header-price { width: 200px; text-align: center; }
+            .items-list { max-height: 450px; overflow-y: auto; }
+            .item-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #f1f5f9; }
+            .item-row:hover { background: #f8fafc; }
+            .item-name { flex: 1; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+            .item-price { width: 200px; display: flex; align-items: center; gap: 10px; }
+            .price-input { flex: 1; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 999px; font-size: 13px; text-align: center; outline: none; }
+            .price-input:focus { border-color: #10b981; }
+            .footer { margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; }
+            .btn-save { background: linear-gradient(135deg, #059669, #047857); color: white; border: none; padding: 12px 28px; border-radius: 999px; font-weight: 600; cursor: pointer; }
+            .btn-cancel { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 12px 28px; border-radius: 999px; cursor: pointer; }
+            .empty { text-align: center; padding: 60px; color: #94a3b8; }
             @media (max-width: 768px) {
-                .price-stats-cards { grid-template-columns: 1fr; }
-                .price-items-header { display: none; }
-                .price-item-row { flex-direction: column; gap: 10px; }
-                .price-item-price-cell { width: 100%; }
+                .stats { grid-template-columns: 1fr; }
+                .table-header { display: none; }
+                .item-row { flex-direction: column; gap: 10px; }
+                .item-price { width: 100%; }
             }
         </style>
     </head>
     <body>
-        <div class="price-window-container">
-            <div class="price-window-header">
-                <div class="price-window-title">
-                    <h1><i class="fas fa-tags"></i> إدارة أسعار المواد</h1>
-                    <p>تحديد أسعار المواد بالكيلوغرام (ليرة سورية) - يتم الحفظ في السحابة تلقائياً</p>
-                </div>
-                <button class="price-window-close" id="closeWindowBtn">
-                    <i class="fas fa-times"></i> إغلاق النافذة
-                </button>
+        <div class="container">
+            <div class="header">
+                <div><h1><i class="fas fa-tags"></i> إدارة أسعار المواد</h1><p>تحديد أسعار المواد بالكيلوغرام (ليرة سورية)</p></div>
+                <button class="close-btn" onclick="window.close()"><i class="fas fa-times"></i> إغلاق</button>
             </div>
             
-            <div class="price-stats-cards" id="priceStatsCards">
-                <div class="price-stat-card">
-                    <div class="price-stat-icon"><i class="fas fa-boxes"></i></div>
-                    <div class="price-stat-info">
-                        <span class="price-stat-label">إجمالي المواد</span>
-                        <span class="price-stat-value" id="totalMaterialsPrice">0</span>
-                    </div>
-                </div>
-                <div class="price-stat-card">
-                    <div class="price-stat-icon"><i class="fas fa-tag"></i></div>
-                    <div class="price-stat-info">
-                        <span class="price-stat-label">المواد المسعرة</span>
-                        <span class="price-stat-value" id="pricedMaterialsCount">0</span>
-                    </div>
-                </div>
-                <div class="price-stat-card">
-                    <div class="price-stat-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="price-stat-info">
-                        <span class="price-stat-label">القيمة الإجمالية</span>
-                        <span class="price-stat-value" id="totalInventoryValuePrice">0</span>
-                    </div>
-                </div>
+            <div class="stats" id="statsContainer">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-boxes"></i></div><div><span class="stat-label">إجمالي المواد</span><span class="stat-value" id="totalCount">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-tag"></i></div><div><span class="stat-label">المواد المسعرة</span><span class="stat-value" id="pricedCount">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div><span class="stat-label">القيمة الإجمالية</span><span class="stat-value" id="totalValue">0</span></div></div>
             </div>
             
-            <div class="price-search-section">
-                <div class="price-search-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
-                    <button id="clearPriceSearch" class="price-clear-search" style="display: none;"><i class="fas fa-times"></i></button>
-                </div>
+            <div class="search-section"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" class="search-input" placeholder="بحث عن مادة..."></div></div>
+            
+            <div class="tabs" id="tabsContainer">
+                <button class="tab active" data-cat="all">الكل</button>
+                <button class="tab" data-cat="main">⭐ أساسيات</button>
+                <button class="tab" data-cat="extra">➕ إضافي</button>
+                <button class="tab" data-cat="bags">🛍️ أكياس</button>
             </div>
             
-            <div class="price-categories-tabs" id="priceCategoriesTabs">
-                <button class="price-cat-tab active" data-cat="all">الكل</button>
-                <button class="price-cat-tab" data-cat="main">⭐ أساسيات</button>
-                <button class="price-cat-tab" data-cat="extra">➕ إضافي</button>
-                <button class="price-cat-tab" data-cat="bags">🛍️ أكياس تعبئة</button>
-            </div>
+            <div class="table"><div class="table-header"><span class="table-header-name">اسم المادة</span><span class="table-header-price">السعر (ل.س/كجم)</span></div>
+            <div id="itemsList" class="items-list"><div class="empty">جاري التحميل...</div></div></div>
             
-            <div class="price-items-container">
-                <div class="price-items-header">
-                    <span class="price-items-header-name">اسم المادة</span>
-                    <span class="price-items-header-price">السعر (ل.س/كجم)</span>
-                </div>
-                <div id="priceListContainer" class="price-items-list">
-                    <div class="price-empty-state"><i class="fas fa-spinner fa-pulse"></i><br>جاري التحميل...</div>
-                </div>
-            </div>
-            
-            <div class="price-window-footer">
-                <button class="btn-close" id="closeWindowBtn2">إلغاء</button>
-                <button class="btn-save-all" id="saveAllPricesBtn"><i class="fas fa-save"></i> حفظ الكل وإغلاق</button>
-            </div>
+            <div class="footer"><button class="btn-cancel" onclick="window.close()">إلغاء</button><button class="btn-save" id="saveBtn">حفظ الكل وإغلاق</button></div>
         </div>
-        
         <script>
             var parentWindow = window.opener;
             
-            function closeWindow() {
-                window.close();
+            function updateDisplay(data) {
+                document.getElementById('totalCount').innerText = data.totalMaterials || 0;
+                document.getElementById('pricedCount').innerText = data.pricedCount || 0;
+                document.getElementById('totalValue').innerText = data.totalValue || '0 ل.س';
+                var container = document.getElementById('itemsList');
+                if (!data.items || data.items.length === 0) { container.innerHTML = '<div class="empty">لا توجد نتائج</div>'; return; }
+                var html = '';
+                for (var i = 0; i < data.items.length; i++) {
+                    var item = data.items[i];
+                    html += '<div class="item-row"><div class="item-name"><span>' + item.icon + '</span><span>' + escapeHtml(item.name) + '</span></div>' +
+                        '<div class="item-price"><input type="number" class="price-input" data-material="' + escapeHtml(item.name) + '" value="' + (item.price > 0 ? item.price : '') + '" placeholder="سعر الكيلو" step="100" min="0"><span>ل.س</span></div></div>';
+                }
+                container.innerHTML = html;
+                document.querySelectorAll('.price-input').forEach(function(input) {
+                    input.addEventListener('change', function() { if (parentWindow) parentWindow.updateMaterialPriceFromWindow(this.dataset.material, this.value); });
+                });
             }
             
-            document.getElementById('closeWindowBtn').addEventListener('click', closeWindow);
-            document.getElementById('closeWindowBtn2').addEventListener('click', closeWindow);
+            function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]; }); }
             
-            document.getElementById('saveAllPricesBtn').addEventListener('click', async function() {
-                if (parentWindow && parentWindow.saveAllPricesAndClose) {
-                    await parentWindow.saveAllPricesAndClose();
-                    closeWindow();
-                }
+            document.getElementById('saveBtn').addEventListener('click', function() { if (parentWindow) parentWindow.saveAllPricesAndClose(); window.close(); });
+            
+            var searchInput = document.getElementById('searchInput');
+            if (searchInput) { searchInput.addEventListener('input', function() { if (parentWindow) parentWindow.filterPriceList(this.value); }); }
+            
+            document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+                    this.classList.add('active');
+                    if (parentWindow) parentWindow.filterPriceListByCategory(this.dataset.cat);
+                });
             });
             
-            var searchInput = document.getElementById('priceSearchInput');
-            var clearBtn = document.getElementById('clearPriceSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
-                    if (clearBtn) clearBtn.style.display = e.target.value ? 'flex' : 'none';
-                    if (parentWindow && parentWindow.filterPriceList) {
-                        parentWindow.filterPriceList(e.target.value);
-                    }
-                });
-            }
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    if (searchInput) searchInput.value = '';
-                    clearBtn.style.display = 'none';
-                    if (parentWindow && parentWindow.filterPriceList) {
-                        parentWindow.filterPriceList('');
-                    }
-                });
-            }
-            
-            var tabs = document.querySelectorAll('.price-cat-tab');
-            for (var i = 0; i < tabs.length; i++) {
-                tabs[i].addEventListener('click', function() {
-                    var activeCat = this.getAttribute('data-cat');
-                    for (var j = 0; j < tabs.length; j++) {
-                        tabs[j].classList.remove('active');
-                    }
-                    this.classList.add('active');
-                    if (parentWindow && parentWindow.filterPriceListByCategory) {
-                        parentWindow.filterPriceListByCategory(activeCat);
-                    }
-                });
-            }
-            
-            if (parentWindow && parentWindow.loadInitialPriceData) {
-                parentWindow.loadInitialPriceData();
-            }
+            if (parentWindow && parentWindow.getPriceDisplayData) { updateDisplay(parentWindow.getPriceDisplayData()); }
         </script>
     </body>
     </html>`;
 }
 
-// بيانات النافذة المنفصلة
-var priceWindowData = {
-    materials: [],
-    summary: { totalMaterials: 0, pricedCount: 0, totalValue: '0 ل.س' },
-    currentFilter: '',
-    currentCategory: 'all'
-};
-
-// تحديث بيانات النافذة
-function updatePriceWindowData() {
-    var filteredMaterials = [];
-    var searchValue = priceWindowData.currentFilter.toLowerCase();
-    var activeCat = priceWindowData.currentCategory;
+function updatePriceWindowDisplay() {
+    if (!priceModalWindow || priceModalWindow.closed) return;
+    
+    var pricedCount = 0;
+    for (var key in materialPrices) { if (materialPrices[key] > 0) pricedCount++; }
+    var totalValue = calculateTotalValue();
+    
+    var filteredItems = [];
+    var searchValue = (priceWindowData && priceWindowData.currentFilter) || '';
+    var activeCat = (priceWindowData && priceWindowData.currentCategory) || 'all';
     
     for (var i = 0; i < allMaterialsList.length; i++) {
         var material = allMaterialsList[i];
         var category = getMaterialCategory(material);
-        var categoryIcon = category === 'main' ? '⭐' : (category === 'extra' ? '➕' : (category === 'bags' ? '🛍️' : ''));
-        
+        var icon = category === 'main' ? '⭐' : (category === 'extra' ? '➕' : (category === 'bags' ? '🛍️' : ''));
         if (activeCat !== 'all' && category !== activeCat) continue;
-        if (searchValue && !material.toLowerCase().includes(searchValue)) continue;
-        
-        filteredMaterials.push({
-            name: material,
-            price: getMaterialPrice(material),
-            category: category,
-            categoryIcon: categoryIcon
-        });
+        if (searchValue && !material.toLowerCase().includes(searchValue.toLowerCase())) continue;
+        filteredItems.push({ name: material, price: getMaterialPrice(material), icon: icon });
     }
     
-    priceWindowData.materials = filteredMaterials;
+    var displayData = { totalMaterials: allMaterialsList.length, pricedCount: pricedCount, totalValue: totalValue.formattedTotal, items: filteredItems };
     
-    var pricedCount = 0;
-    for (var key in materialPrices) {
-        if (materialPrices[key] > 0) pricedCount++;
-    }
-    
-    var totalValue = calculateTotalValue();
-    priceWindowData.summary = {
-        totalMaterials: allMaterialsList.length,
-        pricedCount: pricedCount,
-        totalValue: totalValue.formattedTotal
-    };
-}
-
-// عرض القائمة في النافذة المنفصلة
-function renderPriceWindowList() {
-    if (!priceModalWindow || priceModalWindow.closed) return;
-    
-    updatePriceWindowData();
-    
-    var html = '';
-    for (var i = 0; i < priceWindowData.materials.length; i++) {
-        var item = priceWindowData.materials[i];
-        html += '<div class="price-item-row">' +
-            '<div class="price-item-name-cell">' +
-                '<span class="price-category-icon">' + (item.categoryIcon || '') + '</span>' +
-                '<span class="price-material-name">' + escapeHtml(item.name) + '</span>' +
-            '</div>' +
-            '<div class="price-item-price-cell">' +
-                '<input type="number" class="price-input-field" data-material="' + escapeHtml(item.name) + '" value="' + (item.price > 0 ? item.price : '') + '" placeholder="سعر الكيلو" step="100" min="0">' +
-                '<span class="price-currency">ل.س</span>' +
-            '</div>' +
-        '</div>';
-    }
-    
-    var container = priceModalWindow.document.getElementById('priceListContainer');
-    if (container) {
-        if (priceWindowData.materials.length === 0) {
-            container.innerHTML = '<div class="price-empty-state"><i class="fas fa-search"></i><br>لا توجد نتائج</div>';
-        } else {
-            container.innerHTML = html;
-        }
-    }
-    
-    // ربط أحداث تغيير الأسعار
-    var inputs = priceModalWindow.document.querySelectorAll('.price-input-field');
-    for (var i = 0; i < inputs.length; i++) {
-        inputs[i].removeEventListener('change', handlePriceChange);
-        inputs[i].addEventListener('change', handlePriceChange);
-    }
-    
-    updatePriceWindowSummary();
-}
-
-function handlePriceChange(e) {
-    var materialName = this.getAttribute('data-material');
-    var value = this.value;
-    updateMaterialPrice(materialName, value);
-}
-
-// تحديث ملخص النافذة
-function updatePriceWindowSummary() {
-    if (!priceModalWindow || priceModalWindow.closed) return;
-    
-    var pricedCount = 0;
-    for (var key in materialPrices) {
-        if (materialPrices[key] > 0) pricedCount++;
-    }
-    
-    var totalValue = calculateTotalValue();
-    
-    var totalEl = priceModalWindow.document.getElementById('totalMaterialsPrice');
-    var pricedEl = priceModalWindow.document.getElementById('pricedMaterialsCount');
-    var valueEl = priceModalWindow.document.getElementById('totalInventoryValuePrice');
-    
-    if (totalEl) totalEl.innerText = allMaterialsList.length;
-    if (pricedEl) pricedEl.innerText = pricedCount;
-    if (valueEl) valueEl.innerText = totalValue.formattedTotal;
-}
-
-// تصفية القائمة
-function filterPriceList(searchValue) {
-    priceWindowData.currentFilter = searchValue;
-    renderPriceWindowList();
-}
-
-// تصفية حسب التصنيف
-function filterPriceListByCategory(category) {
-    priceWindowData.currentCategory = category;
-    renderPriceWindowList();
-}
-
-// حفظ جميع الأسعار وإغلاق النافذة
-async function saveAllPricesAndClose() {
-    await savePrices();
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
-    if (priceModalWindow && !priceModalWindow.closed) {
-        updatePriceWindowSummary();
-    }
-}
-
-// تحميل البيانات الأولية للنافذة
-function loadInitialPriceData() {
-    renderPriceWindowList();
-    updatePriceWindowSummary();
-}
-
-// الحصول على تصنيف المادة
-function getMaterialCategory(materialName) {
-    if (typeof importantItemsList !== 'undefined' && importantItemsList.indexOf(materialName) !== -1) {
-        return 'main';
-    }
-    if (typeof extraItemsList !== 'undefined' && extraItemsList.indexOf(materialName) !== -1) {
-        return 'extra';
-    }
-    if (typeof bagTypesList !== 'undefined' && bagTypesList.indexOf(materialName) !== -1) {
-        return 'bags';
-    }
-    return 'other';
-}
-
-// ربط أحداث النافذة المنفصلة
-function bindPriceWindowEvents() {
-    if (!priceModalWindow || priceModalWindow.closed) return;
-    
-    var searchInput = priceModalWindow.document.getElementById('priceSearchInput');
-    var clearBtn = priceModalWindow.document.getElementById('clearPriceSearch');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            if (clearBtn) clearBtn.style.display = e.target.value ? 'flex' : 'none';
-            filterPriceList(e.target.value);
-        });
-    }
-    
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-            if (searchInput) searchInput.value = '';
-            clearBtn.style.display = 'none';
-            filterPriceList('');
-        });
-    }
-    
-    var tabs = priceModalWindow.document.querySelectorAll('.price-cat-tab');
-    for (var i = 0; i < tabs.length; i++) {
-        tabs[i].addEventListener('click', function() {
-            var activeCat = this.getAttribute('data-cat');
-            for (var j = 0; j < tabs.length; j++) {
-                tabs[j].classList.remove('active');
+    if (priceModalWindow && priceModalWindow.updateDisplay) {
+        priceModalWindow.updateDisplay(displayData);
+    } else if (priceModalWindow && priceModalWindow.document) {
+        var container = priceModalWindow.document.getElementById('itemsList');
+        if (container) {
+            if (filteredItems.length === 0) { container.innerHTML = '<div class="empty">لا توجد نتائج</div>'; }
+            else {
+                var html = '';
+                for (var i = 0; i < filteredItems.length; i++) {
+                    var item = filteredItems[i];
+                    html += '<div class="item-row"><div class="item-name"><span>' + item.icon + '</span><span>' + escapeHtml(item.name) + '</span></div>' +
+                        '<div class="item-price"><input type="number" class="price-input" data-material="' + escapeHtml(item.name) + '" value="' + (item.price > 0 ? item.price : '') + '" placeholder="سعر الكيلو" step="100" min="0"><span>ل.س</span></div></div>';
+                }
+                container.innerHTML = html;
+                priceModalWindow.document.querySelectorAll('.price-input').forEach(function(input) {
+                    input.addEventListener('change', function() { updateMaterialPrice(this.dataset.material, this.value); });
+                });
             }
-            this.classList.add('active');
-            filterPriceListByCategory(activeCat);
-        });
+        }
+        var totalEl = priceModalWindow.document.getElementById('totalCount');
+        var pricedEl = priceModalWindow.document.getElementById('pricedCount');
+        var valueEl = priceModalWindow.document.getElementById('totalValue');
+        if (totalEl) totalEl.innerText = allMaterialsList.length;
+        if (pricedEl) pricedEl.innerText = pricedCount;
+        if (valueEl) valueEl.innerText = totalValue.formattedTotal;
     }
 }
 
-// مزامنة الأسعار مع Firebase عند بدء التشغيل
-async function syncPricesFromFirebase() {
-    await loadPrices();
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
-}
+var priceWindowData = { currentFilter: '', currentCategory: 'all' };
 
-// تصدير الدوال
+function filterPriceList(searchValue) { priceWindowData.currentFilter = searchValue; updatePriceWindowDisplay(); }
+function filterPriceListByCategory(category) { priceWindowData.currentCategory = category; updatePriceWindowDisplay(); }
+function getPriceDisplayData() { var pc = 0; for (var k in materialPrices) { if (materialPrices[k] > 0) pc++; } var tv = calculateTotalValue(); var items = []; var cat = priceWindowData.currentCategory || 'all'; var search = (priceWindowData.currentFilter || '').toLowerCase(); for (var i = 0; i < allMaterialsList.length; i++) { var m = allMaterialsList[i]; var c = getMaterialCategory(m); var icon = c === 'main' ? '⭐' : (c === 'extra' ? '➕' : (c === 'bags' ? '🛍️' : '')); if (cat !== 'all' && c !== cat) continue; if (search && !m.toLowerCase().includes(search)) continue; items.push({ name: m, price: getMaterialPrice(m), icon: icon }); } return { totalMaterials: allMaterialsList.length, pricedCount: pc, totalValue: tv.formattedTotal, items: items }; }
+function updateMaterialPriceFromWindow(name, price) { updateMaterialPrice(name, price); updatePriceWindowDisplay(); }
+function saveAllPricesAndClose() { savePrices(); if (typeof calculateAIMetrics === 'function') calculateAIMetrics(); }
+
+function bindPriceWindowEvents() { if (!priceModalWindow || priceModalWindow.closed) return; var searchInput = priceModalWindow.document.getElementById('searchInput'); if (searchInput) { searchInput.oninput = function(e) { filterPriceList(e.target.value); }; } var tabs = priceModalWindow.document.querySelectorAll('.tab'); for (var i = 0; i < tabs.length; i++) { tabs[i].onclick = function() { var btns = priceModalWindow.document.querySelectorAll('.tab'); for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active'); this.classList.add('active'); filterPriceListByCategory(this.dataset.cat); }; } }
+
 window.getMaterialPrice = getMaterialPrice;
 window.getEstimatedPrice = getEstimatedPrice;
 window.loadPrices = loadPrices;
@@ -842,12 +373,8 @@ window.updateMaterialPrice = updateMaterialPrice;
 window.calculateTotalValue = calculateTotalValue;
 window.formatCurrency = formatCurrency;
 window.openPriceModal = openPriceModal;
-window.saveAllPricesAndClose = saveAllPricesAndClose;
 window.filterPriceList = filterPriceList;
 window.filterPriceListByCategory = filterPriceListByCategory;
-window.loadInitialPriceData = loadInitialPriceData;
-window.syncPricesFromFirebase = syncPricesFromFirebase;
-window.priceWindowData = priceWindowData;
-window.initPricesCollection = initPricesCollection;
-window.loadPricesFromFirebase = loadPricesFromFirebase;
-window.savePricesToFirebase = savePricesToFirebase;
+window.getPriceDisplayData = getPriceDisplayData;
+window.updateMaterialPriceFromWindow = updateMaterialPriceFromWindow;
+window.saveAllPricesAndClose = saveAllPricesAndClose;
