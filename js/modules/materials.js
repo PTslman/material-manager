@@ -211,11 +211,15 @@ async function restoreData() {
                 await batch.commit();
                 
                 for (var i = 0; i < backup.length; i++) {
+                    var priority = backup[i].priority;
+                    if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
+                        priority = 'extra';
+                    }
                     await materialsCollection.add({
                         name: backup[i].name, 
                         unitType: backup[i].unitType || 'kg',
                         quantity: backup[i].quantity || 0, 
-                        priority: backup[i].priority || 'main',
+                        priority: priority || 'main',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
