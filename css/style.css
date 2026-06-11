@@ -1043,3 +1043,235 @@ body.dark .toast { background: var(--gray-900); }
     padding: var(--space-10);
     color: var(--text-tertiary);
 }
+/* -------------------- إحصائيات الذكاء الاصطناعي -------------------- */
+.ai-stats-section {
+    background: linear-gradient(135deg, var(--bg-surface), var(--bg-card-hover));
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    margin-top: var(--space-8);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-md);
+}
+
+.ai-stats-header {
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.ai-stats-header h3 {
+    font-size: var(--font-16);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+}
+
+.ai-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+}
+
+.ai-stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-fast);
+}
+
+.ai-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.ai-stat-card.warning {
+    border-right: 3px solid var(--warning-500);
+}
+
+.ai-stat-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--primary-50);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-stat-icon i {
+    font-size: var(--font-18);
+    color: var(--primary-600);
+}
+
+.ai-stat-card.warning .ai-stat-icon {
+    background: var(--warning-50);
+}
+
+.ai-stat-card.warning .ai-stat-icon i {
+    color: var(--warning-500);
+}
+
+.ai-stat-info {
+    flex: 1;
+}
+
+.ai-stat-label {
+    display: block;
+    font-size: var(--font-11);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+}
+
+.ai-stat-value {
+    font-size: var(--font-24);
+    font-weight: var(--font-extrabold);
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.ai-stat-unit {
+    font-size: var(--font-11);
+    color: var(--text-tertiary);
+    margin-right: var(--space-1);
+}
+
+.ai-insights {
+    background: var(--primary-50);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    border: 1px solid var(--border-light);
+}
+
+.insights-content {
+    font-size: var(--font-12);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.insight-item {
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px dashed var(--border-light);
+}
+
+.insight-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* -------------------- تفاصيل الأسعار -------------------- */
+.price-details {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-light);
+}
+
+.price-details-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-13);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px dashed var(--border-light);
+}
+
+.price-details-header i {
+    color: var(--primary-500);
+    font-size: var(--font-14);
+}
+
+.price-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) 0;
+    font-size: var(--font-12);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.price-detail-item:last-child {
+    border-bottom: none;
+}
+
+.price-detail-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+}
+
+.price-detail-name::before {
+    content: '•';
+    color: var(--primary-500);
+    font-size: var(--font-14);
+}
+
+.price-detail-value {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    direction: ltr;
+    font-family: var(--font-mono);
+}
+
+.price-detail-more {
+    text-align: center;
+    padding: var(--space-2);
+    font-size: var(--font-11);
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+/* الوضع الداكن */
+body.dark .ai-stat-icon {
+    background: var(--primary-900);
+}
+
+body.dark .ai-stat-card.warning .ai-stat-icon {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+body.dark .ai-insights {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+body.dark .price-details-header {
+    color: var(--text-primary);
+}
+
+body.dark .price-detail-name {
+    color: var(--text-tertiary);
+}
+
+body.dark .price-detail-value {
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .ai-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .price-detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+    }
+    
+    .price-detail-value {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .ai-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
