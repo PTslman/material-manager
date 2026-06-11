@@ -402,3 +402,48 @@ if (dec && inc && qty) {
 </script>
 </body>
     </html>
+<script>
+// تسجيل التفاعلات مع Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(function(registration) {
+        // تسجيل التفاعلات
+        function recordInteraction(action, success) {
+            if (registration.active) {
+                registration.active.postMessage({
+                    type: 'RECORD_INTERACTION',
+                    action: action,
+                    success: success
+                });
+            }
+        }
+        
+        // تسجيل المزامنة الناجحة
+        window.addEventListener('sync-success', function() {
+            recordInteraction('sync', true);
+        });
+        
+        // تسجيل فتح التطبيق
+        recordInteraction('open_app', true);
+        
+        // الحصول على توصيات ذكية
+        if (registration.active) {
+            registration.active.postMessage({ type: 'GET_RECOMMENDATIONS' });
+        }
+        
+        // استقبال التوصيات
+        navigator.serviceWorker.addEventListener('message', function(event) {
+            if (event.data.type === 'RECOMMENDATIONS') {
+                console.log('AI Recommendations:', event.data.data);
+                // يمكن استخدام التوصيات لتحسين تجربة المستخدم
+                if (event.data.data.bestTimeToSync === new Date().getHours()) {
+                    // عرض إشعار أو تلميح للمستخدم
+                }
+            }
+            if (event.data.type === 'BACKGROUND_UPDATE') {
+                // تحديث البيانات في الخلفية
+                if (typeof startListener === 'function') startListener();
+            }
+        });
+    });
+}
+</script>
