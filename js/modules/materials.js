@@ -21,12 +21,19 @@ function startListener() {
         var newMaterials = [];
         snapshot.forEach(function(doc) {
             var data = doc.data();
+            var priority = data.priority || 'main';
+            
+            // تحويل الأقسام القديمة إلى القسم الجديد "extra"
+            if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs' || priority === 'extra') {
+                priority = 'extra';
+            }
+            
             newMaterials.push({
                 id: doc.id, 
                 name: data.name || 'غير معروف', 
                 unitType: data.unitType || 'kg',
                 quantity: data.quantity || 0, 
-                priority: data.priority || 'main'
+                priority: priority
             });
         });
         
@@ -212,7 +219,11 @@ async function restoreData() {
                 
                 for (var i = 0; i < backup.length; i++) {
                     var priority = backup[i].priority;
+                    // تحويل الأقسام القديمة إلى الجديدة
                     if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
+                        priority = 'extra';
+                    }
+                    if (priority !== 'main' && priority !== 'extra' && priority !== 'bags' && priority !== 'tawsaya') {
                         priority = 'extra';
                     }
                     await materialsCollection.add({
@@ -236,6 +247,39 @@ async function restoreData() {
     input.click();
 }
 
+// تحديث جميع المواد في Firebase لتحويل أقسامها القديمة إلى "extra"
+async function migrateOldSections() {
+    if (!materialsCollection) return;
+    
+    try {
+        var snapshot = await materialsCollection.get();
+        var batch = db.batch();
+        var updatedCount = 0;
+        
+        snapshot.forEach(function(doc) {
+            var data = doc.data();
+            var oldPriority = data.priority;
+            var newPriority = oldPriority;
+            
+            if (oldPriority === 'spices_extra' || oldPriority === 'roasted' || oldPriority === 'herbs') {
+                newPriority = 'extra';
+                batch.update(doc.ref, { priority: newPriority });
+                updatedCount++;
+            }
+        });
+        
+        if (updatedCount > 0) {
+            await batch.commit();
+            if (typeof showToastMessage === 'function') {
+                showToastMessage('✓ تم ترحيل ' + updatedCount + ' مادة إلى قسم الإضافي');
+            }
+            startListener();
+        }
+    } catch(e) {
+        console.error('Migration error:', e);
+    }
+}
+
 window.allMaterials = allMaterials;
 window.startListener = startListener;
 window.addNewMaterial = addNewMaterial;
@@ -243,3 +287,4 @@ window.saveEdit = saveEdit;
 window.clearAllMaterials = clearAllMaterials;
 window.backupData = backupData;
 window.restoreData = restoreData;
+window.migrateOldSections = migrateOldSections;
