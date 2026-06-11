@@ -47,7 +47,6 @@ function setupDraggable(element) {
         dragIcon.style.borderRadius = '9999px';
         dragIcon.style.fontSize = '12px';
         dragIcon.style.fontWeight = 'bold';
-        dragIcon.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
         document.body.appendChild(dragIcon);
         e.dataTransfer.setDragImage(dragIcon, 0, 0);
         setTimeout(function() { document.body.removeChild(dragIcon); }, 0);
@@ -96,9 +95,7 @@ function setupDroppable(section) {
         if (draggedItemId && targetSection && draggedItemOriginalSection !== targetSection) {
             performDragDropMove(draggedItemId, targetSection, draggedItemOriginalSection, draggedItemName);
         } else if (draggedItemId && targetSection && draggedItemOriginalSection === targetSection) {
-            if (typeof showToast === 'function') {
-                showToast('⚠️ المادة موجودة بالفعل في هذا القسم', false);
-            }
+            showToastMessage('⚠️ المادة موجودة بالفعل في هذا القسم', false);
         }
     }
 }
@@ -107,17 +104,16 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
     if (!itemId || !targetSection) return false;
     
     var name = itemName || 'المادة';
-    
-    if (typeof showToast === 'function') {
-        showToast('🔄 جاري نقل "' + name + '"...', false);
-    }
+    showToastMessage('🔄 جاري نقل "' + name + '"...', false);
     
     try {
+        // تحديث في Firebase
         await materialsCollection.doc(itemId).update({ 
             priority: targetSection,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
+        // تسجيل في الذكاء الاصطناعي
         if (window.aiEngine) {
             window.aiEngine.learnFromAction('move', name, {
                 from: originalSection,
@@ -136,23 +132,54 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
             'tawsaya': 'توصيات'
         };
         
-        if (typeof showToast === 'function') {
-            showToast('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        
+        // تحديث البيانات محلياً أولاً
+        var materialIndex = -1;
+        for (var i = 0; i < allMaterials.length; i++) {
+            if (allMaterials[i].id === itemId) {
+                materialIndex = i;
+                break;
+            }
         }
         
-        // إعادة تحميل البيانات من Firebase لعرض التغييرات
-        if (typeof startListener === 'function') {
-            startListener();
+        if (materialIndex !== -1) {
+            allMaterials[materialIndex].priority = targetSection;
+            // إعادة عرض الأقسام
+            if (typeof renderSections === 'function') {
+                renderSections(allMaterials);
+            }
+            if (typeof updateCategoryCounts === 'function') {
+                updateCategoryCounts();
+            }
+            if (typeof calculateAIMetrics === 'function') {
+                calculateAIMetrics();
+            }
+            // إعادة تهيئة السحب والإفلات
+            setTimeout(function() {
+                if (typeof initDragAndDrop === 'function') {
+                    initDragAndDrop();
+                }
+            }, 200);
         }
         
         return true;
     } catch(error) {
         console.error('خطأ في النقل:', error);
-        if (typeof showToast === 'function') {
-            showToast('❌ فشل نقل "' + name + '"', true);
-        }
+        showToastMessage('❌ فشل نقل "' + name + '"', true);
         return false;
     }
+}
+
+function showToastMessage(msg, isErr) {
+    if (isErr === undefined) isErr = false;
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<i class="fas ' + (isErr ? 'fa-exclamation-triangle' : 'fa-check-circle') + '"></i> ' + msg;
+    document.body.appendChild(toast);
+    setTimeout(function() { if (toast && toast.remove) toast.remove(); }, 2500);
 }
 
 function refreshDragAndDrop() {
@@ -164,3 +191,4 @@ function refreshDragAndDrop() {
 window.initDragAndDrop = initDragAndDrop;
 window.refreshDragAndDrop = refreshDragAndDrop;
 window.performDragDropMove = performDragDropMove;
+window.showToastMessage = showToastMessage;
