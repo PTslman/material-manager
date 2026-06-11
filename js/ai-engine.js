@@ -46,19 +46,23 @@ AIEngine.prototype.formatNumber = function(value) {
     return rounded.toFixed(1);
 };
 
-AIEngine.prototype.analyzeInventory = function(materials) {
+AIEngine.prototype.analyzeInventory = function(materials, getPriceFunction) {
     if (!materials || materials.length === 0) {
         return {
             totalWeight: '0',
+            totalValue: '0',
             lowStockCount: 0,
             lowStockList: [],
-            insights: ['✨ لا توجد مواد في المخزون', '💡 أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"']
+            priceBreakdown: [],
+            insights: ['لا توجد مواد في المخزون', 'أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"']
         };
     }
     
     var totalWeight = 0;
+    var totalValue = 0;
     var lowStockCount = 0;
     var lowStockList = [];
+    var priceBreakdown = [];
     var tawsayaCount = 0;
 
     for (var i = 0; i < materials.length; i++) {
@@ -70,12 +74,31 @@ AIEngine.prototype.analyzeInventory = function(materials) {
             totalWeight += quantityInKg;
             lowStockCount++;
             
+            var price = 0;
+            if (typeof getPriceFunction === 'function') {
+                price = getPriceFunction(material.name) || 0;
+            }
+            var itemValue = quantityInKg * price;
+            totalValue += itemValue;
+            
             lowStockList.push({
                 name: material.name,
                 quantity: material.quantity,
                 unit: material.unitType,
                 weight: this.formatNumber(quantityInKg)
             });
+            
+            if (price > 0 && quantityInKg > 0) {
+                priceBreakdown.push({
+                    name: material.name,
+                    quantity: material.quantity,
+                    unit: material.unitType,
+                    quantityInKg: this.formatNumber(quantityInKg),
+                    pricePerKg: price,
+                    totalValue: Math.round(itemValue),
+                    formattedValue: Math.round(itemValue).toLocaleString() + ' ل.س'
+                });
+            }
         } else {
             tawsayaCount++;
         }
@@ -83,32 +106,37 @@ AIEngine.prototype.analyzeInventory = function(materials) {
 
     return {
         totalWeight: this.formatNumber(totalWeight),
+        totalValue: Math.round(totalValue).toLocaleString() + ' ل.س',
+        totalValueRaw: totalValue,
         lowStockCount: lowStockCount,
         lowStockList: lowStockList.slice(0, 10),
-        insights: this.getInsights(materials.length, totalWeight, lowStockCount, tawsayaCount)
+        priceBreakdown: priceBreakdown,
+        tawsayaCount: tawsayaCount,
+        insights: this.getInsights(materials.length, totalWeight, totalValue, lowStockCount, tawsayaCount)
     };
 };
 
-AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, lowStockCount, tawsayaCount) {
+AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, totalValue, lowStockCount, tawsayaCount) {
     var insights = [];
     
     if (totalMaterials === 0) {
-        insights.push('✨ لا توجد مواد في المخزون');
-        insights.push('💡 أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"');
+        insights.push('لا توجد مواد في المخزون');
+        insights.push('أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"');
     } else {
-        insights.push('📊 الوزن الكلي للمخزون: ' + this.formatNumber(totalWeight) + ' كجم');
-        insights.push('⚠️ عدد المواد الناقصة: ' + lowStockCount + ' مادة');
+        insights.push('الوزن الكلي للمخزون: ' + this.formatNumber(totalWeight) + ' كجم');
+        insights.push('القيمة التقديرية للمخزون: ' + Math.round(totalValue).toLocaleString() + ' ل.س');
+        insights.push('عدد المواد الناقصة: ' + lowStockCount + ' مادة');
         
         if (tawsayaCount > 0) {
-            insights.push('🎁 التوصيات: ' + tawsayaCount + ' مادة (لا تدخل في النواقص)');
+            insights.push('التوصيات: ' + tawsayaCount + ' مادة (لا تدخل في النواقص)');
         }
     }
     
     var tips = [
-        '💡 اسحب أي مادة وأفلتها في قسم آخر لنقلها',
-        '📦 المواد ذات الخلفية البرتقالية ناقصة وتحتاج إعادة تعبئة',
-        '🔄 المزامنة التلقائية تحفظ بياناتك في السحابة',
-        '⭐ المواد الأساسية هي الأكثر طلباً'
+        'اسحب أي مادة وأفلتها في قسم آخر لنقلها',
+        'المواد ذات الخلفية البرتقالية ناقصة وتحتاج إعادة تعبئة',
+        'المزامنة التلقائية تحفظ بياناتك في السحابة',
+        'المواد الأساسية هي الأكثر طلباً'
     ];
     insights.push(tips[Math.floor(Math.random() * tips.length)]);
     
@@ -116,39 +144,3 @@ AIEngine.prototype.getInsights = function(totalMaterials, totalWeight, lowStockC
 };
 
 window.aiEngine = new AIEngine();
-// حساب القيمة الإجمالية للمخزون (باستخدام الأسعار)
-AIEngine.prototype.calculateTotalValueWithPrices = function(materials, getPriceFunction) {
-    if (!materials || materials.length === 0) return 0;
-    if (!getPriceFunction) return 0;
-    
-    var totalValue = 0;
-    var valueBreakdown = [];
-    
-    for (var i = 0; i < materials.length; i++) {
-        var material = materials[i];
-        if (material.priority === 'tawsaya') continue;
-        
-        var price = getPriceFunction(material.name);
-        var quantityInKg = this.convertToKg(material.quantity, material.unitType);
-        var itemValue = quantityInKg * price;
-        totalValue += itemValue;
-        
-        if (price > 0 && quantityInKg > 0) {
-            valueBreakdown.push({
-                name: material.name,
-                quantity: material.quantity,
-                unit: material.unitType,
-                quantityInKg: quantityInKg,
-                pricePerKg: price,
-                totalValue: itemValue,
-                formattedValue: Math.round(itemValue).toLocaleString() + ' ل.س'
-            });
-        }
-    }
-    
-    return {
-        total: totalValue,
-        formattedTotal: Math.round(totalValue).toLocaleString() + ' ل.س',
-        breakdown: valueBreakdown
-    };
-};
