@@ -96,7 +96,9 @@ function setupDroppable(section) {
         if (draggedItemId && targetSection && draggedItemOriginalSection !== targetSection) {
             performDragDropMove(draggedItemId, targetSection, draggedItemOriginalSection, draggedItemName);
         } else if (draggedItemId && targetSection && draggedItemOriginalSection === targetSection) {
-            showToast('⚠️ المادة موجودة بالفعل في هذا القسم', false);
+            if (typeof showToast === 'function') {
+                showToast('⚠️ المادة موجودة بالفعل في هذا القسم', false);
+            }
         }
     }
 }
@@ -105,7 +107,10 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
     if (!itemId || !targetSection) return false;
     
     var name = itemName || 'المادة';
-    showToast('🔄 جاري نقل "' + name + '"...', false);
+    
+    if (typeof showToast === 'function') {
+        showToast('🔄 جاري نقل "' + name + '"...', false);
+    }
     
     try {
         await materialsCollection.doc(itemId).update({ 
@@ -131,15 +136,21 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
             'tawsaya': 'توصيات'
         };
         
-        showToast('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        if (typeof showToast === 'function') {
+            showToast('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        }
         
-        if (unsubscribe) unsubscribe();
-        startListener();
+        // إعادة تحميل البيانات من Firebase لعرض التغييرات
+        if (typeof startListener === 'function') {
+            startListener();
+        }
         
         return true;
     } catch(error) {
         console.error('خطأ في النقل:', error);
-        showToast('❌ فشل نقل "' + name + '"', true);
+        if (typeof showToast === 'function') {
+            showToast('❌ فشل نقل "' + name + '"', true);
+        }
         return false;
     }
 }
