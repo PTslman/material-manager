@@ -283,3 +283,36 @@ body {
     .app-main { overflow: visible; height: auto; position: static; padding: 0; }
     .material-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
                      }
+/* تأثيرات السحب والإفلات */
+.material-card.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+}
+
+.priority-section.drag-over {
+    background: var(--primary-50);
+    border: 2px dashed var(--primary-500);
+    border-radius: var(--radius-xl);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-md);
+}
+
+body.dark .priority-section.drag-over {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.material-card {
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.material-card:active {
+    cursor: grabbing;
+}
+
+.material-card.dragging {
+    cursor: grabbing;
+}
