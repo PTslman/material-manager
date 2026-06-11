@@ -7,35 +7,24 @@ var allMaterialsList = [];
 function loadAllMaterialsFromPresets() {
     var materialsSet = new Set();
     
-    // إضافة مواد من أساسيات
     if (typeof importantItemsList !== 'undefined') {
         for (var i = 0; i < importantItemsList.length; i++) {
             materialsSet.add(importantItemsList[i]);
         }
     }
     
-    // إضافة مواد من إضافي
     if (typeof extraItemsList !== 'undefined') {
         for (var i = 0; i < extraItemsList.length; i++) {
             materialsSet.add(extraItemsList[i]);
         }
     }
     
-    // إضافة مواد من أكياس تعبئة
     if (typeof bagTypesList !== 'undefined') {
         for (var i = 0; i < bagTypesList.length; i++) {
             materialsSet.add(bagTypesList[i]);
         }
     }
     
-    // إضافة مواد من توصيات (إذا وجدت)
-    if (typeof tawsayaItemsList !== 'undefined') {
-        for (var i = 0; i < tawsayaItemsList.length; i++) {
-            materialsSet.add(tawsayaItemsList[i]);
-        }
-    }
-    
-    // تحويل Set إلى Array وترتيبها أبجدياً
     allMaterialsList = Array.from(materialsSet);
     allMaterialsList.sort(function(a, b) {
         return a.localeCompare(b);
@@ -76,6 +65,9 @@ function updateMaterialPrice(materialName, price) {
     if (typeof calculateTotalValue === 'function') {
         calculateTotalValue();
     }
+    if (typeof calculateAIMetrics === 'function') {
+        calculateAIMetrics();
+    }
 }
 
 // الحصول على سعر مادة
@@ -83,7 +75,7 @@ function getMaterialPrice(materialName) {
     return materialPrices[materialName] || 0;
 }
 
-// حساب القيمة الإجمالية للمخزون (باستثناء التوصيات)
+// حساب القيمة الإجمالية للمخزون
 function calculateTotalValue() {
     if (!window.allMaterials) return { total: 0, formattedTotal: '0 ل.س', breakdown: [] };
     
@@ -144,56 +136,75 @@ function openPriceModal() {
     }
     
     renderPriceList();
+    updatePriceSummary();
     modal.classList.add('active');
 }
 
 // إنشاء نافذة الأسعار
 function createPriceModal() {
     var modalHTML = `
-        <div id="priceModal" class="modal">
+        <div id="priceModal" class="modal price-modal-full">
             <div class="modal-overlay"></div>
-            <div class="modal-content modal-price">
+            <div class="modal-content price-modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-tags"></i> إدارة أسعار المواد</h3>
                     <button class="modal-close" id="closePriceModalBtn">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="price-summary" id="priceSummary">
-                        <div class="price-total-card">
-                            <i class="fas fa-chart-line"></i>
-                            <div class="price-total-info">
-                                <span class="price-total-label">القيمة الإجمالية للمخزون</span>
-                                <span class="price-total-value" id="totalInventoryValue">0 ل.س</span>
-                            </div>
-                        </div>
-                        <div class="price-stats">
-                            <div class="price-stat">
-                                <span class="price-stat-label">عدد المواد المسعرة</span>
-                                <span class="price-stat-value" id="pricedCount">0</span>
-                            </div>
-                            <div class="price-stat">
+                <div class="modal-body price-modal-body">
+                    <!-- قسم الإحصائيات -->
+                    <div class="price-stats-cards">
+                        <div class="price-stat-card">
+                            <div class="price-stat-icon"><i class="fas fa-boxes"></i></div>
+                            <div class="price-stat-info">
                                 <span class="price-stat-label">إجمالي المواد</span>
-                                <span class="price-stat-value" id="totalMaterialsCountPrice">0</span>
+                                <span class="price-stat-value" id="totalMaterialsPrice">0</span>
+                            </div>
+                        </div>
+                        <div class="price-stat-card">
+                            <div class="price-stat-icon"><i class="fas fa-tag"></i></div>
+                            <div class="price-stat-info">
+                                <span class="price-stat-label">المواد المسعرة</span>
+                                <span class="price-stat-value" id="pricedMaterialsCount">0</span>
+                            </div>
+                        </div>
+                        <div class="price-stat-card">
+                            <div class="price-stat-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="price-stat-info">
+                                <span class="price-stat-label">القيمة الإجمالية</span>
+                                <span class="price-stat-value" id="totalInventoryValuePrice">0</span>
                             </div>
                         </div>
                     </div>
-                    <div class="price-search">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
+                    
+                    <!-- شريط البحث -->
+                    <div class="price-search-section">
+                        <div class="price-search-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="priceSearchInput" class="price-search-input" placeholder="بحث عن مادة...">
+                            <button id="clearPriceSearch" class="price-clear-search" style="display: none;"><i class="fas fa-times"></i></button>
+                        </div>
                     </div>
-                    <div class="price-categories">
-                        <button class="price-cat-btn active" data-cat="all">الكل</button>
-                        <button class="price-cat-btn" data-cat="main">⭐ أساسيات</button>
-                        <button class="price-cat-btn" data-cat="extra">➕ إضافي</button>
-                        <button class="price-cat-btn" data-cat="bags">🛍️ أكياس</button>
+                    
+                    <!-- أزرار التصنيف -->
+                    <div class="price-categories-tabs">
+                        <button class="price-cat-tab active" data-cat="all">الكل</button>
+                        <button class="price-cat-tab" data-cat="main">⭐ أساسيات</button>
+                        <button class="price-cat-tab" data-cat="extra">➕ إضافي</button>
+                        <button class="price-cat-tab" data-cat="bags">🛍️ أكياس تعبئة</button>
                     </div>
-                    <div class="price-list-container" id="priceListContainer">
-                        <div class="price-loading">جاري التحميل...</div>
+                    
+                    <!-- قائمة المواد -->
+                    <div class="price-items-container">
+                        <div class="price-items-header">
+                            <span class="price-items-header-name">اسم المادة</span>
+                            <span class="price-items-header-price">السعر (ل.س/كجم)</span>
+                        </div>
+                        <div id="priceListContainer" class="price-items-list"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="saveAllPricesBtn" class="btn-save">حفظ الكل</button>
-                    <button id="closePriceModalBtn2" class="btn-cancel">إغلاق</button>
+                    <button id="saveAllPricesBtn" class="btn-save"><i class="fas fa-save"></i> حفظ الكل</button>
+                    <button id="closePriceModalBtn2" class="btn-cancel"><i class="fas fa-times"></i> إغلاق</button>
                 </div>
             </div>
         </div>
@@ -208,17 +219,32 @@ function createPriceModal() {
     var searchInput = document.getElementById('priceSearchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
+            var clearBtn = document.getElementById('clearPriceSearch');
+            if (clearBtn) {
+                clearBtn.style.display = e.target.value ? 'flex' : 'none';
+            }
             renderPriceList();
         });
     }
     
-    // ربط أزرار التصنيف
-    var catBtns = document.querySelectorAll('.price-cat-btn');
-    for (var i = 0; i < catBtns.length; i++) {
-        catBtns[i].addEventListener('click', function() {
-            var btns = document.querySelectorAll('.price-cat-btn');
-            for (var j = 0; j < btns.length; j++) {
-                btns[j].classList.remove('active');
+    var clearSearch = document.getElementById('clearPriceSearch');
+    if (clearSearch) {
+        clearSearch.addEventListener('click', function() {
+            var searchInput = document.getElementById('priceSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                this.style.display = 'none';
+                renderPriceList();
+            }
+        });
+    }
+    
+    var catTabs = document.querySelectorAll('.price-cat-tab');
+    for (var i = 0; i < catTabs.length; i++) {
+        catTabs[i].addEventListener('click', function() {
+            var tabs = document.querySelectorAll('.price-cat-tab');
+            for (var j = 0; j < tabs.length; j++) {
+                tabs[j].classList.remove('active');
             }
             this.classList.add('active');
             renderPriceList();
@@ -252,20 +278,17 @@ function renderPriceList() {
     if (!container) return;
     
     var searchValue = document.getElementById('priceSearchInput')?.value.toLowerCase() || '';
-    var activeCat = document.querySelector('.price-cat-btn.active')?.getAttribute('data-cat') || 'all';
+    var activeCat = document.querySelector('.price-cat-tab.active')?.getAttribute('data-cat') || 'all';
     
-    // تصفية المواد حسب البحث والتصنيف
     var filteredMaterials = [];
     for (var i = 0; i < allMaterialsList.length; i++) {
         var material = allMaterialsList[i];
         var category = getMaterialCategory(material);
         
-        // تطبيق تصفية التصنيف
         if (activeCat !== 'all' && category !== activeCat) {
             continue;
         }
         
-        // تطبيق تصفية البحث
         if (searchValue && !material.toLowerCase().includes(searchValue)) {
             continue;
         }
@@ -274,7 +297,7 @@ function renderPriceList() {
     }
     
     if (filteredMaterials.length === 0) {
-        container.innerHTML = '<div class="price-empty"><i class="fas fa-search"></i><br>لا توجد نتائج</div>';
+        container.innerHTML = '<div class="price-empty-state"><i class="fas fa-search"></i><br>لا توجد نتائج</div>';
         updatePriceSummary();
         return;
     }
@@ -283,36 +306,23 @@ function renderPriceList() {
     for (var i = 0; i < filteredMaterials.length; i++) {
         var material = filteredMaterials[i];
         var currentPrice = getMaterialPrice(material);
-        var priceDisplay = currentPrice > 0 ? formatCurrency(currentPrice) : 'لم يحدد';
+        var priceDisplay = currentPrice > 0 ? currentPrice.toLocaleString() : '';
         var category = getMaterialCategory(material);
         var categoryIcon = '';
-        var categoryClass = '';
         
-        if (category === 'main') {
-            categoryIcon = '⭐';
-            categoryClass = 'price-cat-main';
-        } else if (category === 'extra') {
-            categoryIcon = '➕';
-            categoryClass = 'price-cat-extra';
-        } else if (category === 'bags') {
-            categoryIcon = '🛍️';
-            categoryClass = 'price-cat-bags';
-        }
+        if (category === 'main') categoryIcon = '⭐';
+        else if (category === 'extra') categoryIcon = '➕';
+        else if (category === 'bags') categoryIcon = '🛍️';
         
         html += `
-            <div class="price-item ${categoryClass}" data-material="${escapeHtml(material)}">
-                <div class="price-item-info">
-                    <div class="price-item-name">
-                        <span class="price-cat-icon">${categoryIcon}</span>
-                        <span>${escapeHtml(material)}</span>
-                    </div>
-                    <div class="price-item-details">
-                        <span class="price-item-unit">سعر الكيلو (ل.س)</span>
-                    </div>
+            <div class="price-item-row" data-material="${escapeHtml(material)}">
+                <div class="price-item-name-cell">
+                    <span class="price-category-icon">${categoryIcon}</span>
+                    <span class="price-material-name">${escapeHtml(material)}</span>
                 </div>
-                <div class="price-item-input">
-                    <input type="number" class="price-input" data-material="${escapeHtml(material)}" value="${currentPrice > 0 ? currentPrice : ''}" placeholder="0" step="100" min="0">
-                    <span class="price-current">${priceDisplay}</span>
+                <div class="price-item-price-cell">
+                    <input type="number" class="price-input-field" data-material="${escapeHtml(material)}" value="${currentPrice > 0 ? currentPrice : ''}" placeholder="سعر الكيلو" step="100" min="0">
+                    <span class="price-currency">ل.س</span>
                 </div>
             </div>
         `;
@@ -320,20 +330,15 @@ function renderPriceList() {
     
     container.innerHTML = html;
     
-    // ربط أحداث تغيير الأسعار
-    var priceInputs = container.querySelectorAll('.price-input');
+    var priceInputs = container.querySelectorAll('.price-input-field');
     for (var i = 0; i < priceInputs.length; i++) {
         priceInputs[i].addEventListener('change', function(e) {
             var materialName = this.getAttribute('data-material');
             var value = this.value;
             updateMaterialPrice(materialName, value);
             updatePriceSummary();
-            
-            // تحديث العرض الحالي
-            var priceDisplay = this.parentElement.querySelector('.price-current');
-            var newPrice = getMaterialPrice(materialName);
-            if (priceDisplay) {
-                priceDisplay.textContent = newPrice > 0 ? formatCurrency(newPrice) : 'لم يحدد';
+            if (typeof calculateAIMetrics === 'function') {
+                calculateAIMetrics();
             }
         });
     }
@@ -343,40 +348,20 @@ function renderPriceList() {
 
 // تحديث ملخص الأسعار
 function updatePriceSummary() {
-    var summaryContainer = document.getElementById('priceSummary');
-    if (!summaryContainer) return;
+    var totalMaterialsEl = document.getElementById('totalMaterialsPrice');
+    var pricedCountEl = document.getElementById('pricedMaterialsCount');
+    var totalValueEl = document.getElementById('totalInventoryValuePrice');
     
-    var totalValue = calculateTotalValue();
+    if (totalMaterialsEl) totalMaterialsEl.innerText = allMaterialsList.length;
+    
     var pricedCount = 0;
     for (var key in materialPrices) {
         if (materialPrices[key] > 0) pricedCount++;
     }
-    
-    var pricedCountEl = document.getElementById('pricedCount');
-    var totalMaterialsCountEl = document.getElementById('totalMaterialsCountPrice');
-    
     if (pricedCountEl) pricedCountEl.innerText = pricedCount;
-    if (totalMaterialsCountEl) totalMaterialsCountEl.innerText = allMaterialsList.length;
     
-    summaryContainer.innerHTML = `
-        <div class="price-total-card">
-            <i class="fas fa-chart-line"></i>
-            <div class="price-total-info">
-                <span class="price-total-label">القيمة الإجمالية للمخزون</span>
-                <span class="price-total-value" id="totalInventoryValue">${totalValue.formattedTotal}</span>
-            </div>
-        </div>
-        <div class="price-stats">
-            <div class="price-stat">
-                <span class="price-stat-label">عدد المواد المسعرة</span>
-                <span class="price-stat-value">${pricedCount}</span>
-            </div>
-            <div class="price-stat">
-                <span class="price-stat-label">إجمالي المواد</span>
-                <span class="price-stat-value">${allMaterialsList.length}</span>
-            </div>
-        </div>
-    `;
+    var totalValue = calculateTotalValue();
+    if (totalValueEl) totalValueEl.innerText = totalValue.formattedTotal;
 }
 
 // حفظ جميع الأسعار
@@ -390,6 +375,7 @@ function saveAllPrices() {
     }
     updatePriceSummary();
 }
+
 // تصدير الدوال
 window.getMaterialPrice = getMaterialPrice;
 window.loadPrices = loadPrices;
