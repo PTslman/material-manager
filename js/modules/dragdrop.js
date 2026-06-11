@@ -1,3 +1,4 @@
+
 // ==================== نظام السحب والإفلات ====================
 
 var draggedItem = null;
@@ -94,8 +95,6 @@ function setupDroppable(section) {
         
         if (draggedItemId && targetSection && draggedItemOriginalSection !== targetSection) {
             performDragDropMove(draggedItemId, targetSection, draggedItemOriginalSection, draggedItemName);
-        } else if (draggedItemId && targetSection && draggedItemOriginalSection === targetSection) {
-            showToastMessage('⚠️ المادة موجودة بالفعل في هذا القسم', false);
         }
     }
 }
@@ -104,7 +103,10 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
     if (!itemId || !targetSection) return false;
     
     var name = itemName || 'المادة';
-    showToastMessage('🔄 جاري نقل "' + name + '"...', false);
+    
+    if (typeof showToastMessage === 'function') {
+        showToastMessage('🔄 جاري نقل "' + name + '"...', false);
+    }
     
     try {
         // تحديث في Firebase
@@ -112,15 +114,6 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
             priority: targetSection,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        
-        // تسجيل في الذكاء الاصطناعي
-        if (window.aiEngine) {
-            window.aiEngine.learnFromAction('move', name, {
-                from: originalSection,
-                to: targetSection,
-                timestamp: Date.now()
-            });
-        }
         
         var sectionNames = {
             'main': 'أساسيات',
@@ -132,43 +125,29 @@ async function performDragDropMove(itemId, targetSection, originalSection, itemN
             'tawsaya': 'توصيات'
         };
         
-        showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
-        
-        // تحديث البيانات محلياً أولاً
-        var materialIndex = -1;
-        for (var i = 0; i < allMaterials.length; i++) {
-            if (allMaterials[i].id === itemId) {
-                materialIndex = i;
-                break;
-            }
+        if (typeof showToastMessage === 'function') {
+            showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
         }
         
-        if (materialIndex !== -1) {
-            allMaterials[materialIndex].priority = targetSection;
-            // إعادة عرض الأقسام
-            if (typeof renderSections === 'function') {
-                renderSections(allMaterials);
-            }
-            if (typeof updateCategoryCounts === 'function') {
-                updateCategoryCounts();
-            }
-            if (typeof calculateAIMetrics === 'function') {
-                calculateAIMetrics();
-            }
-            // إعادة تهيئة السحب والإفلات
-            setTimeout(function() {
-                if (typeof initDragAndDrop === 'function') {
-                    initDragAndDrop();
-                }
-            }, 200);
+        // إعادة تحميل البيانات من Firebase
+        if (typeof startListener === 'function') {
+            startListener();
         }
         
         return true;
     } catch(error) {
         console.error('خطأ في النقل:', error);
-        showToastMessage('❌ فشل نقل "' + name + '"', true);
+        if (typeof showToastMessage === 'function') {
+            showToastMessage('❌ فشل نقل "' + name + '"', true);
+        }
         return false;
     }
+}
+
+function refreshDragAndDrop() {
+    setTimeout(function() {
+        initDragAndDrop();
+    }, 200);
 }
 
 function showToastMessage(msg, isErr) {
@@ -180,12 +159,6 @@ function showToastMessage(msg, isErr) {
     toast.innerHTML = '<i class="fas ' + (isErr ? 'fa-exclamation-triangle' : 'fa-check-circle') + '"></i> ' + msg;
     document.body.appendChild(toast);
     setTimeout(function() { if (toast && toast.remove) toast.remove(); }, 2500);
-}
-
-function refreshDragAndDrop() {
-    setTimeout(function() {
-        initDragAndDrop();
-    }, 200);
 }
 
 window.initDragAndDrop = initDragAndDrop;
