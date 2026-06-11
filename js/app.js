@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.aiEngine = new AIEngine();
     }
     
-    // ترحيل الأقسام القديمة إلى قسم "إضافي"
     setTimeout(function() {
         if (typeof migrateOldSections === 'function') {
             migrateOldSections();
