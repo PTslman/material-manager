@@ -544,5 +544,16 @@ if (dec && inc && qty) {
     };
 }
 </script>
+    <script src="/material-manager/js/pwa-settings.js"></script>
+<script>
+if (typeof PWASettings !== 'undefined') {
+    PWASettings.init();
+    var installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.onclick = function() { PWASettings.promptInstall(); };
+    }
+    setTimeout(function() { PWASettings.registerBackgroundSync(); }, 3000);
+}
+</script>
 </body>
 </html>
