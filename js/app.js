@@ -1,36 +1,21 @@
 // ==================== تهيئة التطبيق ====================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 App initializing...');
-    
-    if (typeof renderCategories === 'function') {
-        renderCategories();
-        console.log('✅ Categories rendered');
-    }
-    
-    if (typeof bindEvents === 'function') {
-        bindEvents();
-        console.log('✅ Events bound');
-    }
-    
-    if (typeof startListener === 'function') {
-        startListener();
-        console.log('✅ Firestore listener started');
-    }
-    
-    if (typeof initPWA === 'function') {
-        initPWA();
-        console.log('✅ PWA initialized');
-    }
+    if (typeof renderCategories === 'function') renderCategories();
+    if (typeof bindEvents === 'function') bindEvents();
+    if (typeof startListener === 'function') startListener();
+    if (typeof initPWA === 'function') initPWA();
     
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
     
+    if (!window.aiEngine) {
+        window.aiEngine = new AIEngine();
+    }
+    
     setTimeout(function() { 
-        if (typeof initDragAndDrop === 'function') {
-            initDragAndDrop();
-            console.log('✅ Drag and drop system ready');
-        }
+        if (typeof initDragAndDrop === 'function') initDragAndDrop();
+        if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
     }, 1000);
 });
 
@@ -45,4 +30,3 @@ window.startListener = startListener;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
 window.initDragAndDrop = initDragAndDrop;
-window.showToastMessage = showToastMessage;
