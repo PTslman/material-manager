@@ -55,6 +55,7 @@
 </head>
 <body>
 
+<!-- شاشة البداية -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
         <div class="splash-logo"><i class="fas fa-boxes"></i></div>
@@ -69,8 +70,10 @@
     </div>
 </div>
 
+<!-- التطبيق الرئيسي -->
 <div id="appContainer" class="app-main" style="display: none;">
     
+    <!-- الهيرو -->
     <div class="hero">
         <div class="hero-content">
             <h1>مدير المواد والمخزون</h1>
@@ -81,11 +84,13 @@
         </div>
     </div>
     
+    <!-- زر إضافة مادة جديدة -->
     <button id="mainAddBtn" class="main-add-btn">
         <i class="fas fa-plus-circle"></i>
         <span>إضافة مادة جديدة</span>
     </button>
     
+    <!-- شريط المزامنة -->
     <div class="sync-bar">
         <button id="syncBtn" class="sync-main-btn">
             <i class="fas fa-sync-alt"></i>
@@ -93,35 +98,48 @@
         </button>
     </div>
     
+    <!-- ==================== شريط الأدوات المحسن ==================== -->
     <div class="toolbar-modern">
-        <div class="toolbar-group">
-            <button id="themeToggle" class="tool-btn" title="الوضع الليلي">
-                <i class="fas fa-moon"></i>
-                <span>الوضع الليلي</span>
-            </button>
-            <button id="backupBtn" class="tool-btn" title="نسخ احتياطي">
-                <i class="fas fa-download"></i>
-                <span>نسخ احتياطي</span>
-            </button>
-            <button id="restoreBtn" class="tool-btn" title="استعادة">
-                <i class="fas fa-upload"></i>
-                <span>استعادة</span>
-            </button>
-            <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
-                <i class="fas fa-download"></i>
-                <span>تثبيت</span>
-            </button>
-            <button id="clearAllBtn" class="tool-btn danger-btn" title="مسح الكل">
-                <i class="fas fa-trash-alt"></i>
-                <span>مسح الكل</span>
-            </button>
+        <div class="toolbar-container">
+            <div class="toolbar-section">
+                <div class="toolbar-title">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>الأدوات</span>
+                </div>
+                <div class="toolbar-buttons">
+                    <button id="themeToggle" class="tool-btn theme-btn" title="الوضع الليلي">
+                        <i class="fas fa-moon"></i>
+                        <span>الوضع الليلي</span>
+                    </button>
+                    <button id="backupBtn" class="tool-btn backup-btn" title="نسخ احتياطي">
+                        <i class="fas fa-download"></i>
+                        <span>نسخ احتياطي</span>
+                    </button>
+                    <button id="restoreBtn" class="tool-btn restore-btn" title="استعادة">
+                        <i class="fas fa-upload"></i>
+                        <span>استعادة</span>
+                    </button>
+                    <button id="installBtn" class="tool-btn install-btn" title="تثبيت التطبيق" style="display: none;">
+                        <i class="fas fa-download"></i>
+                        <span>تثبيت</span>
+                    </button>
+                    <button id="clearAllBtn" class="tool-btn clear-btn" title="مسح الكل">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>مسح الكل</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+    <!-- ==================== نهاية شريط الأدوات ==================== -->
     
+    <!-- كروت الأقسام -->
     <div class="categories-container" id="categoriesContainer"></div>
     
+    <!-- حاوية الأقسام والمواد -->
     <div id="sectionsContainer"></div>
     
+    <!-- إحصائيات الذكاء الاصطناعي -->
     <div class="ai-stats-section">
         <div class="ai-stats-header">
             <div class="ai-stats-icon"><i class="fas fa-brain"></i></div>
@@ -144,6 +162,7 @@
                 <div class="ai-stat-info">
                     <span class="ai-stat-label">مواد ناقصة</span>
                     <span class="ai-stat-value" id="lowStockCount">0</span>
+                    <span class="ai-stat-unit">مادة</span>
                 </div>
             </div>
         </div>
@@ -155,6 +174,7 @@
     </div>
 </div>
 
+<!-- شريط الحالة -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -166,7 +186,9 @@
     </div>
 </div>
 
-<!-- New Item Modal -->
+<!-- ==================== المودالات ==================== -->
+
+<!-- مودال إضافة مادة جديدة -->
 <div id="newItemModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -224,7 +246,7 @@
     </div>
 </div>
 
-<!-- Preset Modal -->
+<!-- مودال القوائم الجاهزة -->
 <div id="presetModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -246,7 +268,7 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- مودال تعديل الكمية -->
 <div id="editModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -287,7 +309,7 @@
     </div>
 </div>
 
-<!-- Move Item Modal -->
+<!-- مودال نقل المادة -->
 <div id="moveItemModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -323,7 +345,7 @@
     </div>
 </div>
 
-<!-- System Message Modal -->
+<!-- مودال رسائل النظام -->
 <div id="systemMessageModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content modal-message">
@@ -334,6 +356,7 @@
     </div>
 </div>
 
+<!-- ==================== السكربتات ==================== -->
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
@@ -349,6 +372,7 @@
 <script src="/material-manager/js/app.js"></script>
 
 <script>
+// إخفاء شاشة البداية
 setTimeout(function() {
     var splash = document.getElementById('splashScreen');
     var app = document.getElementById('appContainer');
@@ -361,12 +385,14 @@ setTimeout(function() {
     }
 }, 2000);
 
+// تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/material-manager/service-worker.js').then(function(reg) {}).catch(function(err) {});
     });
 }
 
+// إغلاق المودالات
 window.closeAllModals = function() {
     var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal'];
     for (var i = 0; i < modals.length; i++) {
@@ -375,6 +401,7 @@ window.closeAllModals = function() {
     }
 };
 
+// ربط أزرار الإغلاق
 var closeButtons = ['closeNewModalBtn', 'closeNewModalBtn2', 'closePresetModalBtn', 'closePresetModalBtn2', 
                     'closeEditModalBtn', 'closeEditModalBtn2', 'cancelMoveBtn', 'cancelMoveBtn2', 'closeSystemMessageBtn'];
 for (var i = 0; i < closeButtons.length; i++) {
@@ -384,6 +411,7 @@ for (var i = 0; i < closeButtons.length; i++) {
     }
 }
 
+// أزرار +/- في نافذة الإضافة
 var dec = document.getElementById('newQtyDec');
 var inc = document.getElementById('newQtyInc');
 var qty = document.getElementById('newQuantityValue');
@@ -399,51 +427,28 @@ if (dec && inc && qty) {
         qty.value = v;
     };
 }
+
+// أزرار نوع التوصية
+document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(function(b) {
+            b.classList.remove('active');
+        });
+        this.classList.add('active');
+        var customGroup = document.getElementById('tawsayaCustomQtyGroup');
+        if (customGroup) {
+            customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
+        }
+    });
+});
+
+// أزرار الأوزان
+document.querySelectorAll('.weight-preset').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var qtyInput = document.getElementById('tawsayaCustomQty');
+        if (qtyInput) qtyInput.value = this.dataset.value;
+    });
+});
 </script>
 </body>
-    </html>
-<script>
-// تسجيل التفاعلات مع Service Worker
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(function(registration) {
-        // تسجيل التفاعلات
-        function recordInteraction(action, success) {
-            if (registration.active) {
-                registration.active.postMessage({
-                    type: 'RECORD_INTERACTION',
-                    action: action,
-                    success: success
-                });
-            }
-        }
-        
-        // تسجيل المزامنة الناجحة
-        window.addEventListener('sync-success', function() {
-            recordInteraction('sync', true);
-        });
-        
-        // تسجيل فتح التطبيق
-        recordInteraction('open_app', true);
-        
-        // الحصول على توصيات ذكية
-        if (registration.active) {
-            registration.active.postMessage({ type: 'GET_RECOMMENDATIONS' });
-        }
-        
-        // استقبال التوصيات
-        navigator.serviceWorker.addEventListener('message', function(event) {
-            if (event.data.type === 'RECOMMENDATIONS') {
-                console.log('AI Recommendations:', event.data.data);
-                // يمكن استخدام التوصيات لتحسين تجربة المستخدم
-                if (event.data.data.bestTimeToSync === new Date().getHours()) {
-                    // عرض إشعار أو تلميح للمستخدم
-                }
-            }
-            if (event.data.type === 'BACKGROUND_UPDATE') {
-                // تحديث البيانات في الخلفية
-                if (typeof startListener === 'function') startListener();
-            }
-        });
-    });
-}
-</script>
+</html>
