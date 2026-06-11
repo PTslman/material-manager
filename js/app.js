@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
         window.aiEngine = new AIEngine();
     }
     
+    // ترحيل الأقسام القديمة إلى قسم "إضافي"
+    setTimeout(function() {
+        if (typeof migrateOldSections === 'function') {
+            migrateOldSections();
+        }
+    }, 2000);
+    
     setTimeout(function() { 
         if (typeof initDragAndDrop === 'function') initDragAndDrop();
         if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
@@ -30,3 +37,4 @@ window.startListener = startListener;
 window.renderSections = renderSections;
 window.calculateAIMetrics = calculateAIMetrics;
 window.initDragAndDrop = initDragAndDrop;
+window.migrateOldSections = migrateOldSections;
