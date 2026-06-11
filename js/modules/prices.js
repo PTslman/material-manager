@@ -62,9 +62,6 @@ function updateMaterialPrice(materialName, price) {
         }
     }
     savePrices();
-    if (typeof calculateTotalValue === 'function') {
-        calculateTotalValue();
-    }
     if (typeof calculateAIMetrics === 'function') {
         calculateAIMetrics();
     }
@@ -73,6 +70,27 @@ function updateMaterialPrice(materialName, price) {
 // الحصول على سعر مادة
 function getMaterialPrice(materialName) {
     return materialPrices[materialName] || 0;
+}
+
+// الحصول على سعر تقريبي لمادة جديدة
+function getEstimatedPrice(materialName) {
+    var estimatedPrices = {
+        'ملح': 2000, 'فلفل اسود ناعم': 25000, 'كمون ناعم': 20000, 'كركم': 15000,
+        'زنجبيل ناعم': 18000, 'قرفة ناعمة': 22000, 'هيل ناعم': 80000, 'كزبرة ناعمة': 12000,
+        'شطة حلوة': 16000, 'شطة حدة وسط': 16000, 'توم ناعم': 14000, 'بصل ناعم': 12000,
+        'سماق ناعم': 18000, 'شاورما': 20000, 'كاري': 15000, 'نسكافية خشنة': 35000,
+        'نسكافية ناعمة': 35000, 'قهوة عربية': 40000, 'قهوة تركية': 45000, 'هيل مطحون': 80000,
+        'زعفران': 200000, 'ماجي ظروف': 500, 'ماجي اصفر': 500, 'ماجي ابيض': 500,
+        'جوز هند خشن': 25000, 'حليب نصف دسم': 15000, 'جوز امريكي': 30000, 'حبة البركة': 20000,
+        'زنجبيل خشن': 15000, 'سمسم محمص': 18000, 'كركدية': 12000, 'كربونة الصوديوم': 5000,
+        'كبسة خليجية': 25000, 'كبسة ناعمة': 25000, 'كريمة محلاية': 15000, 'كاكاو نخب اول': 30000,
+        'كاكاو نخب ثاني': 25000, 'كمون حب': 20000, 'قرفة عيدان': 25000, 'قرفة سيجار': 28000,
+        'كزبرة حب': 12000, 'قرنفل حب': 40000, 'قرنفل ناعم': 40000, 'اشلميش': 15000,
+        'فستق ني ارجنتيني': 50000, 'ملح صيني': 3000, 'ملح ليمون': 5000, 'مشكلة': 20000,
+        'مشكلة بيضاء': 20000, 'نشا مصري': 8000, 'هيل حب خشن': 75000, 'نعنع يابس': 10000,
+        'يانسون حب': 15000, 'شوفان': 10000, 'تمر سري': 12000
+    };
+    return estimatedPrices[materialName] || 0;
 }
 
 // حساب القيمة الإجمالية للمخزون
@@ -111,6 +129,8 @@ function calculateTotalValue() {
             });
         }
     }
+    
+    priceBreakdown.sort(function(a, b) { return b.totalValue - a.totalValue; });
     
     return {
         total: totalValue,
@@ -151,7 +171,6 @@ function createPriceModal() {
                     <button class="modal-close" id="closePriceModalBtn">&times;</button>
                 </div>
                 <div class="modal-body price-modal-body">
-                    <!-- قسم الإحصائيات -->
                     <div class="price-stats-cards">
                         <div class="price-stat-card">
                             <div class="price-stat-icon"><i class="fas fa-boxes"></i></div>
@@ -176,7 +195,6 @@ function createPriceModal() {
                         </div>
                     </div>
                     
-                    <!-- شريط البحث -->
                     <div class="price-search-section">
                         <div class="price-search-wrapper">
                             <i class="fas fa-search"></i>
@@ -185,7 +203,6 @@ function createPriceModal() {
                         </div>
                     </div>
                     
-                    <!-- أزرار التصنيف -->
                     <div class="price-categories-tabs">
                         <button class="price-cat-tab active" data-cat="all">الكل</button>
                         <button class="price-cat-tab" data-cat="main">⭐ أساسيات</button>
@@ -193,7 +210,6 @@ function createPriceModal() {
                         <button class="price-cat-tab" data-cat="bags">🛍️ أكياس تعبئة</button>
                     </div>
                     
-                    <!-- قائمة المواد -->
                     <div class="price-items-container">
                         <div class="price-items-header">
                             <span class="price-items-header-name">اسم المادة</span>
@@ -212,28 +228,30 @@ function createPriceModal() {
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    document.getElementById('closePriceModalBtn')?.addEventListener('click', closePriceModal);
-    document.getElementById('closePriceModalBtn2')?.addEventListener('click', closePriceModal);
-    document.getElementById('saveAllPricesBtn')?.addEventListener('click', saveAllPrices);
-    
+    var closeBtn1 = document.getElementById('closePriceModalBtn');
+    var closeBtn2 = document.getElementById('closePriceModalBtn2');
+    var saveBtn = document.getElementById('saveAllPricesBtn');
     var searchInput = document.getElementById('priceSearchInput');
+    var clearSearch = document.getElementById('clearPriceSearch');
+    
+    if (closeBtn1) closeBtn1.addEventListener('click', closePriceModal);
+    if (closeBtn2) closeBtn2.addEventListener('click', closePriceModal);
+    if (saveBtn) saveBtn.addEventListener('click', saveAllPrices);
+    
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
-            var clearBtn = document.getElementById('clearPriceSearch');
-            if (clearBtn) {
-                clearBtn.style.display = e.target.value ? 'flex' : 'none';
+            if (clearSearch) {
+                clearSearch.style.display = e.target.value ? 'flex' : 'none';
             }
             renderPriceList();
         });
     }
     
-    var clearSearch = document.getElementById('clearPriceSearch');
     if (clearSearch) {
         clearSearch.addEventListener('click', function() {
-            var searchInput = document.getElementById('priceSearchInput');
             if (searchInput) {
                 searchInput.value = '';
-                this.style.display = 'none';
+                clearSearch.style.display = 'none';
                 renderPriceList();
             }
         });
@@ -277,8 +295,11 @@ function renderPriceList() {
     var container = document.getElementById('priceListContainer');
     if (!container) return;
     
-    var searchValue = document.getElementById('priceSearchInput')?.value.toLowerCase() || '';
-    var activeCat = document.querySelector('.price-cat-tab.active')?.getAttribute('data-cat') || 'all';
+    var searchInput = document.getElementById('priceSearchInput');
+    var searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+    
+    var activeTab = document.querySelector('.price-cat-tab.active');
+    var activeCat = activeTab ? activeTab.getAttribute('data-cat') : 'all';
     
     var filteredMaterials = [];
     for (var i = 0; i < allMaterialsList.length; i++) {
@@ -376,8 +397,8 @@ function saveAllPrices() {
     updatePriceSummary();
 }
 
-// تصدير الدوال
 window.getMaterialPrice = getMaterialPrice;
+window.getEstimatedPrice = getEstimatedPrice;
 window.loadPrices = loadPrices;
 window.savePrices = savePrices;
 window.updateMaterialPrice = updateMaterialPrice;
