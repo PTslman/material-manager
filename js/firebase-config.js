@@ -11,11 +11,8 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
-    console.log('✅ Firebase initialized');
 }
 
 const db = firebase.firestore();
 const materialsCollection = db.collection("spices_final_v12");
 const pricesCollection = db.collection("material_prices");
-
-console.log('✅ Firebase ready - Collection: spices_final_v12, Prices: material_prices');
