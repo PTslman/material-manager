@@ -180,34 +180,18 @@ function updateCategoryCounts() {
 
 function calculateAIMetrics() {
     if (!window.aiEngine) {
-        console.log('AI Engine not available');
         return;
     }
     
-    // استخدام Promise بدلاً من async/await لضمان التوافق
-    if (window.aiEngine.analyzeInventoryWithCallback) {
-        window.aiEngine.analyzeInventoryWithCallback(window.allMaterials || [], function(analysis) {
-            updateAIDisplay(analysis);
-        });
-    } else {
-        // محاولة استخدام الدالة المتزامنة أولاً
-        var analysis = window.aiEngine.analyzeInventorySync ? 
-            window.aiEngine.analyzeInventorySync(window.allMaterials || [], window.getMaterialPrice) : 
-            window.aiEngine.analyzeInventory(window.allMaterials || [], window.getMaterialPrice);
-        
-        if (analysis && analysis.then) {
-            analysis.then(function(result) {
-                updateAIDisplay(result);
-            }).catch(function(e) {
-                console.error('AI Analysis error:', e);
-                showAIFallback();
-            });
-        } else if (analysis) {
-            updateAIDisplay(analysis);
-        } else {
-            showAIFallback();
-        }
+    var materials = window.allMaterials || [];
+    var analysis = window.aiEngine.analyzeInventorySync(materials, window.getMaterialPrice);
+    
+    if (!analysis) {
+        showAIFallback();
+        return;
     }
+    
+    updateAIDisplay(analysis);
 }
 
 function updateAIDisplay(analysis) {
@@ -217,13 +201,23 @@ function updateAIDisplay(analysis) {
     }
     
     var totalQtyEl = document.getElementById('totalQuantityValue');
-    if (totalQtyEl) totalQtyEl.innerText = analysis.totalWeight || '0';
+    if (totalQtyEl) {
+        totalQtyEl.innerText = analysis.totalWeight || '0';
+    }
     
     var totalValueEl = document.getElementById('totalValueValue');
-    if (totalValueEl) totalValueEl.innerText = analysis.totalValue || '0 ل.س';
+    if (totalValueEl) {
+        var discountText = '';
+        if (analysis.discountPercent) {
+            discountText = '<span class="ai-stat-unit" style="font-size:0.65rem;"> (بعد خصم ' + analysis.discountPercent + '%)</span>';
+        }
+        totalValueEl.innerHTML = (analysis.totalValue || '0') + discountText;
+    }
     
     var lowStockEl = document.getElementById('lowStockCount');
-    if (lowStockEl) lowStockEl.innerHTML = (analysis.lowStockCount || 0) + '<span class="ai-stat-unit"> مادة</span>';
+    if (lowStockEl) {
+        lowStockEl.innerHTML = (analysis.lowStockCount || 0) + '<span class="ai-stat-unit"> مادة</span>';
+    }
     
     var insightsDiv = document.getElementById('aiInsights');
     if (insightsDiv && analysis.insights) {
@@ -240,12 +234,12 @@ function updateAIDisplay(analysis) {
     var priceDetailsEl = document.getElementById('priceDetails');
     if (priceDetailsEl) {
         if (analysis.priceBreakdown && analysis.priceBreakdown.length > 0) {
-            var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار</div>';
+            var priceHtml = '<div class="price-details-header"><i class="fas fa-chart-pie"></i> تفاصيل الأسعار (قبل الخصم / بعد الخصم)</div>';
             for (var i = 0; i < analysis.priceBreakdown.length; i++) {
                 var p = analysis.priceBreakdown[i];
                 priceHtml += '<div class="price-detail-item">' +
                     '<span class="price-detail-name">' + escapeHtml(p.name) + '</span>' +
-                    '<span class="price-detail-value">' + (p.formattedValue || '0 ل.س') + '</span>' +
+                    '<span class="price-detail-value">' + (p.formattedValueBefore || '0 ل.س') + ' → ' + (p.formattedValueAfter || '0 ل.س') + '</span>' +
                     '</div>';
             }
             priceDetailsEl.innerHTML = priceHtml;
