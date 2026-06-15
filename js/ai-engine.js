@@ -4,7 +4,7 @@ var AIEngine = function() {
     this.learningData = this.loadLearningData();
     this.pricesCache = {};
     this.pricesLoaded = false;
-    this.discountRate = 0.35;
+    this.discountRate = 0.35; // خصم 35%
 };
 
 AIEngine.prototype.loadLearningData = function() {
@@ -55,7 +55,6 @@ AIEngine.prototype.formatCurrency = function(value) {
 
 AIEngine.prototype.fetchPricesFromFirebase = async function() {
     if (!window.pricesCollection) {
-        console.warn('pricesCollection not defined');
         return false;
     }
     
@@ -68,10 +67,8 @@ AIEngine.prototype.fetchPricesFromFirebase = async function() {
         });
         this.pricesCache = prices;
         this.pricesLoaded = true;
-        console.log('Prices loaded from Firebase:', Object.keys(prices).length);
         return true;
     } catch(e) {
-        console.error('Error loading prices:', e);
         return false;
     }
 };
@@ -92,10 +89,11 @@ AIEngine.prototype.analyzeInventorySync = function(materials, externalGetPriceFu
             totalValueBeforeDiscount: '0',
             totalValueAfterDiscount: '0',
             discountRate: this.discountRate,
+            discountPercent: 35,
             lowStockCount: 0,
             lowStockList: [],
             priceBreakdown: [],
-            insights: ['لا توجد مواد في المخزون', 'أضف مواد جديدة']
+            insights: ['✨ لا توجد مواد في المخزون', '💡 أضف مواد جديدة باستخدام زر "إضافة مادة جديدة"']
         };
     }
     
@@ -176,24 +174,6 @@ AIEngine.prototype.analyzeInventorySync = function(materials, externalGetPriceFu
     };
 };
 
-AIEngine.prototype.analyzeInventory = async function(materials, externalGetPriceFunction) {
-    if (!this.pricesLoaded) {
-        await this.fetchPricesFromFirebase();
-    }
-    return this.analyzeInventorySync(materials, externalGetPriceFunction);
-};
-
-AIEngine.prototype.analyzeInventoryWithCallback = function(materials, callback) {
-    var self = this;
-    this.fetchPricesFromFirebase().then(function() {
-        var result = self.analyzeInventorySync(materials, window.getMaterialPrice);
-        if (callback) callback(result);
-    }).catch(function() {
-        var result = self.analyzeInventorySync(materials, window.getMaterialPrice);
-        if (callback) callback(result);
-    });
-};
-
 AIEngine.prototype.getInsights = function(totalWeight, totalValueBefore, totalValueAfter, lowStockCount, tawsayaCount) {
     var insights = [];
     var discountPercent = Math.round(this.discountRate * 100);
@@ -228,4 +208,3 @@ AIEngine.prototype.preloadPrices = async function() {
 };
 
 window.aiEngine = new AIEngine();
-console.log('AI Engine initialized');
