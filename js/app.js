@@ -1,7 +1,6 @@
 // ==================== تهيئة التطبيق ====================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 تهيئة التطبيق...');
     
     if (typeof renderCategories === 'function') {
         renderCategories();
@@ -22,17 +21,15 @@ document.addEventListener('DOMContentLoaded', function() {
     window.allMaterials = allMaterials;
     window.currentEditId = currentEditId;
     
-    // تحميل الأسعار مسبقاً من Firebase
+    // تحميل الأسعار من Firebase وتحديث التحليل
     if (window.aiEngine && typeof window.aiEngine.preloadPrices === 'function') {
         window.aiEngine.preloadPrices().then(function() {
-            console.log('✅ تم تحميل الأسعار من Firebase');
             if (typeof calculateAIMetrics === 'function') {
                 setTimeout(function() {
                     calculateAIMetrics();
-                }, 300);
+                }, 500);
             }
-        }).catch(function(e) {
-            console.error('خطأ في تحميل الأسعار:', e);
+        }).catch(function() {
             if (typeof calculateAIMetrics === 'function') {
                 calculateAIMetrics();
             }
