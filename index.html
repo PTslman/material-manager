@@ -12,6 +12,7 @@
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
     <script>
+        // تعطيل console.log في الإنتاج
         if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
             console.log = function() {};
             console.error = function() {};
@@ -20,6 +21,7 @@
     </script>
     
     <script>
+        // تحديد المسار الأساسي
         (function() {
             var basePath = '/material-manager';
             var pathname = window.location.pathname;
@@ -46,7 +48,7 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/material-manager/icons/icon-96x96.png">
     <link rel="icon" type="image/png" sizes="128x128" href="/material-manager/icons/icon-128x128.png">
     <link rel="icon" type="image/png" sizes="144x144" href="/material-manager/icons/icon-144x144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png>
+    <link rel="icon" type="image/png" sizes="152x152" href="/material-manager/icons/icon-152x152.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/material-manager/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="384x384" href="/material-manager/icons/icon-384x384.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/material-manager/icons/icon-512x512.png">
@@ -55,7 +57,7 @@
 </head>
 <body>
 
-<!-- شاشة البداية -->
+<!-- ==================== شاشة البداية ==================== -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
         <div class="splash-logo"><i class="fas fa-boxes"></i></div>
@@ -76,7 +78,7 @@
     </div>
 </div>
 
-<!-- التطبيق الرئيسي -->
+<!-- ==================== التطبيق الرئيسي ==================== -->
 <div id="appContainer" class="app-main" style="display: none;">
     
     <!-- الهيرو -->
@@ -187,7 +189,7 @@
     </div>
 </div>
 
-<!-- شريط الحالة -->
+<!-- ==================== شريط الحالة ==================== -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -556,4 +558,4 @@ if (typeof PWASettings !== 'undefined') {
 }
 </script>
 </body>
-    </html>
+                </html>
