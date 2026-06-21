@@ -1,7 +1,7 @@
 {
   "name": "مدير المواد الذكي",
   "short_name": "مدير المواد",
-  "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية وذكاء اصطناعي",
+  "description": "نظام متكامل لإدارة المخزون والبهارات مع مزامنة سحابية فورية",
   "start_url": "/material-manager/",
   "scope": "/material-manager/",
   "display": "standalone",
@@ -12,7 +12,6 @@
   "dir": "rtl",
   "lang": "ar",
   "categories": ["business", "productivity", "shopping", "utilities"],
-  
   "icons": [
     { "src": "/material-manager/icons/icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "any maskable" },
     { "src": "/material-manager/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any maskable" },
@@ -23,45 +22,32 @@
     { "src": "/material-manager/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any maskable" },
     { "src": "/material-manager/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
-  
   "shortcuts": [
     {
       "name": "➕ إضافة مادة جديدة",
       "short_name": "إضافة",
-      "description": "إضافة مادة جديدة إلى المخزون",
       "url": "/material-manager/?action=add",
       "icons": [{ "src": "/material-manager/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "⚠️ المواد الناقصة",
       "short_name": "النواقص",
-      "description": "عرض المواد التي تحتاج إعادة تعبئة",
       "url": "/material-manager/?action=lowstock",
       "icons": [{ "src": "/material-manager/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "🔄 مزامنة",
       "short_name": "مزامنة",
-      "description": "مزامنة البيانات مع السحابة",
       "url": "/material-manager/?action=sync",
-      "icons": [{ "src": "/material-manager/icons/icon-96x96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "💾 نسخ احتياطي",
-      "short_name": "نسخ",
-      "description": "إنشاء نسخة احتياطية للبيانات",
-      "url": "/material-manager/?action=backup",
       "icons": [{ "src": "/material-manager/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "🏷️ إدارة الأسعار",
       "short_name": "أسعار",
-      "description": "تحديد أسعار المواد",
       "url": "/material-manager/?action=prices",
       "icons": [{ "src": "/material-manager/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
-  
   "prefer_related_applications": false,
   "launch_handler": {
     "client_mode": ["focus-existing", "auto"]
