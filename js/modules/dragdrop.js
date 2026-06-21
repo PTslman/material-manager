@@ -1,131 +1,72 @@
-// ==================== نظام السحب والإفلات ====================
+// ==================== نظام السحب والإفلات المتقدم ====================
 
-var draggedItem = null;
-var draggedItemId = null;
-var draggedItemName = null;
-var draggedItemOriginalSection = null;
+let dragState = {
+    item: null,
+    id: null,
+    name: null,
+    originalSection: null
+};
 
 function initDragAndDrop() {
-    var materials = document.querySelectorAll('.material-card');
-    var sections = document.querySelectorAll('.priority-section');
-    
-    for (var i = 0; i < materials.length; i++) {
-        setupDraggable(materials[i]);
-    }
-    
-    for (var i = 0; i < sections.length; i++) {
-        setupDroppable(sections[i]);
-    }
+    document.querySelectorAll('.material-card').forEach(card => setupDraggable(card));
+    document.querySelectorAll('.priority-section').forEach(section => setupDroppable(section));
 }
 
 function setupDraggable(element) {
     element.setAttribute('draggable', 'true');
-    
-    element.removeEventListener('dragstart', dragStartHandler);
-    element.removeEventListener('dragend', dragEndHandler);
-    
-    element.addEventListener('dragstart', dragStartHandler);
-    element.addEventListener('dragend', dragEndHandler);
-    
-    function dragStartHandler(e) {
-        draggedItem = this;
-        draggedItemId = this.getAttribute('data-id');
-        draggedItemName = this.getAttribute('data-name');
-        draggedItemOriginalSection = this.closest('.priority-section')?.getAttribute('data-section') || '';
-        
-        this.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', draggedItemId);
-        e.dataTransfer.effectAllowed = 'move';
-        
-        var dragIcon = document.createElement('div');
-        dragIcon.textContent = draggedItemName;
-        dragIcon.style.cssText = 'position:absolute;top:-1000px;background:#10b981;color:white;padding:8px 16px;border-radius:999px;font-size:12px;font-weight:bold';
-        document.body.appendChild(dragIcon);
-        e.dataTransfer.setDragImage(dragIcon, 0, 0);
-        setTimeout(function() { document.body.removeChild(dragIcon); }, 0);
-    }
-    
-    function dragEndHandler(e) {
-        this.classList.remove('dragging');
-        
-        var allSections = document.querySelectorAll('.priority-section');
-        for (var i = 0; i < allSections.length; i++) {
-            allSections[i].classList.remove('drag-over');
-        }
-        
-        draggedItem = null;
-        draggedItemId = null;
-        draggedItemName = null;
-        draggedItemOriginalSection = null;
-    }
+    element.addEventListener('dragstart', handleDragStart);
+    element.addEventListener('dragend', handleDragEnd);
+}
+
+function handleDragStart(e) {
+    dragState.item = this;
+    dragState.id = this.dataset.id;
+    dragState.name = this.dataset.name;
+    dragState.originalSection = this.closest('.priority-section')?.dataset.section || '';
+    this.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', dragState.id);
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.priority-section').forEach(s => s.classList.remove('drag-over'));
+    dragState = { item: null, id: null, name: null, originalSection: null };
 }
 
 function setupDroppable(section) {
-    section.removeEventListener('dragover', dragOverHandler);
-    section.removeEventListener('dragleave', dragLeaveHandler);
-    section.removeEventListener('drop', dropHandler);
-    
-    section.addEventListener('dragover', dragOverHandler);
-    section.addEventListener('dragleave', dragLeaveHandler);
-    section.addEventListener('drop', dropHandler);
-    
-    function dragOverHandler(e) {
+    section.addEventListener('dragover', e => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-        this.classList.add('drag-over');
-    }
+        section.classList.add('drag-over');
+    });
+    section.addEventListener('dragleave', () => section.classList.remove('drag-over'));
+    section.addEventListener('drop', handleDrop);
+}
+
+async function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
     
-    function dragLeaveHandler(e) {
-        this.classList.remove('drag-over');
-    }
-    
-    function dropHandler(e) {
-        e.preventDefault();
-        this.classList.remove('drag-over');
-        
-        var targetSection = this.getAttribute('data-section');
-        
-        if (draggedItemId && targetSection && draggedItemOriginalSection !== targetSection) {
-            performDragDropMove(draggedItemId, targetSection, draggedItemOriginalSection, draggedItemName);
-        }
+    const targetSection = this.dataset.section;
+    if (dragState.id && targetSection && dragState.originalSection !== targetSection) {
+        await performMove(dragState.id, targetSection, dragState.originalSection, dragState.name);
     }
 }
 
-async function performDragDropMove(itemId, targetSection, originalSection, itemName) {
-    if (!itemId || !targetSection) return false;
-    var name = itemName || 'المادة';
-    if (typeof showToastMessage === 'function') showToastMessage('🔄 جاري نقل "' + name + '"...', false);
+async function performMove(id, target, original, name) {
+    if (!id || !target) return;
+    name = name || 'المادة';
+    showToastMessage(`🔄 جاري نقل "${name}"...`, false);
     
     try {
-        await materialsCollection.doc(itemId).update({ priority: targetSection });
-        var sectionNames = { 'main': 'أساسيات', 'extra': 'إضافي', 'bags': 'أكياس تعبئة', 'tawsaya': 'توصيات' };
-        if (typeof showToastMessage === 'function') showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
+        await materialsCollection.doc(id).update({ priority: target });
+        const names = { 'main': 'أساسيات', 'extra': 'إضافي', 'bags': 'أكياس تعبئة', 'tawsaya': 'توصيات' };
+        showToastMessage(`✓ تم نقل "${name}" إلى ${names[target] || target}`);
         if (typeof startListener === 'function') startListener();
-        return true;
-    } catch(error) {
-        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل نقل "' + name + '"', true);
-        return false;
+    } catch(e) {
+        showToastMessage(`❌ فشل نقل "${name}"`, true);
     }
-}
-
-function refreshDragAndDrop() {
-    setTimeout(function() {
-        initDragAndDrop();
-    }, 200);
-}
-
-function showToastMessage(msg, isErr) {
-    if (isErr === undefined) isErr = false;
-    var existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    var toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = '<i class="fas ' + (isErr ? 'fa-exclamation-triangle' : 'fa-check-circle') + '"></i> ' + msg;
-    document.body.appendChild(toast);
-    setTimeout(function() { if (toast && toast.remove) toast.remove(); }, 2500);
 }
 
 window.initDragAndDrop = initDragAndDrop;
-window.refreshDragAndDrop = refreshDragAndDrop;
-window.performDragDropMove = performDragDropMove;
-window.showToastMessage = showToastMessage;
