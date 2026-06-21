@@ -1,140 +1,43 @@
-// ==================== تهيئة التطبيق المتقدمة ====================
+// ==================== إعدادات Firebase المتقدمة ====================
 
-const App = {
-    initialized: false,
-    priceLoadAttempts: 0,
-    maxPriceLoadAttempts: 3,
-    
-    init() {
-        if (this.initialized) return;
-        console.log('🚀 Starting application...');
-        
-        this._initComponents();
-        this._initData();
-        this._initUI();
-        this._initAdvancedFeatures();
-        
-        this.initialized = true;
-        console.log('✅ Application ready');
-    },
-    
-    _initComponents() {
-        window.allMaterials = allMaterials;
-        window.currentEditId = currentEditId;
-        
-        if (typeof bindEvents === 'function') {
-            bindEvents();
-        }
-        
-        if (typeof initPWA === 'function') {
-            initPWA();
-        }
-    },
-    
-    _initData() {
-        if (typeof startListener === 'function') {
-            startListener();
-        }
-        
-        this._loadPricesWithRetry();
-    },
-    
-    _loadPricesWithRetry() {
-        if (!window.aiEngine || typeof window.aiEngine.preloadPrices !== 'function') {
-            setTimeout(() => this._loadPricesWithRetry(), 1000);
-            return;
-        }
-        
-        window.aiEngine.preloadPrices()
-            .then(() => {
-                this.priceLoadAttempts = 0;
-                this._updateAIAnalysis();
-            })
-            .catch(() => {
-                this.priceLoadAttempts++;
-                if (this.priceLoadAttempts < this.maxPriceLoadAttempts) {
-                    setTimeout(() => this._loadPricesWithRetry(), 2000);
-                } else {
-                    this._updateAIAnalysis();
-                }
-            });
-    },
-    
-    _initUI() {
-        if (typeof renderCategories === 'function') {
-            renderCategories();
-        }
-        
-        if (typeof renderSections === 'function' && window.allMaterials) {
-            renderSections(window.allMaterials);
-        }
-        
-        if (typeof updateCategoryCounts === 'function') {
-            updateCategoryCounts();
-        }
-        
-        setTimeout(() => this._updateAIAnalysis(), 500);
-    },
-    
-    _initAdvancedFeatures() {
-        setTimeout(() => {
-            if (typeof initDragAndDrop === 'function') {
-                initDragAndDrop();
-            }
-        }, 1000);
-        
-        setTimeout(() => {
-            if (typeof PWASettings !== 'undefined' && PWASettings.registerBackgroundSync) {
-                PWASettings.registerBackgroundSync().catch(() => {});
-            }
-        }, 3000);
-        
-        if (window.aiEngine && typeof window.aiEngine.learnFromAction === 'function') {
-            document.addEventListener('click', (e) => {
-                const target = e.target.closest('.material-card');
-                if (target && target.dataset.name) {
-                    window.aiEngine.learnFromAction('view', target.dataset.name, { source: 'click' });
-                }
-            });
-        }
-    },
-    
-    _updateAIAnalysis() {
-        if (typeof calculateAIMetrics === 'function') {
-            setTimeout(calculateAIMetrics, 200);
-        }
-    },
-    
-    refresh() {
-        if (typeof startListener === 'function') {
-            startListener();
-        }
-        if (typeof calculateAIMetrics === 'function') {
-            setTimeout(calculateAIMetrics, 500);
-        }
-    }
+const firebaseConfig = {
+    apiKey: "AIzaSyDQbf5LJRCquRsheFYqvEQBQbI_EoXNOFw",
+    authDomain: "abo-slman.firebaseapp.com",
+    projectId: "abo-slman",
+    storageBucket: "abo-slman.firebasestorage.app",
+    messagingSenderId: "874996942668",
+    appId: "1:874996942668:web:f31da5ca778fb92845f1e9"
 };
 
-// تهيئة التطبيق عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', () => App.init());
+let firebaseInitialized = false;
 
-// إعادة تحميل البيانات عند العودة للصفحة
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && App.initialized) {
-        App.refresh();
+try {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        firebaseInitialized = true;
+    } else {
+        firebaseInitialized = true;
     }
-});
+} catch (error) {
+    console.error('Firebase initialization error:', error);
+}
 
-// تصدير الدوال العالمية
-window.addNewMaterial = addNewMaterial;
-window.saveEdit = saveEdit;
-window.clearAllMaterials = clearAllMaterials;
-window.backupData = backupData;
-window.restoreData = restoreData;
-window.openPresetModal = openPresetModal;
-window.addSelectedPresetItems = addSelectedPresetItems;
-window.startListener = startListener;
-window.renderSections = renderSections;
-window.calculateAIMetrics = calculateAIMetrics;
-window.initDragAndDrop = initDragAndDrop;
-window.App = App;
+const db = firebaseInitialized ? firebase.firestore() : null;
+const materialsCollection = db ? db.collection("spices_final_v12") : null;
+const pricesCollection = db ? db.collection("material_prices") : null;
+
+window.db = db;
+window.materialsCollection = materialsCollection;
+window.pricesCollection = pricesCollection;
+
+async function testFirebaseConnection() {
+    if (!db) return false;
+    try {
+        await db.collection('test').limit(1).get();
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+window.testFirebaseConnection = testFirebaseConnection;
