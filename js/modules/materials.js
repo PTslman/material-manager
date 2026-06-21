@@ -1,106 +1,79 @@
 // ==================== إدارة المواد والمزامنة ====================
 
-var allMaterials = [];
-var unsubscribe = null;
-var currentEditId = null;
+let allMaterials = [];
+let unsubscribe = null;
+let currentEditId = null;
 
 function startListener() {
-    console.log('بدء الاستماع إلى Firebase...');
-    
-    if (!materialsCollection) { 
-        console.error('materialsCollection غير معرف، إعادة المحاولة بعد ثانية');
-        setTimeout(function() { startListener(); }, 1000);
+    if (!materialsCollection) {
+        setTimeout(startListener, 1000);
         return;
     }
     
-    var query = materialsCollection.orderBy('createdAt', 'desc');
+    const query = materialsCollection.orderBy('createdAt', 'desc');
     
     if (unsubscribe) {
         unsubscribe();
         unsubscribe = null;
     }
     
-    unsubscribe = query.onSnapshot(function(snapshot) {
-        console.log('تم استلام البيانات، عدد المستندات:', snapshot.size);
-        
-        var newMaterials = [];
-        snapshot.forEach(function(doc) {
-            var data = doc.data();
-            var priority = data.priority || 'main';
+    unsubscribe = query.onSnapshot((snapshot) => {
+        const newMaterials = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            let priority = data.priority || 'main';
             
-            // تحويل الأقسام القديمة إلى القسم الجديد "extra"
             if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
                 priority = 'extra';
             }
             
             newMaterials.push({
-                id: doc.id, 
-                name: data.name || 'غير معروف', 
+                id: doc.id,
+                name: data.name || 'غير معروف',
                 unitType: data.unitType || 'kg',
-                quantity: data.quantity || 0, 
+                quantity: data.quantity || 0,
                 priority: priority
             });
         });
         
         allMaterials = newMaterials;
-        console.log('تم تحديث allMaterials، عدد المواد:', allMaterials.length);
         
-        // تحديث شريط الحالة
-        var statusText = document.getElementById('syncStatusText');
-        var syncDot = document.getElementById('syncDot');
-        var itemsCount = document.getElementById('syncItemsCount');
-        var syncTime = document.getElementById('syncLastTime');
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
+        const itemsCount = document.getElementById('syncItemsCount');
+        const syncTime = document.getElementById('syncLastTime');
         
         if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
         if (syncDot) syncDot.className = 'sync-dot';
-        if (itemsCount) itemsCount.innerHTML = '<i class="fas fa-database"></i> ' + allMaterials.length;
-        if (syncTime) syncTime.innerHTML = '<i class="far fa-clock"></i> ' + new Date().toLocaleTimeString();
+        if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${allMaterials.length}`;
+        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
         
-        // عرض المواد في الواجهة
-        if (typeof renderSections === 'function') {
-            renderSections(allMaterials);
-        } else {
-            console.error('renderSections غير معرف');
-        }
+        if (typeof renderSections === 'function') renderSections(allMaterials);
+        if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
+        if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
         
-        if (typeof updateCategoryCounts === 'function') {
-            updateCategoryCounts();
-        }
-        
-        if (typeof calculateAIMetrics === 'function') {
-            calculateAIMetrics();
-        }
-        
-        // إعادة تهيئة السحب والإفلات
-        setTimeout(function() {
-            if (typeof initDragAndDrop === 'function') {
-                initDragAndDrop();
-            }
+        setTimeout(() => {
+            if (typeof initDragAndDrop === 'function') initDragAndDrop();
         }, 200);
         
-        // إخفاء شاشة البداية
-        var splash = document.getElementById('splashScreen');
-        var app = document.getElementById('appContainer');
+        const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appContainer');
         if (splash && app && splash.style.display !== 'none') {
             splash.classList.add('hidden');
-            setTimeout(function() { 
-                splash.style.display = 'none'; 
-                app.style.display = 'block'; 
+            setTimeout(() => {
+                splash.style.display = 'none';
+                app.style.display = 'block';
             }, 500);
         }
-        
-    }, function(error) {
-        console.error('خطأ في Firestore:', error);
-        var statusText = document.getElementById('syncStatusText');
-        var syncDot = document.getElementById('syncDot');
+    }, (error) => {
+        const statusText = document.getElementById('syncStatusText');
+        const syncDot = document.getElementById('syncDot');
         if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
         if (syncDot) syncDot.className = 'sync-dot offline';
     });
 }
 
-// دالة إعادة تحميل البيانات يدوياً
 function refreshData() {
-    console.log('إعادة تحميل البيانات...');
     if (unsubscribe) {
         unsubscribe();
         unsubscribe = null;
@@ -109,26 +82,25 @@ function refreshData() {
 }
 
 async function addNewMaterial() {
-    var name = document.getElementById('newMaterialName')?.value.trim();
-    if (!name) { 
-        if (typeof showToastMessage === 'function') showToastMessage('✏️ اكتب اسم المادة', true); 
-        return; 
+    const name = document.getElementById('newMaterialName')?.value.trim();
+    if (!name) {
+        showToastMessage('✏️ اكتب اسم المادة', true);
+        return;
     }
     
-    var section = document.getElementById('newMaterialSection')?.value || 'main';
-    var unit = document.getElementById('newUnitSelect')?.value || 'kg';
-    var quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
+    const section = document.getElementById('newMaterialSection')?.value || 'main';
+    let unit = document.getElementById('newUnitSelect')?.value || 'kg';
+    let quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
     
     if (isNaN(quantity) || quantity < 0) quantity = 0;
     if (unit === 'half') quantity = 0.5;
     else if (unit === 'quarter') quantity = 0.25;
     else if (unit === 'oke') quantity = 0.2;
     
-    // إضافة سعر تقريبي
     if (typeof window.getEstimatedPrice === 'function') {
-        var estimatedPrice = window.getEstimatedPrice(name);
+        const estimatedPrice = window.getEstimatedPrice(name);
         if (estimatedPrice > 0 && typeof window.updateMaterialPrice === 'function') {
-            var currentPrice = window.getMaterialPrice(name);
+            const currentPrice = window.getMaterialPrice(name);
             if (currentPrice === 0) {
                 window.updateMaterialPrice(name, estimatedPrice);
             }
@@ -136,123 +108,118 @@ async function addNewMaterial() {
     }
     
     if (quantity === 0 && section !== 'tawsaya') {
-        if (typeof showToastMessage === 'function') showToastMessage('⚠️ تمت إضافة "' + name + '" بدون كمية (مادة ناقصة)', false);
+        showToastMessage(`⚠️ تمت إضافة "${name}" بدون كمية (مادة ناقصة)`, false);
     }
     
     try {
-        await materialsCollection.add({ 
-            name: name, 
-            unitType: unit, 
-            quantity: quantity, 
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-            priority: section 
+        await materialsCollection.add({
+            name,
+            unitType: unit,
+            quantity,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            priority: section
         });
         
-        if (typeof showToastMessage === 'function') showToastMessage('✓ تمت إضافة "' + name + '"');
+        showToastMessage(`✓ تمت إضافة "${name}"`);
         
         document.getElementById('newItemModal').classList.remove('active');
         document.getElementById('newMaterialName').value = '';
         document.getElementById('newQuantityValue').value = '1';
-        
-    } catch(e) { 
-        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل الإضافة', true); 
+    } catch(e) {
+        showToastMessage('❌ فشل الإضافة', true);
     }
 }
 
 async function saveEdit() {
-    if (!currentEditId) { 
-        if (typeof showToastMessage === 'function') showToastMessage('لا توجد مادة للتعديل', true); 
-        return; 
+    if (!currentEditId) {
+        showToastMessage('لا توجد مادة للتعديل', true);
+        return;
     }
     
-    var unit = document.getElementById('editUnitSelect').value;
-    var qty = parseFloat(document.getElementById('editQuantityValue').value);
+    const unit = document.getElementById('editUnitSelect').value;
+    let qty = parseFloat(document.getElementById('editQuantityValue').value);
     
     if (unit === 'half') qty = 0.5;
     else if (unit === 'quarter') qty = 0.25;
     else if (unit === 'oke') qty = 0.2;
     
-    if (isNaN(qty) || qty < 0) { 
-        if (typeof showToastMessage === 'function') showToastMessage('🔢 كمية صحيحة', true); 
-        return; 
+    if (isNaN(qty) || qty < 0) {
+        showToastMessage('🔢 كمية صحيحة', true);
+        return;
     }
     
     try {
         await materialsCollection.doc(currentEditId).update({ quantity: qty, unitType: unit });
-        if (typeof showToastMessage === 'function') showToastMessage('✓ تم تحديث الكمية');
+        showToastMessage('✓ تم تحديث الكمية');
         
         document.getElementById('editModal').classList.remove('active');
         currentEditId = null;
-        
-    } catch(e) { 
-        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل التحديث', true); 
+    } catch(e) {
+        showToastMessage('❌ فشل التحديث', true);
     }
 }
 
 async function clearAllMaterials() {
-    if (allMaterials.length === 0) { 
-        if (typeof showToastMessage === 'function') showToastMessage('📭 لا توجد بيانات', true); 
-        return; 
+    if (allMaterials.length === 0) {
+        showToastMessage('📭 لا توجد بيانات', true);
+        return;
     }
     
     if (!confirm('⚠️ هل أنت متأكد من حذف جميع المواد نهائياً؟')) return;
     
     try {
-        var batch = db.batch();
-        for (var i = 0; i < allMaterials.length; i++) { 
-            batch.delete(materialsCollection.doc(allMaterials[i].id)); 
+        const batch = db.batch();
+        for (const m of allMaterials) {
+            batch.delete(materialsCollection.doc(m.id));
         }
         await batch.commit();
-        
-        if (typeof showToastMessage === 'function') showToastMessage('✓ تم مسح جميع المواد');
-        
-    } catch(e) { 
-        if (typeof showToastMessage === 'function') showToastMessage('❌ فشل المسح', true); 
+        showToastMessage('✓ تم مسح جميع المواد');
+    } catch(e) {
+        showToastMessage('❌ فشل المسح', true);
     }
 }
 
 async function backupData() {
-    if (allMaterials.length === 0) { 
-        if (typeof showToastMessage === 'function') showToastMessage('📭 لا توجد بيانات للنسخ', true); 
-        return; 
+    if (allMaterials.length === 0) {
+        showToastMessage('📭 لا توجد بيانات للنسخ', true);
+        return;
     }
     
-    var data = JSON.stringify(allMaterials, null, 2);
-    var blob = new Blob([data], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
+    const data = JSON.stringify(allMaterials, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url;
-    a.download = 'backup_spices_' + new Date().toISOString().slice(0,19) + '.json';
+    a.download = `backup_spices_${new Date().toISOString().slice(0, 19)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
-    if (typeof showToastMessage === 'function') showToastMessage('💾 تم نسخ ' + allMaterials.length + ' عنصر');
+    showToastMessage(`💾 تم نسخ ${allMaterials.length} عنصر`);
 }
 
 async function restoreData() {
-    var input = document.createElement('input');
+    const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
     
-    input.onchange = async function(e) {
-        var file = e.target.files[0];
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
         if (!file) return;
         
-        var reader = new FileReader();
-        reader.onload = async function(ev) {
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
             try {
-                var backup = JSON.parse(ev.target.result);
+                const backup = JSON.parse(ev.target.result);
                 
-                if (!confirm('⚠️ استبدال بـ ' + backup.length + ' عنصر؟')) return;
+                if (!confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) return;
                 
-                var batch = db.batch();
-                for (var i = 0; i < allMaterials.length; i++) { 
-                    batch.delete(materialsCollection.doc(allMaterials[i].id)); 
+                const batch = db.batch();
+                for (const m of allMaterials) {
+                    batch.delete(materialsCollection.doc(m.id));
                 }
                 await batch.commit();
                 
-                for (var i = 0; i < backup.length; i++) {
-                    var priority = backup[i].priority;
+                for (const item of backup) {
+                    let priority = item.priority;
                     if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
                         priority = 'extra';
                     }
@@ -260,18 +227,17 @@ async function restoreData() {
                         priority = 'extra';
                     }
                     await materialsCollection.add({
-                        name: backup[i].name, 
-                        unitType: backup[i].unitType || 'kg',
-                        quantity: backup[i].quantity || 0, 
+                        name: item.name,
+                        unitType: item.unitType || 'kg',
+                        quantity: item.quantity || 0,
                         priority: priority || 'main',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
                 
-                if (typeof showToastMessage === 'function') showToastMessage('✓ تم استعادة ' + backup.length + ' عنصر');
-                
-            } catch(e) { 
-                if (typeof showToastMessage === 'function') showToastMessage('❌ ملف غير صالح', true); 
+                showToastMessage(`✓ تم استعادة ${backup.length} عنصر`);
+            } catch(e) {
+                showToastMessage('❌ ملف غير صالح', true);
             }
         };
         reader.readAsText(file);
