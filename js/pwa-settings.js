@@ -1,70 +1,66 @@
 // ==================== إعدادات PWA المتقدمة ====================
 
-var PWASettings = {
+const PWASettings = {
     installPrompt: null,
     isInstalled: false,
     
-    init: function() {
+    init() {
         this.checkInstallStatus();
         this.setupBeforeInstallPrompt();
         this.setupUpdateListener();
     },
     
-    checkInstallStatus: function() {
+    checkInstallStatus() {
         if (window.matchMedia('(display-mode: standalone)').matches) {
             this.isInstalled = true;
-            var installBtn = document.getElementById('installBtn');
+            const installBtn = document.getElementById('installBtn');
             if (installBtn) installBtn.style.display = 'none';
         }
         
-        window.matchMedia('(display-mode: standalone)').addEventListener('change', function(e) {
+        window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
             if (e.matches) {
-                PWASettings.isInstalled = true;
-                var installBtn = document.getElementById('installBtn');
+                this.isInstalled = true;
+                const installBtn = document.getElementById('installBtn');
                 if (installBtn) installBtn.style.display = 'none';
             }
         });
     },
     
-    setupBeforeInstallPrompt: function() {
-        window.addEventListener('beforeinstallprompt', function(e) {
+    setupBeforeInstallPrompt() {
+        window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            PWASettings.installPrompt = e;
-            var installBtn = document.getElementById('installBtn');
-            if (installBtn && !PWASettings.isInstalled) {
+            this.installPrompt = e;
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn && !this.isInstalled) {
                 installBtn.style.display = 'inline-flex';
             }
         });
     },
     
-    promptInstall: function() {
+    promptInstall() {
         if (this.installPrompt) {
             this.installPrompt.prompt();
-            this.installPrompt.userChoice.then(function(result) {
+            this.installPrompt.userChoice.then((result) => {
                 if (result.outcome === 'accepted') {
-                    PWASettings.isInstalled = true;
-                    var installBtn = document.getElementById('installBtn');
+                    this.isInstalled = true;
+                    const installBtn = document.getElementById('installBtn');
                     if (installBtn) installBtn.style.display = 'none';
                 }
-                PWASettings.installPrompt = null;
+                this.installPrompt = null;
             });
         } else {
-            if (typeof showToastMessage === 'function') {
-                showToastMessage('📱 يمكنك تثبيت التطبيق من قائمة المتصفح', false);
-            }
+            showToastMessage('📱 يمكنك تثبيت التطبيق من قائمة المتصفح', false);
         }
     },
     
-    setupUpdateListener: function() {
+    setupUpdateListener() {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(function(registration) {
-                registration.addEventListener('updatefound', function() {
-                    var newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', function() {
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            if (typeof showToastMessage === 'function') {
-                                showToastMessage('🔄 تحديث جديد متاح! أعد تحميل الصفحة', false);
-                            }
+                            showToastMessage('🔄 تحديث جديد متاح! أعد تحميل الصفحة', false);
                         }
                     });
                 });
@@ -72,11 +68,10 @@ var PWASettings = {
         }
     },
     
-    registerBackgroundSync: async function() {
+    async registerBackgroundSync() {
         if (!('serviceWorker' in navigator) || !('SyncManager' in window)) return false;
-        
         try {
-            var registration = await navigator.serviceWorker.ready;
+            const registration = await navigator.serviceWorker.ready;
             await registration.sync.register('sync-materials');
             return true;
         } catch(e) {
