@@ -1,322 +1,86 @@
-// ==================== نظام إدارة الأسعار مع Firebase ====================
+// ==================== نظام إدارة الأسعار المتقدم ====================
 
-var materialPrices = {};
-var allMaterialsList = [];
-var priceModalWindow = null;
-var isSyncing = false;
-
-// تحميل جميع المواد من القوائم الجاهزة
-function loadAllMaterialsFromPresets() {
-    var materialsSet = new Set();
+const PriceSystem = {
+    isOpen: false,
+    window: null,
+    data: {
+        prices: {},
+        allMaterials: [],
+        currentFilter: '',
+        currentCategory: 'all'
+    },
     
-    if (typeof importantItemsList !== 'undefined') {
-        for (var i = 0; i < importantItemsList.length; i++) {
-            materialsSet.add(importantItemsList[i]);
+    loadAllMaterials() {
+        const set = new Set();
+        if (typeof importantItemsList !== 'undefined') {
+            importantItemsList.forEach(item => set.add(item));
         }
-    }
-    
-    if (typeof extraItemsList !== 'undefined') {
-        for (var i = 0; i < extraItemsList.length; i++) {
-            materialsSet.add(extraItemsList[i]);
+        if (typeof extraItemsList !== 'undefined') {
+            extraItemsList.forEach(item => set.add(item));
         }
-    }
-    
-    if (typeof bagTypesList !== 'undefined') {
-        for (var i = 0; i < bagTypesList.length; i++) {
-            materialsSet.add(bagTypesList[i]);
+        if (typeof bagTypesList !== 'undefined') {
+            bagTypesList.forEach(item => set.add(item));
         }
-    }
+        this.data.allMaterials = Array.from(set).sort((a, b) => a.localeCompare(b));
+    },
     
-    allMaterialsList = Array.from(materialsSet);
-    allMaterialsList.sort(function(a, b) {
-        return a.localeCompare(b);
-    });
-}
-
-// تحميل الأسعار من Firebase
-async function loadPricesFromFirebase() {
-    if (!pricesCollection) return false;
-    
-    try {
-        var snapshot = await pricesCollection.get();
-        var prices = {};
-        snapshot.forEach(function(doc) {
-            var data = doc.data();
-            prices[doc.id] = data.price;
-        });
-        materialPrices = prices;
-        
-        // حفظ محلياً
-        savePricesToLocal();
-        
-        console.log('تم تحميل الأسعار من Firebase:', Object.keys(prices).length, 'مادة');
-        return true;
-    } catch(e) {
-        console.error('خطأ في تحميل الأسعار من Firebase:', e);
-        return false;
-    }
-}
-
-// حفظ الأسعار في Firebase
-async function savePricesToFirebase() {
-    if (!pricesCollection) return false;
-    
-    try {
-        var batch = db.batch();
-        var currentPrices = {};
-        
-        var snapshot = await pricesCollection.get();
-        snapshot.forEach(function(doc) {
-            currentPrices[doc.id] = doc.data().price;
-        });
-        
-        for (var materialName in materialPrices) {
-            var price = materialPrices[materialName];
-            if (price > 0) {
-                var docRef = pricesCollection.doc(materialName);
-                if (currentPrices[materialName] !== undefined) {
-                    batch.update(docRef, { 
-                        price: price, 
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
-                    });
-                } else {
-                    batch.set(docRef, { 
-                        name: materialName,
-                        price: price, 
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-            }
+    load() {
+        try {
+            const saved = localStorage.getItem('material_prices');
+            if (saved) this.data.prices = JSON.parse(saved);
+        } catch(e) {
+            this.data.prices = {};
         }
-        
-        for (var existingName in currentPrices) {
-            if (!materialPrices[existingName] || materialPrices[existingName] === 0) {
-                var docRef = pricesCollection.doc(existingName);
-                batch.delete(docRef);
-            }
-        }
-        
-        await batch.commit();
-        console.log('تم حفظ الأسعار في Firebase');
-        return true;
-    } catch(e) {
-        console.error('خطأ في حفظ الأسعار في Firebase:', e);
-        return false;
-    }
-}
-
-// تحميل الأسعار من localStorage
-function loadPricesFromLocal() {
-    try {
-        var saved = localStorage.getItem('material_prices');
-        if (saved) {
-            materialPrices = JSON.parse(saved);
-        }
-    } catch(e) {
-        materialPrices = {};
-    }
-}
-
-// حفظ الأسعار في localStorage
-function savePricesToLocal() {
-    try {
-        localStorage.setItem('material_prices', JSON.stringify(materialPrices));
-    } catch(e) {}
-}
-
-// تحميل الأسعار (من Firebase أولاً)
-async function loadPrices() {
-    // محاولة التحميل من Firebase أولاً
-    var firebaseSuccess = await loadPricesFromFirebase();
+        return this.data.prices;
+    },
     
-    if (!firebaseSuccess) {
-        // إذا فشل، تحميل من localStorage
-        loadPricesFromLocal();
-        console.log('تم تحميل الأسعار من localStorage');
-    }
+    save() {
+        try {
+            localStorage.setItem('material_prices', JSON.stringify(this.data.prices));
+        } catch(e) {}
+    },
     
-    // تحديث التحليل الذكي
-    if (typeof calculateAIMetrics === 'function') {
-        setTimeout(function() {
-            calculateAIMetrics();
-        }, 100);
-    }
-    
-    return materialPrices;
-}
-
-// حفظ الأسعار (في Firebase و localStorage)
-async function savePrices() {
-    // حفظ محلياً
-    savePricesToLocal();
-    
-    // حفظ في Firebase
-    var firebaseSuccess = await savePricesToFirebase();
-    
-    if (firebaseSuccess) {
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('✓ تم حفظ الأسعار في السحابة');
-        }
-    } else {
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('⚠️ تم حفظ الأسعار محلياً فقط', false);
-        }
-    }
-    
-    // تحديث التحليل الذكي
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
-    
-    return firebaseSuccess;
-}
-
-// تحديث سعر مادة وحفظه
-async function updateMaterialPrice(materialName, price) {
-    if (!materialName) return;
-    
-    if (price === undefined || price === null || price === '') {
-        delete materialPrices[materialName];
-    } else {
-        var numPrice = parseFloat(price);
-        if (!isNaN(numPrice) && numPrice >= 0) {
-            materialPrices[materialName] = numPrice;
-        }
-    }
-    
-    // حفظ التغييرات
-    savePricesToLocal();
-    await savePricesToFirebase();
-    
-    // تحديث النافذة المنفصلة
-    if (priceModalWindow && !priceModalWindow.closed) {
-        updatePriceWindowDisplay();
-    }
-    
-    // تحديث التحليل الذكي
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
-}
-
-// الحصول على سعر مادة
-function getMaterialPrice(materialName) {
-    return materialPrices[materialName] || 0;
-}
-
-// الحصول على سعر تقريبي
-function getEstimatedPrice(materialName) {
-    var estimatedPrices = {
-        'ملح': 2000, 'فلفل اسود ناعم': 25000, 'كمون ناعم': 20000, 'كركم': 15000,
-        'زنجبيل ناعم': 18000, 'قرفة ناعمة': 22000, 'هيل ناعم': 80000, 'كزبرة ناعمة': 12000,
-        'شطة حلوة': 16000, 'شطة حدة وسط': 16000, 'توم ناعم': 14000, 'بصل ناعم': 12000,
-        'نسكافية خشنة': 35000, 'نسكافية ناعمة': 35000, 'قهوة عربية': 40000, 'يانسون حب': 15000,
-        'شوفان': 10000, 'نعنع يابس': 10000, 'ميلو': 30000, 'اشلميش': 15000
-    };
-    return estimatedPrices[materialName] || 0;
-}
-
-// حساب القيمة الإجمالية للمخزون
-function calculateTotalValue() {
-    if (!window.allMaterials) return { total: 0, formattedTotal: '0 ل.س', breakdown: [] };
-    
-    var totalValue = 0;
-    var priceBreakdown = [];
-    
-    for (var i = 0; i < window.allMaterials.length; i++) {
-        var material = window.allMaterials[i];
-        if (material.priority === 'tawsaya') continue;
-        
-        var price = getMaterialPrice(material.name);
-        var quantityInKg = 0;
-        
-        if (window.aiEngine) {
-            quantityInKg = window.aiEngine.convertToKg(material.quantity, material.unitType);
+    updatePrice(name, price) {
+        const numPrice = parseFloat(price);
+        if (price === undefined || price === null || price === '' || isNaN(numPrice) || numPrice < 0) {
+            delete this.data.prices[name];
         } else {
-            var conversions = { 'kg':1, 'half':0.5, 'quarter':0.25, 'oke':0.128, 'box':0.5, 'piece':0.1, 'bag':0.05 };
-            quantityInKg = material.quantity * (conversions[material.unitType] || 1);
+            this.data.prices[name] = numPrice;
+        }
+        this.save();
+        if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
+    },
+    
+    getPrice(name) {
+        return this.data.prices[name] || 0;
+    },
+    
+    openModal() {
+        this.load();
+        this.loadAllMaterials();
+        
+        if (this.window && !this.window.closed) {
+            this.window.focus();
+            return;
         }
         
-        var itemValue = quantityInKg * price;
-        totalValue += itemValue;
+        const features = 'width=850,height=750,left=200,top=100,resizable=yes,scrollbars=yes,dir=rtl';
+        this.window = window.open('', 'PriceManager', features);
         
-        if (price > 0 && quantityInKg > 0) {
-            priceBreakdown.push({
-                name: material.name,
-                quantity: material.quantity,
-                unit: material.unitType,
-                quantityInKg: quantityInKg,
-                pricePerKg: price,
-                totalValue: itemValue,
-                formattedValue: formatCurrency(itemValue)
-            });
-        }
-    }
-    
-    priceBreakdown.sort(function(a, b) { return b.totalValue - a.totalValue; });
-    
-    return {
-        total: totalValue,
-        breakdown: priceBreakdown,
-        formattedTotal: formatCurrency(totalValue)
-    };
-}
-
-function formatCurrency(value) {
-    return Math.round(value).toLocaleString() + ' ل.س';
-}
-
-function getMaterialCategory(materialName) {
-    if (typeof importantItemsList !== 'undefined' && importantItemsList.indexOf(materialName) !== -1) {
-        return 'main';
-    }
-    if (typeof extraItemsList !== 'undefined' && extraItemsList.indexOf(materialName) !== -1) {
-        return 'extra';
-    }
-    if (typeof bagTypesList !== 'undefined' && bagTypesList.indexOf(materialName) !== -1) {
-        return 'bags';
-    }
-    return 'other';
-}
-
-// فتح نافذة الأسعار
-async function openPriceModal() {
-    // تحميل الأسعار أولاً
-    await loadPrices();
-    loadAllMaterialsFromPresets();
-    
-    if (priceModalWindow && !priceModalWindow.closed) {
-        priceModalWindow.focus();
-        return;
-    }
-    
-    var windowFeatures = 'width=850,height=750,left=200,top=100,resizable=yes,scrollbars=yes,dir=rtl';
-    priceModalWindow = window.open('', 'PriceManager', windowFeatures);
-    
-    if (!priceModalWindow) {
-        if (typeof showToastMessage === 'function') {
+        if (!this.window) {
             showToastMessage('يرجى السماح بالنوافذ المنبثقة', true);
+            return;
         }
-        return;
-    }
+        
+        this.window.document.write(this._getHTML());
+        this.window.document.close();
+        setTimeout(() => this._updateDisplay(), 200);
+    },
     
-    var htmlContent = getPriceWindowHTML();
-    priceModalWindow.document.write(htmlContent);
-    priceModalWindow.document.close();
-    
-    setTimeout(function() {
-        updatePriceWindowDisplay();
-        bindPriceWindowEvents();
-    }, 200);
-}
-
-function getPriceWindowHTML() {
-    return `<!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    _getHTML() {
+        return `<!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>إدارة أسعار المواد</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -364,155 +128,156 @@ function getPriceWindowHTML() {
                 .item-price { width: 100%; }
             }
         </style>
-    </head>
-    <body>
+        </head>
+        <body>
         <div class="container">
             <div class="header">
-                <div><h1><i class="fas fa-tags"></i> إدارة أسعار المواد</h1><p>تحديد أسعار المواد بالكيلوغرام (ليرة سورية) - يتم الحفظ في السحابة</p></div>
+                <div><h1><i class="fas fa-tags"></i> إدارة أسعار المواد</h1><p>تحديد أسعار المواد بالكيلوغرام (ليرة سورية)</p></div>
                 <button class="close-btn" onclick="window.close()"><i class="fas fa-times"></i> إغلاق</button>
             </div>
-            
             <div class="stats" id="statsContainer">
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-boxes"></i></div><div><span class="stat-label">إجمالي المواد</span><span class="stat-value" id="totalCount">0</span></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-tag"></i></div><div><span class="stat-label">المواد المسعرة</span><span class="stat-value" id="pricedCount">0</span></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div><span class="stat-label">القيمة الإجمالية</span><span class="stat-value" id="totalValue">0</span></div></div>
             </div>
-            
             <div class="search-section"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" class="search-input" placeholder="بحث عن مادة..."></div></div>
-            
             <div class="tabs" id="tabsContainer">
                 <button class="tab active" data-cat="all">الكل</button>
                 <button class="tab" data-cat="main">⭐ أساسيات</button>
                 <button class="tab" data-cat="extra">➕ إضافي</button>
                 <button class="tab" data-cat="bags">🛍️ أكياس</button>
             </div>
-            
             <div class="table"><div class="table-header"><span class="table-header-name">اسم المادة</span><span class="table-header-price">السعر (ل.س/كجم)</span></div>
             <div id="itemsList" class="items-list"><div class="empty">جاري التحميل...</div></div></div>
-            
             <div class="footer"><button class="btn-cancel" onclick="window.close()">إلغاء</button><button class="btn-save" id="saveBtn">حفظ الكل وإغلاق</button></div>
         </div>
         <script>
-            var parentWindow = window.opener;
-            
-            function updateDisplay(data) {
-                document.getElementById('totalCount').innerText = data.totalMaterials || 0;
-                document.getElementById('pricedCount').innerText = data.pricedCount || 0;
-                document.getElementById('totalValue').innerText = data.totalValue || '0 ل.س';
-                var container = document.getElementById('itemsList');
-                if (!data.items || data.items.length === 0) { container.innerHTML = '<div class="empty">لا توجد نتائج</div>'; return; }
-                var html = '';
-                for (var i = 0; i < data.items.length; i++) {
-                    var item = data.items[i];
-                    html += '<div class="item-row"><div class="item-name"><span>' + item.icon + '</span><span>' + escapeHtml(item.name) + '</span></div>' +
-                        '<div class="item-price"><input type="number" class="price-input" data-material="' + escapeHtml(item.name) + '" value="' + (item.price > 0 ? item.price : '') + '" placeholder="سعر الكيلو" step="100" min="0"><span>ل.س</span></div></div>';
+            var parent = window.opener;
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                if (parent && parent.PriceSystem) {
+                    parent.PriceSystem.save();
+                    if (typeof parent.calculateAIMetrics === 'function') parent.calculateAIMetrics();
                 }
-                container.innerHTML = html;
-                document.querySelectorAll('.price-input').forEach(function(input) {
-                    input.addEventListener('change', function() { if (parentWindow) parentWindow.updateMaterialPriceFromWindow(this.dataset.material, this.value); });
+                window.close();
+            });
+            var searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    if (parent && parent.PriceSystem) {
+                        parent.PriceSystem.data.currentFilter = this.value;
+                        parent.PriceSystem._updateDisplay();
+                    }
                 });
             }
-            
-            function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]; }); }
-            
-            document.getElementById('saveBtn').addEventListener('click', function() { if (parentWindow) parentWindow.saveAllPricesAndClose(); window.close(); });
-            
-            var searchInput = document.getElementById('searchInput');
-            if (searchInput) { searchInput.addEventListener('input', function() { if (parentWindow) parentWindow.filterPriceList(this.value); }); }
-            
             document.querySelectorAll('.tab').forEach(function(tab) {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
                     this.classList.add('active');
-                    if (parentWindow) parentWindow.filterPriceListByCategory(this.dataset.cat);
+                    if (parent && parent.PriceSystem) {
+                        parent.PriceSystem.data.currentCategory = this.dataset.cat;
+                        parent.PriceSystem._updateDisplay();
+                    }
                 });
             });
-            
-            if (parentWindow && parentWindow.getPriceDisplayData) { updateDisplay(parentWindow.getPriceDisplayData()); }
+            if (parent && parent.PriceSystem) {
+                parent.PriceSystem._updateDisplay();
+            }
         </script>
-    </body>
-    </html>`;
-}
-
-function updatePriceWindowDisplay() {
-    if (!priceModalWindow || priceModalWindow.closed) return;
+        </body>
+        </html>`;
+    },
     
-    var pricedCount = 0;
-    for (var key in materialPrices) { if (materialPrices[key] > 0) pricedCount++; }
-    var totalValue = calculateTotalValue();
-    
-    var filteredItems = [];
-    var searchValue = (priceWindowData && priceWindowData.currentFilter) || '';
-    var activeCat = (priceWindowData && priceWindowData.currentCategory) || 'all';
-    
-    for (var i = 0; i < allMaterialsList.length; i++) {
-        var material = allMaterialsList[i];
-        var category = getMaterialCategory(material);
-        var icon = category === 'main' ? '⭐' : (category === 'extra' ? '➕' : (category === 'bags' ? '🛍️' : ''));
-        if (activeCat !== 'all' && category !== activeCat) continue;
-        if (searchValue && !material.toLowerCase().includes(searchValue.toLowerCase())) continue;
-        filteredItems.push({ name: material, price: getMaterialPrice(material), icon: icon });
-    }
-    
-    var displayData = { totalMaterials: allMaterialsList.length, pricedCount: pricedCount, totalValue: totalValue.formattedTotal, items: filteredItems };
-    
-    if (priceModalWindow && priceModalWindow.updateDisplay) {
-        priceModalWindow.updateDisplay(displayData);
-    } else if (priceModalWindow && priceModalWindow.document) {
-        var container = priceModalWindow.document.getElementById('itemsList');
+    _updateDisplay() {
+        if (!this.window || this.window.closed) return;
+        
+        const pricedCount = Object.values(this.data.prices).filter(p => p > 0).length;
+        const totalValue = this._calculateTotalValue();
+        const filteredItems = this._getFilteredItems();
+        
+        const data = {
+            totalMaterials: this.data.allMaterials.length,
+            pricedCount: pricedCount,
+            totalValue: totalValue.formattedTotal,
+            items: filteredItems
+        };
+        
+        const doc = this.window.document;
+        const container = doc.getElementById('itemsList');
         if (container) {
-            if (filteredItems.length === 0) { container.innerHTML = '<div class="empty">لا توجد نتائج</div>'; }
-            else {
-                var html = '';
-                for (var i = 0; i < filteredItems.length; i++) {
-                    var item = filteredItems[i];
-                    html += '<div class="item-row"><div class="item-name"><span>' + item.icon + '</span><span>' + escapeHtml(item.name) + '</span></div>' +
-                        '<div class="item-price"><input type="number" class="price-input" data-material="' + escapeHtml(item.name) + '" value="' + (item.price > 0 ? item.price : '') + '" placeholder="سعر الكيلو" step="100" min="0"><span>ل.س</span></div></div>';
-                }
-                container.innerHTML = html;
-                priceModalWindow.document.querySelectorAll('.price-input').forEach(function(input) {
-                    input.addEventListener('change', function() { updateMaterialPrice(this.dataset.material, this.value); });
+            if (data.items.length === 0) {
+                container.innerHTML = '<div class="empty">لا توجد نتائج</div>';
+            } else {
+                container.innerHTML = data.items.map(item => `
+                    <div class="item-row">
+                        <div class="item-name"><span>${item.icon}</span><span>${this._escapeHtml(item.name)}</span></div>
+                        <div class="item-price">
+                            <input type="number" class="price-input" data-material="${this._escapeHtml(item.name)}" value="${item.price > 0 ? item.price : ''}" placeholder="سعر الكيلو" step="100" min="0">
+                            <span>ل.س</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                doc.querySelectorAll('.price-input').forEach(input => {
+                    input.addEventListener('change', () => {
+                        this.updatePrice(input.dataset.material, input.value);
+                        this._updateDisplay();
+                    });
                 });
             }
         }
-        var totalEl = priceModalWindow.document.getElementById('totalCount');
-        var pricedEl = priceModalWindow.document.getElementById('pricedCount');
-        var valueEl = priceModalWindow.document.getElementById('totalValue');
-        if (totalEl) totalEl.innerText = allMaterialsList.length;
-        if (pricedEl) pricedEl.innerText = pricedCount;
-        if (valueEl) valueEl.innerText = totalValue.formattedTotal;
+        
+        const totalEl = doc.getElementById('totalCount');
+        const pricedEl = doc.getElementById('pricedCount');
+        const valueEl = doc.getElementById('totalValue');
+        if (totalEl) totalEl.innerText = data.totalMaterials;
+        if (pricedEl) pricedEl.innerText = data.pricedCount;
+        if (valueEl) valueEl.innerText = data.totalValue;
+    },
+    
+    _getFilteredItems() {
+        const search = (this.data.currentFilter || '').toLowerCase();
+        const category = this.data.currentCategory || 'all';
+        const result = [];
+        
+        for (const name of this.data.allMaterials) {
+            const cat = this._getCategory(name);
+            const icon = cat === 'main' ? '⭐' : cat === 'extra' ? '➕' : cat === 'bags' ? '🛍️' : '';
+            if (category !== 'all' && cat !== category) continue;
+            if (search && !name.toLowerCase().includes(search)) continue;
+            result.push({ name, price: this.getPrice(name), icon });
+        }
+        return result;
+    },
+    
+    _getCategory(name) {
+        if (typeof importantItemsList !== 'undefined' && importantItemsList.indexOf(name) !== -1) return 'main';
+        if (typeof extraItemsList !== 'undefined' && extraItemsList.indexOf(name) !== -1) return 'extra';
+        if (typeof bagTypesList !== 'undefined' && bagTypesList.indexOf(name) !== -1) return 'bags';
+        return 'other';
+    },
+    
+    _calculateTotalValue() {
+        if (!window.allMaterials) return { total: 0, formattedTotal: '0 ل.س' };
+        let total = 0;
+        for (const m of window.allMaterials) {
+            if (m.priority === 'tawsaya') continue;
+            const price = this.getPrice(m.name);
+            const qty = window.aiEngine ? window.aiEngine.convertToKg(m.quantity, m.unitType) : (m.quantity || 0);
+            total += qty * price;
+        }
+        return { total, formattedTotal: Math.round(total).toLocaleString() + ' ل.س' };
+    },
+    
+    _escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
-}
+};
 
-var priceWindowData = { currentFilter: '', currentCategory: 'all' };
-
-function filterPriceList(searchValue) { priceWindowData.currentFilter = searchValue; updatePriceWindowDisplay(); }
-function filterPriceListByCategory(category) { priceWindowData.currentCategory = category; updatePriceWindowDisplay(); }
-function getPriceDisplayData() { var pc = 0; for (var k in materialPrices) { if (materialPrices[k] > 0) pc++; } var tv = calculateTotalValue(); var items = []; var cat = priceWindowData.currentCategory || 'all'; var search = (priceWindowData.currentFilter || '').toLowerCase(); for (var i = 0; i < allMaterialsList.length; i++) { var m = allMaterialsList[i]; var c = getMaterialCategory(m); var icon = c === 'main' ? '⭐' : (c === 'extra' ? '➕' : (c === 'bags' ? '🛍️' : '')); if (cat !== 'all' && c !== cat) continue; if (search && !m.toLowerCase().includes(search)) continue; items.push({ name: m, price: getMaterialPrice(m), icon: icon }); } return { totalMaterials: allMaterialsList.length, pricedCount: pc, totalValue: tv.formattedTotal, items: items }; }
-function updateMaterialPriceFromWindow(name, price) { updateMaterialPrice(name, price); updatePriceWindowDisplay(); }
-function saveAllPricesAndClose() { savePrices(); if (typeof calculateAIMetrics === 'function') calculateAIMetrics(); }
-
-function bindPriceWindowEvents() { if (!priceModalWindow || priceModalWindow.closed) return; var searchInput = priceModalWindow.document.getElementById('searchInput'); if (searchInput) { searchInput.oninput = function(e) { filterPriceList(e.target.value); }; } var tabs = priceModalWindow.document.querySelectorAll('.tab'); for (var i = 0; i < tabs.length; i++) { tabs[i].onclick = function() { var btns = priceModalWindow.document.querySelectorAll('.tab'); for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active'); this.classList.add('active'); filterPriceListByCategory(this.dataset.cat); }; } }
-
-// مزامنة الأسعار عند تحميل التطبيق
-async function syncPricesOnStartup() {
-    await loadPrices();
-    if (typeof calculateAIMetrics === 'function') {
-        calculateAIMetrics();
-    }
-}
-
-window.getMaterialPrice = getMaterialPrice;
-window.getEstimatedPrice = getEstimatedPrice;
-window.loadPrices = loadPrices;
-window.savePrices = savePrices;
-window.updateMaterialPrice = updateMaterialPrice;
-window.calculateTotalValue = calculateTotalValue;
-window.formatCurrency = formatCurrency;
-window.openPriceModal = openPriceModal;
-window.filterPriceList = filterPriceList;
-window.filterPriceListByCategory = filterPriceListByCategory;
-window.getPriceDisplayData = getPriceDisplayData;
-window.updateMaterialPriceFromWindow = updateMaterialPriceFromWindow;
-window.saveAllPricesAndClose = saveAllPricesAndClose;
-window.syncPricesOnStartup = syncPricesOnStartup;
+// تصدير الدوال
+window.getMaterialPrice = (name) => PriceSystem.getPrice(name);
+window.loadPrices = () => PriceSystem.load();
+window.savePrices = () => PriceSystem.save();
+window.updateMaterialPrice = (name, price) => PriceSystem.updatePrice(name, price);
+window.openPriceModal = () => PriceSystem.openModal();
+window.PriceSystem = PriceSystem;
