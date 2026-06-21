@@ -2,11 +2,11 @@
 // Service Worker - مدير المواد الذكي v12.0
 // =====================================================
 
-var CACHE_NAME = 'material-manager-v12';
-var BASE_PATH = '/material-manager';
-var OFFLINE_URL = BASE_PATH + '/offline.html';
+const CACHE_NAME = 'material-manager-v12';
+const BASE_PATH = '/material-manager';
+const OFFLINE_URL = BASE_PATH + '/offline.html';
 
-var STATIC_CACHE_URLS = [
+const STATIC_CACHE_URLS = [
     BASE_PATH + '/',
     BASE_PATH + '/index.html',
     BASE_PATH + '/offline.html',
@@ -38,71 +38,52 @@ var STATIC_CACHE_URLS = [
     'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js'
 ];
 
-self.addEventListener('install', function(event) {
+self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(function(cache) {
-                return cache.addAll(STATIC_CACHE_URLS);
-            })
-            .then(function() {
-                return self.skipWaiting();
-            })
+            .then(cache => cache.addAll(STATIC_CACHE_URLS))
+            .then(() => self.skipWaiting())
     );
 });
 
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(function(cacheNames) {
+        caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(function(cacheName) {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
+                cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
             );
-        }).then(function() {
-            return self.clients.claim();
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
-self.addEventListener('fetch', function(event) {
-    var requestUrl = new URL(event.request.url);
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
     
-    if (requestUrl.hostname.includes('firebase') || 
-        requestUrl.hostname.includes('google-analytics') ||
-        requestUrl.hostname.includes('googletagmanager')) {
+    if (url.hostname.includes('firebase') || url.hostname.includes('google-analytics')) {
         event.respondWith(fetch(event.request));
         return;
     }
     
     event.respondWith(
-        caches.match(event.request)
-            .then(function(response) {
-                if (response) {
-                    return response;
+        caches.match(event.request).then(response => {
+            if (response) return response;
+            return fetch(event.request).then(networkResponse => {
+                if (networkResponse && networkResponse.status === 200) {
+                    const cache = caches.open(CACHE_NAME);
+                    cache.then(c => c.put(event.request, networkResponse.clone()));
                 }
-                return fetch(event.request)
-                    .then(function(networkResponse) {
-                        if (networkResponse && networkResponse.status === 200) {
-                            var cache = caches.open(CACHE_NAME);
-                            cache.then(function(c) {
-                                c.put(event.request, networkResponse.clone());
-                            });
-                        }
-                        return networkResponse;
-                    })
-                    .catch(function() {
-                        if (event.request.mode === 'navigate') {
-                            return caches.match(OFFLINE_URL);
-                        }
-                        return new Response('⚠️ غير متصل', { status: 503 });
-                    });
-            })
+                return networkResponse;
+            }).catch(() => {
+                if (event.request.mode === 'navigate') {
+                    return caches.match(OFFLINE_URL);
+                }
+                return new Response('⚠️ غير متصل', { status: 503 });
+            });
+        })
     );
 });
 
-self.addEventListener('message', function(event) {
+self.addEventListener('message', event => {
     if (event.data === 'SKIP_WAITING') {
         self.skipWaiting();
     }
