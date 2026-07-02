@@ -1,43 +1,61 @@
-// ==================== إعدادات Firebase المتقدمة ====================
+// ==================== تهيئة التطبيق ====================
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDQbf5LJRCquRsheFYqvEQBQbI_EoXNOFw",
-    authDomain: "abo-slman.firebaseapp.com",
-    projectId: "abo-slman",
-    storageBucket: "abo-slman.firebasestorage.app",
-    messagingSenderId: "874996942668",
-    appId: "1:874996942668:web:f31da5ca778fb92845f1e9"
-};
-
-let firebaseInitialized = false;
-
-try {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        firebaseInitialized = true;
-    } else {
-        firebaseInitialized = true;
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 تهيئة التطبيق...');
+    
+    if (typeof renderCategories === 'function') {
+        renderCategories();
+        console.log('✅ Categories rendered');
     }
-} catch (error) {
-    console.error('Firebase initialization error:', error);
-}
-
-const db = firebaseInitialized ? firebase.firestore() : null;
-const materialsCollection = db ? db.collection("spices_final_v12") : null;
-const pricesCollection = db ? db.collection("material_prices") : null;
-
-window.db = db;
-window.materialsCollection = materialsCollection;
-window.pricesCollection = pricesCollection;
-
-async function testFirebaseConnection() {
-    if (!db) return false;
-    try {
-        await db.collection('test').limit(1).get();
-        return true;
-    } catch {
-        return false;
+    
+    if (typeof bindEvents === 'function') {
+        bindEvents();
+        console.log('✅ Events bound');
     }
-}
+    
+    if (typeof startListener === 'function') {
+        startListener();
+        console.log('✅ Listener started');
+    }
+    
+    if (typeof initPWA === 'function') {
+        initPWA();
+        console.log('✅ PWA initialized');
+    }
+    
+    window.allMaterials = allMaterials;
+    window.currentEditId = currentEditId;
+    
+    // تحميل الأسعار
+    if (window.aiEngine && typeof window.aiEngine.loadPricesFromLocal === 'function') {
+        window.aiEngine.loadPricesFromLocal();
+        console.log('✅ Prices loaded');
+    }
+    
+    if (typeof calculateAIMetrics === 'function') {
+        setTimeout(function() {
+            calculateAIMetrics();
+            console.log('✅ AI metrics calculated');
+        }, 500);
+    }
+    
+    setTimeout(function() {
+        if (typeof initDragAndDrop === 'function') {
+            initDragAndDrop();
+            console.log('✅ Drag and drop initialized');
+        }
+    }, 1000);
+});
 
-window.testFirebaseConnection = testFirebaseConnection;
+window.addNewMaterial = addNewMaterial;
+window.saveEdit = saveEdit;
+window.clearAllMaterials = clearAllMaterials;
+window.backupData = backupData;
+window.restoreData = restoreData;
+window.openPresetModal = openPresetModal;
+window.addSelectedPresetItems = addSelectedPresetItems;
+window.startListener = startListener;
+window.refreshData = refreshData;
+window.renderSections = renderSections;
+window.calculateAIMetrics = calculateAIMetrics;
+window.initDragAndDrop = initDragAndDrop;
