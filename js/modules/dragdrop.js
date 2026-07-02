@@ -1,137 +1,80 @@
-// ==================== نظام السحب والإفلات ====================
+// =========================================
+// Drag & Drop Module
+// =========================================
 
-var draggedItem = null;
-var draggedItemId = null;
-var draggedItemName = null;
-var draggedItemOriginalSection = null;
-
-function initDragAndDrop() {
-    var materials = document.querySelectorAll('.material-card');
-    var sections = document.querySelectorAll('.priority-section');
+const DragDrop = {
+    // Drag state
+    draggedId: null,
+    draggedElement: null,
     
-    for (var i = 0; i < materials.length; i++) {
-        setupDraggable(materials[i]);
-    }
-    
-    for (var i = 0; i < sections.length; i++) {
-        setupDroppable(sections[i]);
-    }
-}
-
-function setupDraggable(element) {
-    element.setAttribute('draggable', 'true');
-    
-    element.removeEventListener('dragstart', dragStartHandler);
-    element.removeEventListener('dragend', dragEndHandler);
-    
-    element.addEventListener('dragstart', dragStartHandler);
-    element.addEventListener('dragend', dragEndHandler);
-    
-    function dragStartHandler(e) {
-        draggedItem = this;
-        draggedItemId = this.getAttribute('data-id');
-        draggedItemName = this.getAttribute('data-name');
-        draggedItemOriginalSection = this.closest('.priority-section')?.getAttribute('data-section') || '';
+    // Initialize drag and drop
+    init: function() {
+        // Setup drop zones on sections
+        document.querySelectorAll('.section-card').forEach(function(el) {
+            el.addEventListener('dragover', DragDrop.onDragOver);
+            el.addEventListener('drop', DragDrop.onDrop);
+        });
         
-        this.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', draggedItemId);
-        e.dataTransfer.effectAllowed = 'move';
-        
-        var dragIcon = document.createElement('div');
-        dragIcon.textContent = draggedItemName;
-        dragIcon.style.cssText = 'position:absolute;top:-1000px;background:#10b981;color:white;padding:8px 16px;border-radius:9999px;font-size:12px;font-weight:bold';
-        document.body.appendChild(dragIcon);
-        e.dataTransfer.setDragImage(dragIcon, 0, 0);
-        setTimeout(function() { document.body.removeChild(dragIcon); }, 0);
-    }
-    
-    function dragEndHandler(e) {
-        this.classList.remove('dragging');
-        
-        var allSections = document.querySelectorAll('.priority-section');
-        for (var i = 0; i < allSections.length; i++) {
-            allSections[i].classList.remove('drag-over');
+        // Setup drop on materials container
+        const container = document.getElementById('materialsContainer');
+        if (container) {
+            container.addEventListener('dragover', DragDrop.onDragOver);
+            container.addEventListener('drop', DragDrop.onDrop);
         }
-        
-        draggedItem = null;
-        draggedItemId = null;
-        draggedItemName = null;
-        draggedItemOriginalSection = null;
-    }
-}
-
-function setupDroppable(section) {
-    section.removeEventListener('dragover', dragOverHandler);
-    section.removeEventListener('dragleave', dragLeaveHandler);
-    section.removeEventListener('drop', dropHandler);
+    },
     
-    section.addEventListener('dragover', dragOverHandler);
-    section.addEventListener('dragleave', dragLeaveHandler);
-    section.addEventListener('drop', dropHandler);
-    
-    function dragOverHandler(e) {
+    // On drag over
+    onDragOver: function(e) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-        this.classList.add('drag-over');
-    }
+    },
     
-    function dragLeaveHandler(e) {
-        this.classList.remove('drag-over');
-    }
-    
-    function dropHandler(e) {
+    // On drop
+    onDrop: function(e) {
         e.preventDefault();
-        this.classList.remove('drag-over');
         
-        var targetSection = this.getAttribute('data-section');
+        const draggedId = e.dataTransfer.getData('text/plain');
+        if (!draggedId) return;
         
-        if (draggedItemId && targetSection && draggedItemOriginalSection !== targetSection) {
-            performDragDropMove(draggedItemId, targetSection, draggedItemOriginalSection, draggedItemName);
+        // Get target section
+        let targetSection = null;
+        let targetElement = e.target.closest('.section-card');
+        
+        if (targetElement) {
+            targetSection = targetElement.dataset.section;
+        } else {
+            // If dropped on materials container, use current section
+            targetSection = Materials.currentSection;
         }
-    }
-}
-
-async function performDragDropMove(itemId, targetSection, originalSection, itemName) {
-    if (!itemId || !targetSection) return false;
-    var name = itemName || 'المادة';
+        
+        if (targetSection) {
+            DragDrop.moveMaterial(draggedId, targetSection);
+        }
+    },
     
-    if (typeof showToastMessage === 'function') {
-        showToastMessage('🔄 جاري نقل "' + name + '"...', false);
+    // Move material to section
+    moveMaterial: function(id, targetSection) {
+        if (!isFirebaseReady()) {
+            UI.showNotification('Firebase غير جاهز', 'error');
+            return;
+        }
+        
+        const db = getDB();
+        if (!db) return;
+        
+        db.collection(COLLECTION).doc(id).update({
+            section: targetSection,
+            timestamp: Utils.getTimestamp()
+        })
+        .then(function() {
+            UI.showNotification('تم نقل المادة بنجاح', 'success');
+        })
+        .catch(function(error) {
+            console.error('Move material error:', error);
+            UI.showNotification('حدث خطأ أثناء نقل المادة', 'error');
+        });
     }
-    
-    try {
-        await materialsCollection.doc(itemId).update({ priority: targetSection });
-        
-        var sectionNames = {
-            'main': 'أساسيات',
-            'extra': 'إضافي',
-            'bags': 'أكياس تعبئة',
-            'tawsaya': 'توصيات'
-        };
-        
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('✓ تم نقل "' + name + '" إلى ' + (sectionNames[targetSection] || targetSection));
-        }
-        
-        if (typeof startListener === 'function') {
-            startListener();
-        }
-        
-        return true;
-    } catch(error) {
-        if (typeof showToastMessage === 'function') {
-            showToastMessage('❌ فشل نقل "' + name + '"', true);
-        }
-        return false;
-    }
-}
+};
 
-function refreshDragAndDrop() {
-    setTimeout(function() {
-        initDragAndDrop();
-    }, 200);
-}
-
-window.initDragAndDrop = initDragAndDrop;
-window.refreshDragAndDrop = refreshDragAndDrop;
-window.performDragDropMove = performDragDropMove;
+// Make DragDrop globally accessible
+window.DragDrop = DragDrop;
