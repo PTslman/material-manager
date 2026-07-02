@@ -232,6 +232,35 @@
                 <button class="modal-close" onclick="closeModal('priceModal')">&times;</button>
             </div>
             <div class="price-stats" id="priceStats">
+                <!-- إضافة داخل نافذة الأسعار بعد price-stats -->
+<div class="price-stats" id="priceStats">
+    <div class="stat-card mini">
+        <span class="stat-label">المواد المسعرة</span>
+        <span class="stat-value" id="pricedCount">0/0</span>
+    </div>
+    <div class="stat-card mini highlight">
+        <span class="stat-label">القيمة بعد الخصم</span>
+        <span class="stat-value" id="priceTotalValue">0 ل.س</span>
+    </div>
+    <div class="stat-card mini">
+        <span class="stat-label">القيمة قبل الخصم</span>
+        <span class="stat-value" id="priceBeforeDiscount">0 ل.س</span>
+    </div>
+    <div class="stat-card mini">
+        <span class="stat-label">الخصم</span>
+        <span class="stat-value" id="priceDiscount">35%</span>
+    </div>
+</div>
+
+<!-- إضافة أزرار تصدير واستيراد الأسعار -->
+<div class="price-actions" style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+    <button class="btn btn-secondary" onclick="PriceManager.exportPrices()" style="flex:1;">
+        <i class="fas fa-download"></i> تصدير الأسعار
+    </button>
+    <button class="btn btn-secondary" onclick="PriceManager.importPrices()" style="flex:1;">
+        <i class="fas fa-upload"></i> استيراد الأسعار
+    </button>
+</div>
                 <div class="stat-card mini">
                     <span class="stat-label">المواد المسعرة</span>
                     <span class="stat-value" id="pricedCount">0</span>
