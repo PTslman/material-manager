@@ -1,256 +1,252 @@
-// ==================== إدارة المواد والمزامنة ====================
+// =========================================
+// Materials Module
+// =========================================
 
-let allMaterials = [];
-let unsubscribe = null;
-let currentEditId = null;
-
-function startListener() {
-    if (!materialsCollection) {
-        setTimeout(startListener, 1000);
-        return;
-    }
+const Materials = {
+    // All materials cache
+    allMaterials: [],
+    currentSection: 'main',
+    listener: null,
     
-    const query = materialsCollection.orderBy('createdAt', 'desc');
-    
-    if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-    }
-    
-    unsubscribe = query.onSnapshot((snapshot) => {
-        const newMaterials = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            let priority = data.priority || 'main';
+    // Load materials from Firebase
+    loadMaterials: function(section) {
+        this.currentSection = section || this.currentSection;
+        
+        if (!isFirebaseReady()) {
+            console.warn('Firebase not ready, loading from cache');
+            this.loadFromCache();
+            return;
+        }
+        
+        try {
+            const db = getDB();
+            if (!db) return;
             
-            if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
-                priority = 'extra';
+            // Detach previous listener
+            if (this.listener) {
+                this.listener();
+                this.listener = null;
             }
             
-            newMaterials.push({
-                id: doc.id,
-                name: data.name || 'غير معروف',
-                unitType: data.unitType || 'kg',
-                quantity: data.quantity || 0,
-                priority: priority
-            });
-        });
-        
-        allMaterials = newMaterials;
-        
-        const statusText = document.getElementById('syncStatusText');
-        const syncDot = document.getElementById('syncDot');
-        const itemsCount = document.getElementById('syncItemsCount');
-        const syncTime = document.getElementById('syncLastTime');
-        
-        if (statusText) statusText.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
-        if (syncDot) syncDot.className = 'sync-dot';
-        if (itemsCount) itemsCount.innerHTML = `<i class="fas fa-database"></i> ${allMaterials.length}`;
-        if (syncTime) syncTime.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString()}`;
-        
-        if (typeof renderSections === 'function') renderSections(allMaterials);
-        if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
-        if (typeof calculateAIMetrics === 'function') calculateAIMetrics();
-        
-        setTimeout(() => {
-            if (typeof initDragAndDrop === 'function') initDragAndDrop();
-        }, 200);
-        
-        const splash = document.getElementById('splashScreen');
-        const app = document.getElementById('appContainer');
-        if (splash && app && splash.style.display !== 'none') {
-            splash.classList.add('hidden');
-            setTimeout(() => {
-                splash.style.display = 'none';
-                app.style.display = 'block';
-            }, 500);
-        }
-    }, (error) => {
-        const statusText = document.getElementById('syncStatusText');
-        const syncDot = document.getElementById('syncDot');
-        if (statusText) statusText.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-        if (syncDot) syncDot.className = 'sync-dot offline';
-    });
-}
-
-function refreshData() {
-    if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-    }
-    startListener();
-}
-
-async function addNewMaterial() {
-    const name = document.getElementById('newMaterialName')?.value.trim();
-    if (!name) {
-        showToastMessage('✏️ اكتب اسم المادة', true);
-        return;
-    }
-    
-    const section = document.getElementById('newMaterialSection')?.value || 'main';
-    let unit = document.getElementById('newUnitSelect')?.value || 'kg';
-    let quantity = parseFloat(document.getElementById('newQuantityValue')?.value);
-    
-    if (isNaN(quantity) || quantity < 0) quantity = 0;
-    if (unit === 'half') quantity = 0.5;
-    else if (unit === 'quarter') quantity = 0.25;
-    else if (unit === 'oke') quantity = 0.2;
-    
-    if (typeof window.getEstimatedPrice === 'function') {
-        const estimatedPrice = window.getEstimatedPrice(name);
-        if (estimatedPrice > 0 && typeof window.updateMaterialPrice === 'function') {
-            const currentPrice = window.getMaterialPrice(name);
-            if (currentPrice === 0) {
-                window.updateMaterialPrice(name, estimatedPrice);
-            }
-        }
-    }
-    
-    if (quantity === 0 && section !== 'tawsaya') {
-        showToastMessage(`⚠️ تمت إضافة "${name}" بدون كمية (مادة ناقصة)`, false);
-    }
-    
-    try {
-        await materialsCollection.add({
-            name,
-            unitType: unit,
-            quantity,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            priority: section
-        });
-        
-        showToastMessage(`✓ تمت إضافة "${name}"`);
-        
-        document.getElementById('newItemModal').classList.remove('active');
-        document.getElementById('newMaterialName').value = '';
-        document.getElementById('newQuantityValue').value = '1';
-    } catch(e) {
-        showToastMessage('❌ فشل الإضافة', true);
-    }
-}
-
-async function saveEdit() {
-    if (!currentEditId) {
-        showToastMessage('لا توجد مادة للتعديل', true);
-        return;
-    }
-    
-    const unit = document.getElementById('editUnitSelect').value;
-    let qty = parseFloat(document.getElementById('editQuantityValue').value);
-    
-    if (unit === 'half') qty = 0.5;
-    else if (unit === 'quarter') qty = 0.25;
-    else if (unit === 'oke') qty = 0.2;
-    
-    if (isNaN(qty) || qty < 0) {
-        showToastMessage('🔢 كمية صحيحة', true);
-        return;
-    }
-    
-    try {
-        await materialsCollection.doc(currentEditId).update({ quantity: qty, unitType: unit });
-        showToastMessage('✓ تم تحديث الكمية');
-        
-        document.getElementById('editModal').classList.remove('active');
-        currentEditId = null;
-    } catch(e) {
-        showToastMessage('❌ فشل التحديث', true);
-    }
-}
-
-async function clearAllMaterials() {
-    if (allMaterials.length === 0) {
-        showToastMessage('📭 لا توجد بيانات', true);
-        return;
-    }
-    
-    if (!confirm('⚠️ هل أنت متأكد من حذف جميع المواد نهائياً؟')) return;
-    
-    try {
-        const batch = db.batch();
-        for (const m of allMaterials) {
-            batch.delete(materialsCollection.doc(m.id));
-        }
-        await batch.commit();
-        showToastMessage('✓ تم مسح جميع المواد');
-    } catch(e) {
-        showToastMessage('❌ فشل المسح', true);
-    }
-}
-
-async function backupData() {
-    if (allMaterials.length === 0) {
-        showToastMessage('📭 لا توجد بيانات للنسخ', true);
-        return;
-    }
-    
-    const data = JSON.stringify(allMaterials, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup_spices_${new Date().toISOString().slice(0, 19)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToastMessage(`💾 تم نسخ ${allMaterials.length} عنصر`);
-}
-
-async function restoreData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            try {
-                const backup = JSON.parse(ev.target.result);
-                
-                if (!confirm(`⚠️ استبدال بـ ${backup.length} عنصر؟`)) return;
-                
-                const batch = db.batch();
-                for (const m of allMaterials) {
-                    batch.delete(materialsCollection.doc(m.id));
-                }
-                await batch.commit();
-                
-                for (const item of backup) {
-                    let priority = item.priority;
-                    if (priority === 'spices_extra' || priority === 'roasted' || priority === 'herbs') {
-                        priority = 'extra';
-                    }
-                    if (priority !== 'main' && priority !== 'extra' && priority !== 'bags' && priority !== 'tawsaya') {
-                        priority = 'extra';
-                    }
-                    await materialsCollection.add({
-                        name: item.name,
-                        unitType: item.unitType || 'kg',
-                        quantity: item.quantity || 0,
-                        priority: priority || 'main',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            // Listen to real-time updates
+            this.listener = db.collection(COLLECTION)
+                .where('section', '==', this.currentSection)
+                .orderBy('name')
+                .onSnapshot(function(snapshot) {
+                    const materials = [];
+                    snapshot.forEach(function(doc) {
+                        const data = doc.data();
+                        materials.push({
+                            id: doc.id,
+                            name: data.name || '',
+                            quantity: data.quantity || 0,
+                            unit: data.unit || 'كغ',
+                            section: data.section || 'main',
+                            timestamp: data.timestamp || null
+                        });
                     });
-                }
-                
-                showToastMessage(`✓ تم استعادة ${backup.length} عنصر`);
-            } catch(e) {
-                showToastMessage('❌ ملف غير صالح', true);
-            }
-        };
-        reader.readAsText(file);
-    };
+                    
+                    Materials.allMaterials = materials;
+                    Materials.saveToCache(materials);
+                    UI.renderMaterials(materials);
+                    
+                    // Update AI analysis
+                    Materials.updateAnalysis();
+                }, function(error) {
+                    console.error('Firestore listener error:', error);
+                    Materials.loadFromCache();
+                });
+        } catch (error) {
+            console.error('Error loading materials:', error);
+            this.loadFromCache();
+        }
+    },
     
-    input.click();
-}
+    // Load from cache
+    loadFromCache: function() {
+        try {
+            const cached = localStorage.getItem('materials_cache');
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (data && data.section === this.currentSection) {
+                    this.allMaterials = data.materials || [];
+                    UI.renderMaterials(this.allMaterials);
+                    this.updateAnalysis();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Cache load error:', e);
+        }
+        
+        UI.renderMaterials([]);
+        this.updateAnalysis();
+    },
+    
+    // Save to cache
+    saveToCache: function(materials) {
+        try {
+            localStorage.setItem('materials_cache', JSON.stringify({
+                materials: materials,
+                section: this.currentSection,
+                timestamp: Date.now()
+            }));
+        } catch (e) {
+            console.warn('Cache save error:', e);
+        }
+    },
+    
+    // Update AI analysis
+    updateAnalysis: function() {
+        const analysis = AIEngine.analyzeInventory(
+            this.allMaterials,
+            PriceManager.getPrice.bind(PriceManager)
+        );
+        
+        AIAssistant.updateStats(analysis);
+    },
+    
+    // Add material
+    addMaterial: function(name, quantity, unit, section) {
+        if (!isFirebaseReady()) {
+            UI.showNotification('Firebase غير جاهز، يرجى المحاولة لاحقاً', 'error');
+            return;
+        }
+        
+        const db = getDB();
+        if (!db) return;
+        
+        const data = {
+            name: name.trim(),
+            quantity: parseFloat(quantity) || 0,
+            unit: unit || 'كغ',
+            section: section || this.currentSection,
+            timestamp: Utils.getTimestamp()
+        };
+        
+        db.collection(COLLECTION).add(data)
+            .then(function(docRef) {
+                UI.showNotification('تمت إضافة المادة بنجاح', 'success');
+                // Close modal
+                UI.hideModal('addModal');
+                // Reset form
+                document.getElementById('addForm').reset();
+            })
+            .catch(function(error) {
+                console.error('Add material error:', error);
+                UI.showNotification('حدث خطأ أثناء إضافة المادة', 'error');
+            });
+    },
+    
+    // Edit material
+    editMaterial: function(id) {
+        const material = this.allMaterials.find(function(m) {
+            return m.id === id;
+        });
+        
+        if (!material) {
+            UI.showNotification('المادة غير موجودة', 'error');
+            return;
+        }
+        
+        // Fill edit form
+        document.getElementById('editId').value = material.id;
+        document.getElementById('editName').value = material.name;
+        document.getElementById('editQuantity').value = material.quantity;
+        document.getElementById('editUnit').value = material.unit;
+        document.getElementById('editSection').value = material.section;
+        
+        UI.showModal('editModal');
+    },
+    
+    // Save edit
+    saveEdit: function(id, name, quantity, unit, section) {
+        if (!isFirebaseReady()) {
+            UI.showNotification('Firebase غير جاهز', 'error');
+            return;
+        }
+        
+        const db = getDB();
+        if (!db) return;
+        
+        const data = {
+            name: name.trim(),
+            quantity: parseFloat(quantity) || 0,
+            unit: unit || 'كغ',
+            section: section || this.currentSection,
+            timestamp: Utils.getTimestamp()
+        };
+        
+        db.collection(COLLECTION).doc(id).update(data)
+            .then(function() {
+                UI.showNotification('تم تعديل المادة بنجاح', 'success');
+                UI.hideModal('editModal');
+            })
+            .catch(function(error) {
+                console.error('Edit material error:', error);
+                UI.showNotification('حدث خطأ أثناء التعديل', 'error');
+            });
+    },
+    
+    // Delete material
+    deleteMaterial: function(id) {
+        if (!confirm('هل أنت متأكد من حذف هذه المادة؟')) return;
+        
+        if (!isFirebaseReady()) {
+            UI.showNotification('Firebase غير جاهز', 'error');
+            return;
+        }
+        
+        const db = getDB();
+        if (!db) return;
+        
+        db.collection(COLLECTION).doc(id).delete()
+            .then(function() {
+                UI.showNotification('تم حذف المادة بنجاح', 'success');
+            })
+            .catch(function(error) {
+                console.error('Delete material error:', error);
+                UI.showNotification('حدث خطأ أثناء الحذف', 'error');
+            });
+    },
+    
+    // Clear all materials
+    clearAll: function() {
+        if (!confirm('⚠️ هل أنت متأكد من حذف جميع المواد؟ هذا الإجراء لا يمكن التراجع عنه!')) return;
+        
+        if (!isFirebaseReady()) {
+            UI.showNotification('Firebase غير جاهز', 'error');
+            return;
+        }
+        
+        const db = getDB();
+        if (!db) return;
+        
+        // Get all materials in current section
+        db.collection(COLLECTION)
+            .where('section', '==', this.currentSection)
+            .get()
+            .then(function(snapshot) {
+                const batch = db.batch();
+                snapshot.forEach(function(doc) {
+                    batch.delete(doc.ref);
+                });
+                return batch.commit();
+            })
+            .then(function() {
+                UI.showNotification('تم حذف جميع المواد بنجاح', 'success');
+            })
+            .catch(function(error) {
+                console.error('Clear all error:', error);
+                UI.showNotification('حدث خطأ أثناء الحذف', 'error');
+            });
+    },
+    
+    // Get all materials (for backup)
+    getAllMaterials: function() {
+        return this.allMaterials;
+    }
+};
 
-window.allMaterials = allMaterials;
-window.startListener = startListener;
-window.refreshData = refreshData;
-window.addNewMaterial = addNewMaterial;
-window.saveEdit = saveEdit;
-window.clearAllMaterials = clearAllMaterials;
-window.backupData = backupData;
-window.restoreData = restoreData;
+// Make Materials globally accessible
+window.Materials = Materials;
