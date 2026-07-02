@@ -1,132 +1,75 @@
 // =========================================
-// UI Module
+// UI Module - مع دعم التمرير السلس
 // =========================================
 
 const UI = {
-    // Current active section
-    activeSection: 'main',
+    // ... الكود السابق ...
     
-    // Section definitions
-    sections: [
-        { id: 'main', title: 'أساسيات', icon: 'fa-star', color: '#f59e0b' },
-        { id: 'extra', title: 'إضافي', icon: 'fa-plus-circle', color: '#3b82f6' },
-        { id: 'bags', title: 'أكياس تعبئة', icon: 'fa-shopping-bag', color: '#ec4899' },
-        { id: 'tawsaya', title: 'توصيات', icon: 'fa-gift', color: '#06b6d4' }
-    ],
-    
-    // Render sections
-    renderSections: function() {
-        const container = document.getElementById('sectionsContainer');
-        if (!container) return;
+    // التمرير إلى عنصر معين بسلاسة
+    scrollToElement: function(elementId, offset) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
         
-        container.innerHTML = this.sections.map(function(section) {
-            const isActive = section.id === UI.activeSection ? 'active' : '';
-            return '<div class="section-card section-' + section.id + ' ' + isActive + 
-                '" data-section="' + section.id + '" onclick="UI.switchSection(\'' + section.id + '\')">' +
-                '<i class="fas ' + section.icon + ' section-icon"></i>' +
-                '<span>' + section.title + '</span>' +
-                '</div>';
-        }).join('');
+        const rect = element.getBoundingClientRect();
+        const elementTop = rect.top + window.scrollY;
+        const targetScroll = elementTop - (offset || 80);
+        const currentScroll = window.scrollY;
+        const distance = targetScroll - currentScroll;
+        
+        if (Math.abs(distance) < 10) return;
+        
+        const duration = 400;
+        const startTime = Date.now();
+        
+        const smoothScroll = function() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // دالة easeInOutCubic
+            const ease = progress < 0.5 
+                ? 4 * progress * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            
+            window.scrollTo(0, currentScroll + distance * ease);
+            
+            if (progress < 1) {
+                requestAnimationFrame(smoothScroll);
+            }
+        };
+        
+        smoothScroll();
     },
     
-    // Switch section
-    switchSection: function(sectionId) {
-        this.activeSection = sectionId;
-        this.renderSections();
-        
-        // Trigger materials refresh
-        if (typeof Materials !== 'undefined') {
-            Materials.loadMaterials(sectionId);
-        }
-    },
-    
-    // Render materials
-    renderMaterials: function(materials) {
-        const container = document.getElementById('materialsContainer');
-        if (!container) return;
-        
-        if (!materials || materials.length === 0) {
-            container.innerHTML = '<div class="empty-state">' +
-                '<i class="fas fa-box-open"></i>' +
-                '<p>لا توجد مواد في هذا القسم</p>' +
-                '<p style="font-size:0.8rem;color:var(--text-muted)">اضغط على "إضافة" لإضافة مادة جديدة</p>' +
-                '</div>';
-            return;
+    // عرض إشعار مع أيقونة
+    showNotification: function(message, type, duration) {
+        const existing = document.querySelector('.notification');
+        if (existing) {
+            existing.remove();
         }
         
-        const grid = document.createElement('div');
-        grid.className = 'materials-grid';
-        
-        materials.forEach(function(material) {
-            const price = PriceManager.getPrice(material.name);
-            const priceText = price && price > 0 ? PriceManager.formatCurrency(price) + '/كغ' : '';
-            
-            const card = document.createElement('div');
-            card.className = 'material-card';
-            card.dataset.id = material.id;
-            card.dataset.section = material.section;
-            card.draggable = true;
-            
-            card.innerHTML = 
-                '<div class="material-name">' + Utils.capitalize(material.name) + '</div>' +
-                '<div class="material-quantity">' + material.quantity + ' ' + material.unit + '</div>' +
-                (priceText ? '<div class="material-price">' + priceText + '</div>' : '') +
-                '<div class="material-actions">' +
-                '<button class="edit-btn" onclick="Materials.editMaterial(\'' + material.id + '\')">' +
-                '<i class="fas fa-edit"></i>' +
-                '</button>' +
-                '<button class="delete-btn" onclick="Materials.deleteMaterial(\'' + material.id + '\')">' +
-                '<i class="fas fa-trash"></i>' +
-                '</button>' +
-                '</div>';
-            
-            // Drag events
-            card.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData('text/plain', material.id);
-                card.classList.add('dragging');
-            });
-            
-            card.addEventListener('dragend', function(e) {
-                card.classList.remove('dragging');
-            });
-            
-            grid.appendChild(card);
-        });
-        
-        container.innerHTML = '';
-        container.appendChild(grid);
-    },
-    
-    // Show modal
-    showModal: function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-    },
-    
-    // Hide modal
-    hideModal: function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    },
-    
-    // Show notification
-    showNotification: function(message, type) {
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = 'notification ' + (type || 'info');
-        notification.textContent = message;
+        
+        // إضافة أيقونة حسب النوع
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        
+        notification.innerHTML = (icons[type] || 'ℹ️') + ' ' + message;
         notification.style.cssText = 
-            'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);' +
-            'padding:12px 24px;border-radius:12px;background:var(--bg-card);' +
-            'color:var(--text-primary);box-shadow:var(--shadow-lg);' +
+            'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+            'padding:14px 28px;border-radius:12px;background:var(--bg-card);' +
+            'color:var(--text-primary);box-shadow:0 10px 40px rgba(0,0,0,0.2);' +
             'z-index:9999;font-weight:500;max-width:90%;' +
-            'border-right:4px solid ' + (type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6');
+            'border-right:4px solid ' + (type === 'success' ? '#22c55e' : 
+                                         type === 'error' ? '#ef4444' : 
+                                         type === 'warning' ? '#f59e0b' : '#3b82f6') +
+            ';font-family:Tajawal,sans-serif;' +
+            'animation:slideUp 0.3s ease;' +
+            'backdrop-filter:blur(10px);' +
+            'background:var(--bg-secondary);';
         
         document.body.appendChild(notification);
         
@@ -137,7 +80,7 @@ const UI = {
             setTimeout(function() {
                 notification.remove();
             }, 300);
-        }, 3000);
+        }, duration || 3000);
     }
 };
 
