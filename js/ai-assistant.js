@@ -1,85 +1,62 @@
-// ==================== المساعد الذكي ====================
+// =========================================
+// AI Assistant - UI Integration
+// =========================================
 
 const AIAssistant = {
-    analyzeStockLevels(materials) {
-        const analysis = { critical: [], warning: [], optimal: [], excess: [] };
+    // Current analysis data
+    analysis: null,
+    
+    // Update AI stats display
+    updateStats: function(analysis) {
+        this.analysis = analysis;
         
-        for (const m of materials) {
-            if (m.priority === 'tawsaya') continue;
-            const qty = window.aiEngine ? window.aiEngine.convertToKg(m.quantity, m.unitType) : (m.quantity || 0);
-            
-            if (qty === 0) {
-                analysis.critical.push({ name: m.name, status: 'مفقودة بالكامل', action: 'شراء فوري' });
-            } else if (qty < 0.5) {
-                analysis.critical.push({ name: m.name, status: 'كمية حرجة', action: 'شراء عاجل' });
-            } else if (qty < 1) {
-                analysis.warning.push({ name: m.name, status: 'كمية منخفضة', action: 'مراجعة' });
-            } else if (qty > 10) {
-                analysis.excess.push({ name: m.name, status: 'كمية زائدة', action: 'تخفيض' });
-            } else {
-                analysis.optimal.push({ name: m.name, status: 'مناسب', action: 'متابعة' });
-            }
-        }
-        return analysis;
-    },
-    
-    estimatePrice(materialName) {
-        const prices = {
-            'ملح': 2, 'فلفل اسود ناعم': 25, 'كمون ناعم': 20, 'كركم': 15,
-            'زنجبيل ناعم': 18, 'قرفة ناعمة': 22, 'هيل ناعم': 80, 'كزبرة ناعمة': 12,
-            'شطة حدة وسط': 16, 'توم ناعم': 14, 'بصل ناعم': 12, 'سماق ناعم': 18,
-            'شاورما': 20, 'كاري': 15, 'جوز هند خشن': 25, 'نسكافية خشنة': 35
-        };
-        return prices[materialName] || 10;
-    },
-    
-    predictDemand(materials) {
-        const predictions = [];
-        for (const m of materials) {
-            if (m.priority === 'tawsaya') continue;
-            const rate = window.aiEngine ? window.aiEngine.getConsumptionRate(m.name) : 0.1;
-            const qty = window.aiEngine ? window.aiEngine.convertToKg(m.quantity, m.unitType) : (m.quantity || 0);
-            const weeks = rate > 0 ? (qty / rate) : 30;
-            
-            if (weeks < 2) {
-                predictions.push({ name: m.name, weeksUntilEmpty: weeks.toFixed(1), urgency: 'حرجة', action: 'شراء فوري' });
-            } else if (weeks < 4) {
-                predictions.push({ name: m.name, weeksUntilEmpty: weeks.toFixed(1), urgency: 'متوسطة', action: 'التخطيط للشراء' });
-            }
-        }
-        return predictions;
-    },
-    
-    calculateTotalValue(materials) {
-        let total = 0;
-        for (const m of materials) {
-            if (m.priority === 'tawsaya') continue;
-            const qty = window.aiEngine ? window.aiEngine.convertToKg(m.quantity, m.unitType) : (m.quantity || 0);
-            const price = this.estimatePrice(m.name);
-            total += qty * price;
-        }
-        return Math.round(total);
-    },
-    
-    getFullReport(materials) {
-        const stock = this.analyzeStockLevels(materials);
-        const demand = this.predictDemand(materials);
-        const value = this.calculateTotalValue(materials);
-        const normalCount = materials.filter(m => m.priority !== 'tawsaya').length;
+        // Update total weight
+        const weightEl = document.getElementById('totalWeight');
+        if (weightEl) weightEl.textContent = analysis.totalWeightFormatted || '0 كغ';
         
-        return {
-            summary: {
-                totalMaterials: normalCount,
-                totalValue: value,
-                criticalCount: stock.critical.length,
-                warningCount: stock.warning.length,
-                excessCount: stock.excess.length
-            },
-            stockAnalysis: stock,
-            demandPredictions: demand,
-            generatedAt: new Date().toLocaleString('ar-SA')
-        };
+        // Update total value
+        const valueEl = document.getElementById('totalValue');
+        if (valueEl) valueEl.textContent = analysis.totalValueFormatted || '0 ل.س';
+        
+        // Update low stock count
+        const lowEl = document.getElementById('lowStockCount');
+        if (lowEl) lowEl.textContent = analysis.lowStockCount || 0;
+        
+        // Update total materials
+        const totalEl = document.getElementById('totalMaterials');
+        if (totalEl) totalEl.textContent = analysis.totalMaterials || 0;
+        
+        // Update insights
+        this.updateInsights(analysis.insights);
+    },
+    
+    // Update insights display
+    updateInsights: function(insights) {
+        const container = document.getElementById('insightsContent');
+        if (!container) return;
+        
+        if (!insights || insights.length === 0) {
+            container.innerHTML = '<p class="insight-placeholder">لا توجد رؤى لعرضها</p>';
+            return;
+        }
+        
+        container.innerHTML = insights.map(function(insight) {
+            return '<div class="insight-item"><i class="fas fa-circle"></i> ' + insight + '</div>';
+        }).join('');
+    },
+    
+    // Show low stock warning
+    showLowStockWarning: function(lowStockList) {
+        if (!lowStockList || lowStockList.length === 0) return;
+        
+        const container = document.getElementById('insightsContent');
+        if (!container) return;
+        
+        const warning = document.createElement('div');
+        warning.className = 'insight-item warning';
+        warning.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> ' +
+            'مواد ناقصة: ' + lowStockList.join(', ');
+        
+        container.prepend(warning);
     }
 };
-
-window.AIAssistant = AIAssistant;
