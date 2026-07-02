@@ -1,61 +1,103 @@
-// ==================== تهيئة التطبيق ====================
+// =========================================
+// Main Application
+// =========================================
 
+// Wait for DOM to load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 تهيئة التطبيق...');
+    // Initialize Firebase
+    const firebaseReady = initFirebase();
     
-    if (typeof renderCategories === 'function') {
-        renderCategories();
-        console.log('✅ Categories rendered');
+    // Load theme preference
+    Events.loadTheme();
+    
+    // Initialize modules
+    if (firebaseReady) {
+        // Load materials
+        Materials.loadMaterials('main');
+        
+        // Load prices
+        PriceManager.loadPrices();
+    } else {
+        // Try loading from cache
+        Materials.loadFromCache();
+        PriceManager.loadFromLocal();
+        
+        // Show offline warning
+        UI.showNotification('وضع غير متصل - البيانات من التخزين المحلي', 'info');
     }
     
-    if (typeof bindEvents === 'function') {
-        bindEvents();
-        console.log('✅ Events bound');
-    }
+    // Initialize events
+    Events.init();
     
-    if (typeof startListener === 'function') {
-        startListener();
-        console.log('✅ Listener started');
-    }
+    // Initialize drag and drop
+    DragDrop.init();
     
-    if (typeof initPWA === 'function') {
-        initPWA();
-        console.log('✅ PWA initialized');
-    }
-    
-    window.allMaterials = allMaterials;
-    window.currentEditId = currentEditId;
-    
-    // تحميل الأسعار
-    if (window.aiEngine && typeof window.aiEngine.loadPricesFromLocal === 'function') {
-        window.aiEngine.loadPricesFromLocal();
-        console.log('✅ Prices loaded');
-    }
-    
-    if (typeof calculateAIMetrics === 'function') {
-        setTimeout(function() {
-            calculateAIMetrics();
-            console.log('✅ AI metrics calculated');
-        }, 500);
-    }
-    
+    // Hide splash screen
     setTimeout(function() {
-        if (typeof initDragAndDrop === 'function') {
-            initDragAndDrop();
-            console.log('✅ Drag and drop initialized');
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.classList.add('hidden');
         }
     }, 1000);
 });
 
-window.addNewMaterial = addNewMaterial;
-window.saveEdit = saveEdit;
-window.clearAllMaterials = clearAllMaterials;
-window.backupData = backupData;
-window.restoreData = restoreData;
-window.openPresetModal = openPresetModal;
-window.addSelectedPresetItems = addSelectedPresetItems;
-window.startListener = startListener;
-window.refreshData = refreshData;
-window.renderSections = renderSections;
-window.calculateAIMetrics = calculateAIMetrics;
-window.initDragAndDrop = initDragAndDrop;
+// Make functions globally accessible for inline HTML
+window.addMaterial = function(e) {
+    e.preventDefault();
+    const name = document.getElementById('addName').value;
+    const quantity = document.getElementById('addQuantity').value;
+    const unit = document.getElementById('addUnit').value;
+    const section = document.getElementById('addSection').value;
+    
+    if (!name.trim()) {
+        UI.showNotification('يرجى إدخال اسم المادة', 'error');
+        return;
+    }
+    
+    if (!quantity || parseFloat(quantity) <= 0) {
+        UI.showNotification('يرجى إدخال كمية صحيحة', 'error');
+        return;
+    }
+    
+    Materials.addMaterial(name, quantity, unit, section);
+};
+
+window.saveEdit = function(e) {
+    e.preventDefault();
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('editName').value;
+    const quantity = document.getElementById('editQuantity').value;
+    const unit = document.getElementById('editUnit').value;
+    const section = document.getElementById('editSection').value;
+    
+    if (!name.trim()) {
+        UI.showNotification('يرجى إدخال اسم المادة', 'error');
+        return;
+    }
+    
+    if (!quantity || parseFloat(quantity) <= 0) {
+        UI.showNotification('يرجى إدخال كمية صحيحة', 'error');
+        return;
+    }
+    
+    Materials.saveEdit(id, name, quantity, unit, section);
+};
+
+window.closeModal = function(modalId) {
+    UI.hideModal(modalId);
+};
+
+window.saveAllPrices = function() {
+    PriceManager.saveAllPrices();
+};
+
+// Service Worker Registration for PWA
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(function(registration) {
+            console.log('Service Worker registered successfully');
+        })
+        .catch(function(error) {
+            console.warn('Service Worker registration failed:', error);
+        });
+}
