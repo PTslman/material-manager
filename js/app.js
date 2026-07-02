@@ -101,3 +101,33 @@ if ('serviceWorker' in navigator) {
             console.warn('Service Worker registration failed:', error);
         });
 }
+// =========================================
+// إضافة زر التمرير للأعلى
+// =========================================
+
+// إظهار/إخفاء زر التمرير للأعلى
+window.addEventListener('scroll', function() {
+    const btn = document.getElementById('scrollTopBtn');
+    if (btn) {
+        if (window.scrollY > 300) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    }
+});
+
+// عند تحميل الصفحة، التحقق من وجود الزر
+document.addEventListener('DOMContentLoaded', function() {
+    // ... الكود الموجود ...
+    
+    // إضافة زر التمرير للأعلى
+    const scrollBtn = document.createElement('button');
+    scrollBtn.className = 'scroll-top-btn';
+    scrollBtn.id = 'scrollTopBtn';
+    scrollBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+    scrollBtn.onclick = function() {
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    };
+    document.body.appendChild(scrollBtn);
+});
