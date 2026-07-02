@@ -1,83 +1,61 @@
-// ==================== إعدادات PWA المتقدمة ====================
+// =========================================
+// PWA Settings
+// =========================================
 
-const PWASettings = {
-    installPrompt: null,
-    isInstalled: false,
+// Install prompt handler
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
     
-    init() {
-        this.checkInstallStatus();
-        this.setupBeforeInstallPrompt();
-        this.setupUpdateListener();
-    },
+    // Show install button or notification
+    console.log('PWA install prompt available');
     
-    checkInstallStatus() {
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            this.isInstalled = true;
-            const installBtn = document.getElementById('installBtn');
-            if (installBtn) installBtn.style.display = 'none';
-        }
-        
-        window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
-            if (e.matches) {
-                this.isInstalled = true;
-                const installBtn = document.getElementById('installBtn');
-                if (installBtn) installBtn.style.display = 'none';
+    // You can show a custom install button here
+});
+
+// Handle install button click
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(choiceResult) {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('PWA installed');
+                UI.showNotification('تم تثبيت التطبيق بنجاح', 'success');
+            } else {
+                console.log('PWA installation declined');
             }
+            deferredPrompt = null;
         });
-    },
-    
-    setupBeforeInstallPrompt() {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            this.installPrompt = e;
-            const installBtn = document.getElementById('installBtn');
-            if (installBtn && !this.isInstalled) {
-                installBtn.style.display = 'inline-flex';
-            }
-        });
-    },
-    
-    promptInstall() {
-        if (this.installPrompt) {
-            this.installPrompt.prompt();
-            this.installPrompt.userChoice.then((result) => {
-                if (result.outcome === 'accepted') {
-                    this.isInstalled = true;
-                    const installBtn = document.getElementById('installBtn');
-                    if (installBtn) installBtn.style.display = 'none';
-                }
-                this.installPrompt = null;
-            });
-        } else {
-            showToastMessage('📱 يمكنك تثبيت التطبيق من قائمة المتصفح', false);
-        }
-    },
-    
-    setupUpdateListener() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            showToastMessage('🔄 تحديث جديد متاح! أعد تحميل الصفحة', false);
-                        }
-                    });
-                });
-            });
-        }
-    },
-    
-    async registerBackgroundSync() {
-        if (!('serviceWorker' in navigator) || !('SyncManager' in window)) return false;
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            await registration.sync.register('sync-materials');
-            return true;
-        } catch(e) {
-            return false;
-        }
     }
-};
+}
 
-window.PWASettings = PWASettings;
+// Check if app is installed
+window.addEventListener('appinstalled', function() {
+    console.log('PWA installed successfully');
+    UI.showNotification('تم تثبيت التطبيق', 'success');
+});
+
+// Network status detection
+window.addEventListener('online', function() {
+    UI.showNotification('تم استعادة الاتصال بالإنترنت', 'success');
+    // Sync data when back online
+    if (typeof Events !== 'undefined') {
+        Events.syncData();
+    }
+});
+
+window.addEventListener('offline', function() {
+    UI.showNotification('تم قطع الاتصال بالإنترنت - وضع غير متصل', 'error');
+});
+
+// Handle visibility change for background sync
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden && !navigator.onLine) {
+        // App became visible while offline
+        console.log('App is visible but offline');
+    }
+});
