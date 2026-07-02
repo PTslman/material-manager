@@ -957,3 +957,300 @@ body {
         flex-direction: column;
     }
 }
+/* ========== تحسينات الجوال ========== */
+
+/* تحسين المسافات للجوال */
+@media (max-width: 768px) {
+    .material-card {
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    .material-card:active {
+        transform: scale(0.97);
+        transition: transform 0.1s;
+    }
+    
+    /* زيادة مساحة النقر */
+    .material-actions button {
+        padding: 8px 12px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+    
+    /* تحسين عرض الأقسام */
+    .sections-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 8px 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .section-card {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+    
+    /* تحسين عرض الإحصائيات */
+    .ai-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        padding: 8px 12px;
+    }
+    
+    .stat-card {
+        padding: 8px 10px;
+    }
+    
+    .stat-value {
+        font-size: 0.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.55rem;
+    }
+    
+    /* تحسين عرض القوائم الجاهزة */
+    .preset-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        max-height: 300px;
+    }
+    
+    .preset-item {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+        min-height: 40px;
+        touch-action: manipulation;
+    }
+    
+    /* تحسين عرض الأسعار */
+    .price-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+    
+    .price-item-input {
+        min-height: 38px;
+        font-size: 0.9rem;
+    }
+    
+    .price-controls {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .price-controls input,
+    .price-controls select {
+        min-height: 40px;
+        font-size: 0.9rem;
+    }
+    
+    /* تحسين النوافذ المنبثقة */
+    .modal-content {
+        padding: 16px;
+        margin: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal-content.large-modal {
+        max-width: 100%;
+        margin: 8px;
+    }
+    
+    /* تحسين الأزرار */
+    .btn {
+        padding: 12px;
+        min-height: 44px;
+        font-size: 0.9rem;
+        touch-action: manipulation;
+    }
+    
+    .toolbar-btn {
+        padding: 8px 12px;
+        min-height: 40px;
+        min-width: 40px;
+        touch-action: manipulation;
+    }
+    
+    /* إضافة مساحة للتمرير */
+    #materialsContainer {
+        padding: 8px 12px;
+        scroll-margin-top: 80px;
+    }
+    
+    .materials-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+}
+
+/* تحسينات للأجهزة الصغيرة جداً */
+@media (max-width: 380px) {
+    .materials-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    
+    .material-card {
+        padding: 8px 10px;
+    }
+    
+    .material-name {
+        font-size: 0.8rem;
+    }
+    
+    .material-quantity {
+        font-size: 0.7rem;
+    }
+    
+    .sections-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+    }
+    
+    .section-card {
+        padding: 6px 4px;
+        font-size: 0.7rem;
+        min-height: 36px;
+    }
+    
+    .ai-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+    }
+    
+    .stat-card {
+        padding: 6px 8px;
+    }
+}
+
+/* إضافة مساعدة بصرية للسحب */
+.material-card.dragging {
+    opacity: 0.3;
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+}
+
+/* تحسين مناطق الإسقاط */
+.section-card {
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+}
+
+.section-card.drop-target {
+    background: var(--primary) !important;
+    color: white !important;
+    transform: scale(1.08) !important;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.4) !important;
+    border-color: var(--primary) !important;
+    z-index: 10;
+}
+
+/* إشعارات محسنة للجوال */
+.notification {
+    font-size: 0.9rem !important;
+    padding: 12px 20px !important;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* تحسين شريط الأدوات للجوال */
+.toolbar {
+    padding: 6px 8px;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.toolbar::-webkit-scrollbar {
+    display: none;
+}
+
+.toolbar-btn {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    min-height: 36px;
+}
+
+.toolbar-btn span {
+    font-size: 0.7rem;
+}
+
+/* تحسين الرأس للجوال */
+.app-header {
+    padding: 8px 12px;
+}
+
+.header-title h1 {
+    font-size: 1rem;
+}
+
+.header-icon {
+    font-size: 1.2rem;
+}
+
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.85rem;
+}
+
+/* تحسين عرض الرؤى الذكية */
+.insights-container {
+    padding: 8px 12px;
+}
+
+.insights-content {
+    font-size: 0.75rem;
+}
+
+.insight-item {
+    padding: 4px 0;
+}
+
+/* إضافة زر مساعد للتمرير للأعلى */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 140px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    cursor: pointer;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    touch-action: manipulation;
+    transition: all 0.3s ease;
+}
+
+.scroll-top-btn.visible {
+    display: flex;
+    animation: fadeInUp 0.3s ease;
+}
+
+.scroll-top-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
+}
