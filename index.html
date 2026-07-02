@@ -12,7 +12,6 @@
     <title>مدير المواد الذكي | نظام إدارة المخزون المتقدم</title>
     
     <script>
-        // تعطيل console.log في الإنتاج
         if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
             console.log = function() {};
             console.error = function() {};
@@ -21,7 +20,6 @@
     </script>
     
     <script>
-        // تحديد المسار الأساسي
         (function() {
             var basePath = '/material-manager';
             var pathname = window.location.pathname;
@@ -57,7 +55,7 @@
 </head>
 <body>
 
-<!-- ==================== شاشة البداية ==================== -->
+<!-- شاشة البداية -->
 <div id="splashScreen" class="splash">
     <div class="splash-container">
         <div class="splash-logo"><i class="fas fa-boxes"></i></div>
@@ -78,7 +76,7 @@
     </div>
 </div>
 
-<!-- ==================== التطبيق الرئيسي ==================== -->
+<!-- التطبيق الرئيسي -->
 <div id="appContainer" class="app-main" style="display: none;">
     
     <!-- الهيرو -->
@@ -189,7 +187,7 @@
     </div>
 </div>
 
-<!-- ==================== شريط الحالة ==================== -->
+<!-- شريط الحالة -->
 <div id="syncStatusBar" class="sync-status-bar">
     <div class="sync-indicator">
         <div id="syncDot" class="sync-dot"></div>
@@ -501,11 +499,7 @@ window.addEventListener('load', function() {
 // تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/material-manager/sw.js').then(function(reg) {
-            console.log('Service Worker registered');
-        }).catch(function(err) {
-            console.log('Service Worker registration failed:', err);
-        });
+        navigator.serviceWorker.register('/material-manager/sw.js').catch(function(err) {});
     });
 }
 
