@@ -1,4 +1,65 @@
-// ==================== دوال مساعدة متقدمة ====================
+// =========================================
+// Utils Module
+// =========================================
+
+const Utils = {
+    // Generate unique ID
+    generateId: function() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    },
+    
+    // Debounce function
+    debounce: function(func, wait) {
+        let timeout;
+        return function executedFunction() {
+            const later = function() {
+                clearTimeout(timeout);
+                func.apply(this, arguments);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
+    
+    // Get current timestamp
+    getTimestamp: function() {
+        return new Date().toISOString();
+    },
+    
+    // Format date
+    formatDate: function(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toLocaleDateString('ar-SA');
+    },
+    
+    // Safe parse JSON
+    safeJSONParse: function(str, fallback) {
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+            return fallback || null;
+        }
+    },
+    
+    // Capitalize first letter
+    capitalize: function(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    },
+    
+    // Check if string is empty
+    isEmpty: function(str) {
+        return !str || str.trim() === '';
+    },
+    
+    // Truncate string
+    truncate: function(str, length) {
+        if (!str) return '';
+        if (str.length <= length) return str;
+        return str.substring(0, length) + '...';
+    }
+};// ==================== دوال مساعدة متقدمة ====================
 
 function showToastMessage(msg, isErr = false) {
     const existing = document.querySelector('.toast');
