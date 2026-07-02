@@ -1,58 +1,161 @@
-// ==================== ربط الأحداث المتقدمة ====================
+// ==================== ربط الأحداث ====================
 
 function bindEvents() {
-    const events = [
-        { id: 'mainAddBtn', handler: () => document.getElementById('newItemModal').classList.add('active') },
-        { id: 'syncBtn', handler: () => { 
-            if (typeof refreshData === 'function') refreshData();
-            else if (typeof startListener === 'function') startListener();
-            showToastMessage('🔄 جاري المزامنة...');
-        }},
-        { id: 'themeToggle', handler: () => {
-            document.body.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-        }},
-        { id: 'backupBtn', handler: () => { if (typeof backupData === 'function') backupData(); }},
-        { id: 'restoreBtn', handler: () => { if (typeof restoreData === 'function') restoreData(); }},
-        { id: 'clearAllBtn', handler: () => { if (typeof clearAllMaterials === 'function') clearAllMaterials(); }},
-        { id: 'priceManagerBtn', handler: (e) => { e.preventDefault(); if (typeof openPriceModal === 'function') openPriceModal(); }},
-        { id: 'saveNewItemBtn', handler: () => { if (typeof addNewMaterial === 'function') addNewMaterial(); }},
-        { id: 'saveEditBtn', handler: () => { if (typeof saveEdit === 'function') saveEdit(); }},
-        { id: 'savePresetBtn', handler: () => { if (typeof addSelectedPresetItems === 'function') addSelectedPresetItems(); }},
-        { id: 'confirmMoveBtn', handler: () => { if (typeof executeMove === 'function') executeMove(); }}
-    ];
+    // زر إضافة مادة جديدة
+    var mainAddBtn = document.getElementById('mainAddBtn');
+    if (mainAddBtn) {
+        mainAddBtn.onclick = function() {
+            document.getElementById('newItemModal').classList.add('active');
+        };
+    }
     
-    for (const { id, handler } of events) {
-        const el = document.getElementById(id);
-        if (el) el.onclick = handler;
+    // زر المزامنة
+    var syncBtn = document.getElementById('syncBtn');
+    if (syncBtn) {
+        syncBtn.onclick = function() {
+            if (typeof refreshData === 'function') {
+                refreshData();
+            } else if (typeof startListener === 'function') {
+                startListener();
+            }
+            if (typeof showToastMessage === 'function') {
+                showToastMessage('🔄 جاري المزامنة...');
+            }
+        };
+    }
+    
+    // زر الوضع الليلي
+    var themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.onclick = function() {
+            document.body.classList.toggle('dark');
+            var isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+        };
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+        }
+    }
+    
+    // زر النسخ الاحتياطي
+    var backupBtn = document.getElementById('backupBtn');
+    if (backupBtn) {
+        backupBtn.onclick = function() {
+            if (typeof backupData === 'function') {
+                backupData();
+            }
+        };
+    }
+    
+    // زر الاستعادة
+    var restoreBtn = document.getElementById('restoreBtn');
+    if (restoreBtn) {
+        restoreBtn.onclick = function() {
+            if (typeof restoreData === 'function') {
+                restoreData();
+            }
+        };
+    }
+    
+    // زر مسح الكل
+    var clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) {
+        clearAllBtn.onclick = function() {
+            if (typeof clearAllMaterials === 'function') {
+                clearAllMaterials();
+            }
+        };
+    }
+    
+    // زر إدارة الأسعار
+    var priceManagerBtn = document.getElementById('priceManagerBtn');
+    if (priceManagerBtn) {
+        priceManagerBtn.onclick = function(e) {
+            e.preventDefault();
+            if (typeof openPriceModal === 'function') {
+                openPriceModal();
+            } else if (typeof showToastMessage === 'function') {
+                showToastMessage('جاري تحميل نظام الأسعار...', false);
+            }
+        };
+    }
+    
+    // زر إضافة مادة من المودال
+    var saveNewItemBtn = document.getElementById('saveNewItemBtn');
+    if (saveNewItemBtn) {
+        saveNewItemBtn.onclick = function() {
+            if (typeof addNewMaterial === 'function') {
+                addNewMaterial();
+            }
+        };
+    }
+    
+    // زر حفظ التعديل
+    var saveEditBtn = document.getElementById('saveEditBtn');
+    if (saveEditBtn) {
+        saveEditBtn.onclick = function() {
+            if (typeof saveEdit === 'function') {
+                saveEdit();
+            }
+        };
+    }
+    
+    // زر حفظ القوائم الجاهزة
+    var savePresetBtn = document.getElementById('savePresetBtn');
+    if (savePresetBtn) {
+        savePresetBtn.onclick = function() {
+            if (typeof addSelectedPresetItems === 'function') {
+                addSelectedPresetItems();
+            }
+        };
+    }
+    
+    // زر تأكيد النقل
+    var confirmMoveBtn = document.getElementById('confirmMoveBtn');
+    if (confirmMoveBtn) {
+        confirmMoveBtn.onclick = function() {
+            if (typeof executeMove === 'function') {
+                executeMove();
+            }
+        };
     }
     
     // كروت الأقسام
-    document.querySelectorAll('.category-card').forEach(card => {
-        card.onclick = function(e) {
+    var categoryCards = document.querySelectorAll('.category-card');
+    for (var i = 0; i < categoryCards.length; i++) {
+        categoryCards[i].onclick = function(e) {
             e.stopPropagation();
-            const category = this.dataset.category;
+            var category = this.getAttribute('data-category');
+            
             if (category === 'tawsaya') {
-                document.getElementById('newMaterialSection').value = 'tawsaya';
-                document.getElementById('newItemModal').classList.add('active');
-            } else if (typeof openPresetModal === 'function') {
-                openPresetModal(category);
+                var modal = document.getElementById('newItemModal');
+                var sectionSelect = document.getElementById('newMaterialSection');
+                if (sectionSelect) {
+                    sectionSelect.value = 'tawsaya';
+                }
+                if (modal) {
+                    modal.classList.add('active');
+                }
+            } else {
+                if (typeof openPresetModal === 'function') {
+                    openPresetModal(category);
+                }
             }
         };
-    });
+    }
     
     // البحث في القوائم الجاهزة
-    const presetSearch = document.getElementById('presetSearchInput');
+    var presetSearch = document.getElementById('presetSearchInput');
     if (presetSearch) {
-        presetSearch.oninput = (e) => {
+        presetSearch.oninput = function(e) {
             if (typeof renderPresetList === 'function') {
                 renderPresetList(window.currentPresetCategory || 'main', e.target.value);
             }
         };
     }
     
-    // أزرار الإغلاق
-    const closeButtons = [
+    // أزرار إغلاق المودالات
+    var closeButtons = [
         'closeNewModalBtn', 'closeNewModalBtn2',
         'closePresetModalBtn', 'closePresetModalBtn2',
         'closeEditModalBtn', 'closeEditModalBtn2',
@@ -61,103 +164,149 @@ function bindEvents() {
         'closePriceModalBtn', 'closePriceModalBtn2'
     ];
     
-    for (const id of closeButtons) {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = () => { if (typeof closeAllModals === 'function') closeAllModals(); };
+    for (var i = 0; i < closeButtons.length; i++) {
+        var btn = document.getElementById(closeButtons[i]);
+        if (btn) {
+            btn.onclick = function() {
+                if (typeof closeAllModals === 'function') {
+                    closeAllModals();
+                } else {
+                    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
+                    for (var j = 0; j < modals.length; j++) {
+                        var el = document.getElementById(modals[j]);
+                        if (el) el.classList.remove('active');
+                    }
+                }
+            };
+        }
+    }
+    
+    // زر حفظ جميع الأسعار (إذا كان موجوداً)
+    var saveAllPricesBtn = document.getElementById('saveAllPricesBtn');
+    if (saveAllPricesBtn) {
+        saveAllPricesBtn.onclick = function() {
+            if (typeof saveAllPrices === 'function') {
+                saveAllPrices();
+            }
+        };
     }
     
     // أزرار +/- في نافذة الإضافة
-    const dec = document.getElementById('newQtyDec');
-    const inc = document.getElementById('newQtyInc');
-    const qty = document.getElementById('newQuantityValue');
+    var dec = document.getElementById('newQtyDec');
+    var inc = document.getElementById('newQtyInc');
+    var qty = document.getElementById('newQuantityValue');
+    
     if (dec && inc && qty) {
-        dec.onclick = () => { qty.value = Math.max(0.25, (parseFloat(qty.value) || 1) - 0.25); };
-        inc.onclick = () => { qty.value = (parseFloat(qty.value) || 1) + 0.25; };
+        dec.onclick = function() {
+            var v = parseFloat(qty.value) || 1;
+            v = Math.max(0.25, v - 0.25);
+            qty.value = v;
+        };
+        inc.onclick = function() {
+            var v = parseFloat(qty.value) || 1;
+            v = v + 0.25;
+            qty.value = v;
+        };
     }
     
     // تغيير الوحدة في نافذة التعديل
-    const editUnit = document.getElementById('editUnitSelect');
+    var editUnit = document.getElementById('editUnitSelect');
     if (editUnit) {
         editUnit.onchange = function() {
-            const qtyInput = document.getElementById('editQuantityValue');
-            const unit = this.value;
-            if (unit === 'half') qtyInput.value = 0.5;
-            else if (unit === 'quarter') qtyInput.value = 0.25;
-            else if (unit === 'oke') qtyInput.value = 0.2;
+            var unit = this.value;
+            var qtyInput = document.getElementById('editQuantityValue');
+            if (unit === 'half') {
+                qtyInput.value = 0.5;
+            } else if (unit === 'quarter') {
+                qtyInput.value = 0.25;
+            } else if (unit === 'oke') {
+                qtyInput.value = 0.2;
+            }
         };
     }
     
     // أزرار نوع التوصية
-    document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#tawsayaTypeGroup .unit-btn').forEach(b => b.classList.remove('active'));
+    var tawsayaTypeBtns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+    for (var i = 0; i < tawsayaTypeBtns.length; i++) {
+        tawsayaTypeBtns[i].addEventListener('click', function() {
+            var btns = document.querySelectorAll('#tawsayaTypeGroup .unit-btn');
+            for (var j = 0; j < btns.length; j++) {
+                btns[j].classList.remove('active');
+            }
             this.classList.add('active');
-            const customGroup = document.getElementById('tawsayaCustomQtyGroup');
+            var customGroup = document.getElementById('tawsayaCustomQtyGroup');
             if (customGroup) {
-                customGroup.style.display = this.dataset.type === 'custom' ? 'block' : 'none';
+                customGroup.style.display = this.getAttribute('data-type') === 'custom' ? 'block' : 'none';
             }
         });
-    });
+    }
     
     // أزرار الأوزان المخصصة
-    document.querySelectorAll('.weight-preset').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const qtyInput = document.getElementById('tawsayaCustomQty');
-            if (qtyInput) qtyInput.value = this.dataset.value;
+    var weightPresets = document.querySelectorAll('.weight-preset');
+    for (var i = 0; i < weightPresets.length; i++) {
+        weightPresets[i].addEventListener('click', function() {
+            var qtyInput = document.getElementById('tawsayaCustomQty');
+            if (qtyInput) {
+                qtyInput.value = this.getAttribute('data-value');
+            }
         });
-    });
-    
-    // استعادة الوضع الليلي
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
     }
-}
-
-function closeAllModals() {
-    const modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
-    for (const id of modals) {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('active');
-    }
-}
-
-function initPWA() {
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const installBtn = document.getElementById('installBtn');
-        if (installBtn) installBtn.style.display = 'inline-flex';
-    });
     
-    const installBtn = document.getElementById('installBtn');
+    // زر تثبيت PWA
+    var installBtn = document.getElementById('installBtn');
     if (installBtn) {
-        installBtn.onclick = () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    deferredPrompt = null;
-                    installBtn.style.display = 'none';
-                });
-            } else {
-                showToastMessage('📱 التطبيق مثبت مسبقاً', false);
+        installBtn.onclick = function() {
+            if (typeof PWASettings !== 'undefined' && PWASettings.promptInstall) {
+                PWASettings.promptInstall();
+            } else if (typeof showToastMessage === 'function') {
+                showToastMessage('📱 يمكنك تثبيت التطبيق من قائمة المتصفح', false);
             }
         };
     }
 }
 
-function showSystemMessage(title, message, type = 'info') {
-    const modal = document.getElementById('systemMessageModal');
-    document.getElementById('systemMessageTitle').innerText = title;
-    document.getElementById('systemMessageText').innerText = message;
-    const icon = modal?.querySelector('.modal-icon i');
-    if (icon) {
-        icon.style.color = type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#10b981';
+function closeAllModals() {
+    var modals = ['newItemModal', 'presetModal', 'editModal', 'moveItemModal', 'systemMessageModal', 'priceModal'];
+    for (var i = 0; i < modals.length; i++) {
+        var el = document.getElementById(modals[i]);
+        if (el) {
+            el.classList.remove('active');
+        }
     }
-    if (modal) modal.classList.add('active');
+}
+
+function initPWA() {
+    var deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        var installBtn = document.getElementById('installBtn');
+        if (installBtn) {
+            installBtn.style.display = 'inline-flex';
+        }
+    });
+    
+    var installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.onclick = function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function() {
+                    deferredPrompt = null;
+                    if (installBtn) {
+                        installBtn.style.display = 'none';
+                    }
+                });
+            } else {
+                if (typeof showToastMessage === 'function') {
+                    showToastMessage('📱 التطبيق مثبت مسبقاً', false);
+                }
+            }
+        };
+    }
 }
 
 window.bindEvents = bindEvents;
 window.closeAllModals = closeAllModals;
 window.initPWA = initPWA;
-window.showSystemMessage = showSystemMessage;
